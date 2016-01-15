@@ -14,42 +14,12 @@
         <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
 
+			
+		<script type="text/javascript" src="bateau.js"></script>
 		<script>
-
-			function Bateau(id,x,y,j,s) {
-				this.id= id;				
-				this.speed = s;
-				this.x_dep = x;
-				this.y_dep = y;				
-				this.x_dest = x;
-				this.y_dest = y;
-				this.joueur = j;
-				this.time_move = 0;
-				this.speed = s;
-				this.x = function()
-				{
-					distanceParcours = distance(this.x_dep, this.y_dep, this.x_dest, this.y_dest);	
-					this.time_delta = (new Date().getTime() - this.time_move) / 1000; // en seconde.
-
-					if (this.time_delta * this.speed >= distanceParcours)
-						return this.x_dest;
-					else
-						return this.x_dep + (this.x_dest - this.x_dep) / distanceParcours * this.time_delta * this.speed;
-				};
-				this.y = function()
-				{
-					distanceParcours = distance(this.x_dep, this.y_dep, this.x_dest, this.y_dest);
-					time_delta = (new Date().getTime() - this.time_move) / 1000; // en seconde.
-
-					if (this.time_delta * this.speed >= distanceParcours)
-						return this.y_dest;
-					else
-						return this.y_dep + (this.y_dest - this.y_dep) / distanceParcours * this.time_delta * this.speed;
-
-				};
-			}
-
-			function Tir(x,y) {
+			
+			function Tir(x,y) 
+			{
 			  this.x = x;
 			  this.y = y;
 			  this.time = new Date().getTime();
