@@ -50,11 +50,11 @@ function Joueur(id)  {
 
 
 var express = require('express'),
-	app = express();	
+	app = express(),
     server = require('http').createServer(app),
-    io = require('socket.io').listen(server),
-    ent = require('ent'),
-    fs = require('fs');
+    io = require('socket.io').listen(server);
+//    ent = require('ent'),
+//    fs = require('fs');
 
 var nbJoueurs = 0;
 var idJoueur = 0;

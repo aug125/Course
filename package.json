@@ -1,0 +1,10 @@
+{
+    "name": "Bataille_navale_node",
+    "version": "0.1.0",
+	"main": "serveur.js",
+    "dependencies": {
+        "express": "~4.13.3",
+		"socket": "~1.3.7",
+		""
+    }
+}
