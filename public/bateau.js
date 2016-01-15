@@ -8,25 +8,15 @@ function Bateau(id,x,y,j,s) {
 	this.joueur = j;
 	this.time_move = 0;
 	this.speed = s;
+	this.portee = 50;
 	this.x = function()
 	{
-		console.log("dep : " + this.x_dep);
-		console.log("dest : " + this.x_dest);		
-		console.log("speed : " + this.speed);		
-		
-		distanceParcours = distance(this.x_dep, this.y_dep, this.x_dest, this.y_dest);
-		console.log("distance : " + distanceParcours);
-		
+		distanceParcours = distance(this.x_dep, this.y_dep, this.x_dest, this.y_dest);		
 		this.time_delta = (new Date().getTime() - this.time_move) / 1000; // en seconde.
 		if (this.time_delta * this.speed >= distanceParcours)			
-		{
-			return this.x_dest;
-			
-		}
+			return this.x_dest;			
 		else
-		{
 			return this.x_dep + (this.x_dest - this.x_dep) / distanceParcours * this.time_delta * this.speed;
-		}
 	};
 	this.y = function()
 	{

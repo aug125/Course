@@ -1,4 +1,15 @@
-﻿function Bateau(id,x,y,j,s) {
+﻿function random(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+function distance(x1,y1,x2,y2)
+{
+	return Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+}
+
+
+
+function Bateau(id,x,y,j,s) {
   
 	this.id = id;
 	this.x_dep = x;
@@ -8,27 +19,17 @@
 	this.joueur = j;
 	this.time_move = 0;
 	this.speed = s;
+	this.portee = 20;
+	this.puissance = 5;
 	this.x = function()
-	{
-		console.log("dep : " + this.x_dep);
-		console.log("dest : " + this.x_dest);		
-		console.log("speed : " + this.speed);		
-		
+	{		
 		distanceParcours = distance(this.x_dep, this.y_dep, this.x_dest, this.y_dest);
-		console.log("distance : " + distanceParcours);
 		
 		this.time_delta = (new Date().getTime() - this.time_move) / 1000; // en seconde.
 		if (this.time_delta * this.speed >= distanceParcours)			
-		{
-			console.log(1);					
-			return this.x_dest;
-			
-		}
+			return this.x_dest;			
 		else
-		{
-			console.log(2);								
 			return this.x_dep + (this.x_dest - this.x_dep) / distanceParcours * this.time_delta * this.speed;
-		}
 	};
 	this.y = function()
 	{
@@ -47,10 +48,6 @@ function Joueur(id)  {
 	this.tir = new Date(0).getTime();
 }
 
-function distance(x1,y1,x2,y2)
-{
-	return Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-}
 
 var express = require('express'),
 	app = express();	
@@ -68,7 +65,7 @@ app.use( express.static( "public" ) );
 		
 // Chargement de la page index.html
 app.get('/', function (req, res) {
-	res.sendFile(__dirname + '/index.html');
+	res.sendFile(__dirname + '/public/index.html');
 	var idJoueur = 0;  
 });
 
@@ -118,35 +115,45 @@ io.sockets.on('connection', function (socket) {
 				listBateaux[i].x_dest = px;
 				listBateaux[i].y_dest = py;
 				listBateaux[i].time_move = new Date().getTime();
-				console.log(listBateaux[i].x() + ' ' + listBateaux[i].y());
 				io.emit("move", listBateaux[i].id, px,py); // normalement, à envoyer qu'à ceux qui voient le bateau.
 			}
 		}
 	});
 	
 	
-	socket.on('tir', function(x,y) {
+	socket.on('tir', function(px,py) {
 		// Vérifions si le joueur peut tirer.
 		var tempsTir = new Date().getTime() - listJoueurs[socket.id].tir;
 		if (tempsTir > 3000)
 		{			
-	
-			// Ici, définir les différents tirs selon le type de bateau.
-			io.emit('tir', x, y);
-			listJoueurs[socket.id].tir = new Date().getTime();
-			// détruire les bateaux.
-					
-			for (var i=0; i<listBateaux.length;i=i+1)
-			{				
-				if (distance(listBateaux[i].x(), listBateaux[i].y(), x,y) < 10)
-				{
-					io.emit("destruction",listBateaux[i].id);
-					listBateaux.splice(i,1);
-					i--;					
+			// maintenant, vérifier les bateaux à portée de tir.
+			var tir = false;
+
+			for (var j=0; j<listBateaux.length;j=j+1)
+			{	
+
+				if (socket.id != listBateaux[j].joueur || distance(listBateaux[j].x(), listBateaux[j].y(), x, y) > listBateaux[j].portee)
+					continue;
+		
+				var x = px + random(-2,2);
+				var y = py + random(-2,2);
+				io.emit('tir', x, y);
+				tir = true;
+				// détruire les bateaux.
+						
+				for (var i=0; i<listBateaux.length;i=i+1)
+				{				
+					if (distance(listBateaux[i].x(), listBateaux[i].y(), x,y) < listBateaux[i].puissance)
+					{
+						io.emit("destruction",listBateaux[i].id);
+						listBateaux.splice(i,1);
+						i--;					
+					}			
 				}
-			
 			}
 			
+			if (tir)
+				listJoueurs[socket.id].tir = new Date().getTime();			
 		}
 	});
 	
