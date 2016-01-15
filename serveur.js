@@ -9,7 +9,7 @@ function distance(x1,y1,x2,y2)
 
 
 
-function Bateau(id,x,y,j,s) {
+function Bateau(id,x,y,j,s,r,p) {
   
 	this.id = id;
 	this.x_dep = x;
@@ -19,8 +19,8 @@ function Bateau(id,x,y,j,s) {
 	this.joueur = j;
 	this.time_move = 0;
 	this.speed = s;
-	this.portee = 20;
-	this.puissance = 5;
+	this.portee = r;
+	this.puissance = p;
 	this.x = function()
 	{		
 		distanceParcours = distance(this.x_dep, this.y_dep, this.x_dest, this.y_dest);
@@ -98,7 +98,7 @@ io.sockets.on('connection', function (socket) {
 		for (var i=0; i< listBateaux.length; i=i+1)
 		{
 			if (listBateaux[i].joueur == idJoueur)
-				socket.emit("bateau", listBateaux[i].id, listBateaux[i].x_dest, listBateaux[i].y_dest, listBateaux[i].speed);
+				socket.emit("bateau", listBateaux[i].id, listBateaux[i].x_dest, listBateaux[i].y_dest, listBateaux[i].speed, listBateaux[i].portee, listBateaux[i].puissance);
 		}
 		idJoueur +=1;
 
@@ -132,9 +132,9 @@ io.sockets.on('connection', function (socket) {
 			for (var j=0; j<listBateaux.length;j=j+1)
 			{	
 
-				if (socket.id != listBateaux[j].joueur || distance(listBateaux[j].x(), listBateaux[j].y(), x, y) > listBateaux[j].portee)
+				if (socket.id != listBateaux[j].joueur || distance(listBateaux[j].x(), listBateaux[j].y(), px, py) > listBateaux[j].portee)
 					continue;
-		
+				console.log("je tire avec " + j + " socket" + socket.id + " " + listBateaux[j].joueur);
 				var x = px + random(-2,2);
 				var y = py + random(-2,2);
 				io.emit('tir', x, y);
@@ -161,16 +161,16 @@ io.sockets.on('connection', function (socket) {
 	
 	function jeu()
 	{
-		listBateaux.push(new Bateau(0,30,30,0,15));				
-		listBateaux.push(new Bateau(1,30,40,0,11));				
-		listBateaux.push(new Bateau(2,30,50,0,12));
-		listBateaux.push(new Bateau(3,30,60,0,10));				
-		listBateaux.push(new Bateau(4,30,70,0,20));		                                    
-		listBateaux.push(new Bateau(5,70,30,1,15));				
-		listBateaux.push(new Bateau(6,70,40,1,11));				
-		listBateaux.push(new Bateau(7,70,50,1,12));
-		listBateaux.push(new Bateau(8,70,60,1,10));				
-		listBateaux.push(new Bateau(9,70,70,1,20));
+		listBateaux.push(new Bateau(0,30,30,0,15,20,5));				
+		listBateaux.push(new Bateau(1,30,40,0,11,20,5));				
+		listBateaux.push(new Bateau(2,30,50,0,12,20,5));
+		listBateaux.push(new Bateau(3,30,60,0,10,20,5));				
+		listBateaux.push(new Bateau(4,30,70,0,20,20,5));		                                    
+		listBateaux.push(new Bateau(5,70,30,1,15,20,5));				
+		listBateaux.push(new Bateau(6,70,40,1,11,20,5));				
+		listBateaux.push(new Bateau(7,70,50,1,12,20,5));
+		listBateaux.push(new Bateau(8,70,60,1,10,20,5));				
+		listBateaux.push(new Bateau(9,70,70,1,20,20,5));
 		io.emit("jeu");
 	}
 	

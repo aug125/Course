@@ -1,4 +1,4 @@
-function Bateau(id,x,y,j,s) {
+function Bateau(id,x,y,j,s,r,p) {
   
 	this.id = id;
 	this.x_dep = x;
@@ -8,7 +8,8 @@ function Bateau(id,x,y,j,s) {
 	this.joueur = j;
 	this.time_move = 0;
 	this.speed = s;
-	this.portee = 50;
+	this.portee = r;
+	this.puissance = p;
 	this.x = function()
 	{
 		distanceParcours = distance(this.x_dep, this.y_dep, this.x_dest, this.y_dest);		
