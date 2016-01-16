@@ -77,6 +77,7 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('nouveau_joueur', function (){
 		nbJoueurs += 1;
+		console.log(nbJoueurs + " joueurs");
 		if (nbJoueurs == 2)
 		{
 			jeu();
