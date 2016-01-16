@@ -161,7 +161,7 @@ io.sockets.on('connection', function (socket) {
 						{				
 							if (distance(listBateaux[i].x(), listBateaux[i].y(), x,y) < listBateaux[i].puissance)
 							{
-								io.emit("destruction",listBateaux[i].id);
+								socket.broadcast.emit("destruction",listBateaux[i].id);
 								listBateaux.splice(i,1);
 								i--;					
 							}			
