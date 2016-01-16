@@ -1,0 +1,255 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Bataille navale</title>
+        <style>
+        </style>
+    </head>
+ 
+    <body>
+	
+	 <canvas id="canvas" width="1000" height="700"> </canvas>
+	 
+
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+
+			
+		<script type="text/javascript" src="bateau.js"></script>
+		<script>
+			
+			// type de boucle d'animation.
+			this.requestAnimFrame = (function(){ return window.requestAnimationFrame
+			 || window.webkitRequestAnimationFrame
+			 || window.mozRequestAnimationFrame
+			 || window.oRequestAnimationFrame
+			 || window.msRequestAnimationFrame
+			 || null})();
+			
+			
+			function recolorPants(red, green, blue, xmin, ymin, xmax, ymax) {
+			
+				var imgData = ctx.getImageData(xmin, ymin, xmax, ymax);				
+				for (var i = 0; i < imgData.data.length; i += 4) {
+					if (imgData.data[i + 0] != 77 || imgData.data[i + 1] != 77 || imgData.data[i + 2] != 77)
+						continue;
+					
+					imgData.data[i + 0] = red;
+					imgData.data[i + 1] = green,  			
+					imgData.data[i + 2] = blue;
+				}
+				ctx.putImageData(imgData, xmin, ymin);
+			}
+
+			
+			function Tir(x,y,t) 
+			{
+			  this.x = x;
+			  this.y = y;
+			  this.time = new Date().getTime() + t * 1000;
+			}
+
+			function distance(x1,y1,x2,y2)
+			{
+				return Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+			}
+			
+			document.oncontextmenu = new Function("return false");
+			
+			// Connexion socket.io
+            var socket = io.connect('http://192.168.10.4:8080');
+			socket.emit('nouveau_joueur');
+			var canvas = document.getElementById('canvas');
+			var ctx = canvas.getContext("2d");
+			//var canvasBG = document.getElementById('canvasBG');
+			//var ctxBG = canvasBG.getContext("2d");
+			
+			var listBateaux = [];
+			var tirs = [];
+			var idJoueur;
+			var time;
+			var sourisX = 0;
+			var sourisY = 0;
+			var select = -1;
+			var sousMarin = new Image();
+			var leftUp = true;
+			var rightUp = true;
+			
+			
+			canvas.width = window.innerHeight;
+			canvas.height = window.innerHeight;
+			//canvasBG.width = window.innerHeight;
+			//canvasBG.height = window.innerHeight;
+			
+            // mouvement souris
+			canvas.addEventListener("mousemove", function(e)
+			{
+				sourisX = e.pageX - 10;
+				sourisY = e.pageY - 10;
+			});
+
+			document.oncontextmenu = new Function("return false");			
+			
+			
+			
+			// clic souris
+			canvas.addEventListener("mousedown", function(e)
+			{
+				if (e.which == 1) // bouton gauche
+				{
+					// Soit on selectionne un bateau, soit on tire.
+					for (var i=0; i<listBateaux.length; i=i+1)
+					{
+
+						var selected = false;
+						if (listBateaux[i].joueur == idJoueur && distance(listBateaux[i].x(), listBateaux[i].y(), sourisX/ratio, sourisY/ratio) < 5)
+						{
+							select = listBateaux[i].id;
+							selected = true;
+							break;
+						}
+					}	
+					if (selected == false)
+					{
+						socket.emit('tir', sourisX/ratio, sourisY/ratio);
+					}
+				}
+				else if (e.which == 3) // bouton droit
+				{
+					if (select != -1 && rightUp)
+					{
+						socket.emit('move', select, sourisX/ratio, sourisY/ratio);
+						rightUp = false;
+					}
+				}
+			});		
+			
+			canvas.addEventListener("mouseup", function(e)
+			{
+				if (e.which == 3)
+				{
+					rightUp = true;
+				}
+			});
+			
+			var ratio = canvas.width/100; // Le ratio des éléments à placer selon la taille du jeu.
+			
+			socket.on('infosPartie', function(num) {
+				idJoueur = num;				
+			});			
+			
+			socket.on('bateau', function(id,px,py,pspeed,prange,ppuissance) {
+				console.log(prange);
+				listBateaux.push(new Bateau(id,px,py,idJoueur,pspeed,prange,ppuissance));
+			});
+
+			
+
+			
+			socket.on('jeu', function () {		
+				initialiser();
+				renderingLoop();
+			});
+
+			socket.on('pre_tir', function (x,y) {
+			
+				tirs.push(new Tir(x,y,1));
+			});
+			
+			socket.on('tir', function (x,y) {	
+				tirs.push(new Tir(x,y,0));			
+			});
+
+			socket.on('destruction', function (id) {				
+				for (var i=0; i<listBateaux.length;i=i+1)
+				{
+					if (listBateaux[i].id == id)
+					{										
+						var list = listBateaux.splice(i,1);
+						break;
+					}
+				}
+			});
+			
+			function initialiser()
+			{
+				socket.emit('id');				
+				sousMarin.src = 'sousMarin.svg';				
+				sousMarin.onload = function() 
+				{
+				
+				}
+
+			}
+			
+			function renderingLoop()
+			{
+				
+				socket.on('move', function(id,x_dep, y_dep, px,py) {
+					console.log("move");
+					for (var i=0; i<listBateaux.length;i=i+1)
+					{
+						if (listBateaux[i].id == id) //
+						{
+							listBateaux[i].x_dep = x_dep;
+							listBateaux[i].y_dep = y_dep;
+							listBateaux[i].x_dest = px;
+							listBateaux[i].y_dest = py;
+							listBateaux[i].time_move = new Date().getTime();
+
+						}
+					}
+				});
+				console.log(new Date().getTime() - time);
+				time = new Date().getTime();
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				var gradient = ctx.createLinearGradient(0,0,0,canvas.height);
+				gradient.addColorStop(0,"#00BBFF");
+				var time = new Date().getTime() / 10000;				
+				gradient.addColorStop(1,"#0022FF");	
+				ctx.fillStyle = gradient;
+				ctx.fillRect(0,0,canvas.width, canvas.height);		
+				
+					// dessiner tous les bateaux.
+					for (var i=0; i<listBateaux.length;i=i+1)
+					{			
+						// dessiner le cercle de portee.
+						ctx.beginPath();
+						ctx.arc(listBateaux[i].x() * ratio, listBateaux[i].y() * ratio, listBateaux[i].portee * ratio, 0, 2 * Math.PI);
+						ctx.fillStyle = "rgba(0, 200, 0, 0.2)";
+						ctx.fill();
+										
+						// dessiner le cercle de selection
+						if (listBateaux[i].id == select)
+						{
+							ctx.beginPath();
+							ctx.lineWidth="2";
+							ctx.arc(listBateaux[i].x() * ratio, listBateaux[i].y() * ratio, 20, 0, 2 * Math.PI);
+							ctx.stroke();
+						}				
+						ctx.drawImage(sousMarin, (listBateaux[i].x() - 2) * ratio, (listBateaux[i].y() - 2) * ratio, 4*ratio, 4*ratio);
+						recolorPants(255,20,20,(listBateaux[i].x()-2)*ratio, (listBateaux[i].y()-1)*ratio, 20*ratio, 20*ratio);							
+												
+					}
+					
+				// dessiner tous les tirs
+				for (var i=0; i<tirs.length;i=i+1)
+				{
+					var tempsTir = new Date().getTime() - tirs[i].time;
+					if (tempsTir < 1000)
+					{
+						ctx.beginPath();
+						ctx.arc(tirs[i].x * ratio,tirs[i].y * ratio,Math.abs(tempsTir)/1000*5*ratio,0,Math.PI*2);
+						ctx.fillStyle = "#EEFFEE";
+						ctx.stroke();
+					}			
+				}
+				if(this.requestAnimFrame)
+					this.requestAnimFrame.call(window,this.renderingLoop.bind(this));		
+			}
+
+        </script>
+    </body>
+</html>
