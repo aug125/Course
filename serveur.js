@@ -23,23 +23,21 @@ function Bateau(id,x,y,j,s,r,p) {
 	this.puissance = p;
 	this.x = function()
 	{		
-		distanceParcours = distance(this.x_dep, this.y_dep, this.x_dest, this.y_dest);
-		
-		this.time_delta = (new Date().getTime() - this.time_move) / 1000; // en seconde.
-		if (this.time_delta * this.speed >= distanceParcours)			
+		distanceParcours = distance(this.x_dep, this.y_dep, this.x_dest, this.y_dest);		
+		time_delta = (new Date().getTime() - this.time_move) / 1000; // en seconde.
+		if (time_delta * this.speed >= distanceParcours)			
 			return this.x_dest;			
 		else
-			return this.x_dep + (this.x_dest - this.x_dep) / distanceParcours * this.time_delta * this.speed;
+			return this.x_dep + (this.x_dest - this.x_dep) / distanceParcours * time_delta * this.speed;
 	};
 	this.y = function()
 	{
 		distanceParcours = distance(this.x_dep, this.y_dep, this.x_dest, this.y_dest);
 		time_delta = (new Date().getTime() - this.time_move) / 1000; // en seconde.
-
 		if (time_delta * this.speed >= distanceParcours)
 			return this.y_dest;
 		else
-			return this.y_dep + (this.y_dest - this.y_dep) / distanceParcours * this.time_delta * this.speed;
+			return this.y_dep + (this.y_dest - this.y_dep) / distanceParcours * time_delta * this.speed;
 	};
 }
 
@@ -107,13 +105,16 @@ io.sockets.on('connection', function (socket) {
 	
 	socket.on('move', function(bateau,px,py)
 	{
+		
 		for (var i=0; i<listBateaux.length;i=i+1)
 		{
 			if (listBateaux[i].id == bateau && listBateaux[i].joueur == socket.id) // Ouais, faudrait pas qu'il bouge un autre bateau ce con.
 			{
-				console.log(listBateaux[i].x_dest);
-				listBateaux[i].x_dep = listBateaux[i].x();
-				listBateaux[i].y_dep = listBateaux[i].y();
+				var x = listBateaux[i].x();
+				var y = listBateaux[i].y();
+				listBateaux[i].x_dep = x;
+				listBateaux[i].y_dep = y;
+				
 				listBateaux[i].x_dest = px;
 				listBateaux[i].y_dest = py;
 				listBateaux[i].time_move = new Date().getTime();
