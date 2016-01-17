@@ -43,11 +43,12 @@
 			}
 
 			
-			function Tir(x,y,t) 
+			function Tir(x,y,t,p) 
 			{
 			  this.x = x;
 			  this.y = y;
 			  this.time = new Date().getTime() + t * 1000;
+			  this.puissance = p;
 			}
 
 			function distance(x1,y1,x2,y2)
@@ -108,10 +109,10 @@
 					{
 						ctx.beginPath();
 						if (tempsTir < 0)
-							ctx.arc(tirs[i].x * ratio,tirs[i].y * ratio,-tempsTir/1000*5*ratio,0,Math.PI*2);
+							ctx.arc(tirs[i].x * ratio,tirs[i].y * ratio,-tempsTir/1000*tirs[i].puissance * ratio,0,Math.PI*2);
 						else
 {
-							ctx.arc(tirs[i].x * ratio,tirs[i].y * ratio, Math.min(tempsTir/200,1) * 5 *ratio,0,Math.PI*2);
+							ctx.arc(tirs[i].x * ratio,tirs[i].y * ratio, Math.min(tempsTir/200,1) * tirs[i].puissance * ratio,0,Math.PI*2);
 							ctx.fillStyle = "rgba(200, 0, 0, 0.2)";
 							ctx.fill();
 }
@@ -227,13 +228,13 @@
 				renderingLoop();
 			});
 
-			socket.on('pre_tir', function (x,y) {
+			socket.on('pre_tir', function (x,y,p) {
 			
-				tirs.push(new Tir(x,y,1));
+				tirs.push(new Tir(x,y,1,p));
 			});
 			
-			socket.on('tir', function (x,y) {	
-				tirs.push(new Tir(x,y,0));			
+			socket.on('tir', function (x,y,p) {	
+				tirs.push(new Tir(x,y,0,p));			
 			});
 
 			socket.on('destruction', function (id) {				
