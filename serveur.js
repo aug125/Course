@@ -9,16 +9,16 @@ function distance(x1,y1,x2,y2)
 
 function jeu()
 {
-	listBateaux.push(new Bateau(0,30,30,0,15,16,10));				
-	listBateaux.push(new Bateau(1,30,40,0,11,20,5));				
-	listBateaux.push(new Bateau(2,30,50,0,12,20,5));
-	listBateaux.push(new Bateau(3,30,60,0,10,20,5));				
-	listBateaux.push(new Bateau(4,30,70,0,20,20,5));		                                    
-	listBateaux.push(new Bateau(5,70,30,1,15,16,10));				
-	listBateaux.push(new Bateau(6,70,40,1,11,20,5));				
-	listBateaux.push(new Bateau(7,70,50,1,12,20,5));
-	listBateaux.push(new Bateau(8,70,60,1,10,20,5));				
-	listBateaux.push(new Bateau(9,70,70,1,20,20,5));
+	listBateaux.push(new Bateau(0,30,30,0,12,20,4));				
+	listBateaux.push(new Bateau(1,30,40,0,12,20,4));				
+	listBateaux.push(new Bateau(2,30,50,0,12,20,4));
+	listBateaux.push(new Bateau(3,30,60,0,12,20,4));				
+	listBateaux.push(new Bateau(4,30,70,0,12,20,4));		                                    
+	listBateaux.push(new Bateau(5,70,30,1,12,20,4));				
+	listBateaux.push(new Bateau(6,70,40,1,12,20,4));				
+	listBateaux.push(new Bateau(7,70,50,1,12,20,4));
+	listBateaux.push(new Bateau(8,70,60,1,12,20,4));				
+	listBateaux.push(new Bateau(9,70,70,1,12,20,4));
 	io.emit("jeu");
 }
 
@@ -193,6 +193,27 @@ io.sockets.on('connection', function (socket) {
 		}
 	});
 		
+	socket.on('positionEnnemi', function() {
+		
+		
+		// Pour chaque bateau contrôlé par le joueur, on regarde les bateaux ennemis proches.
+		for (var i=0; i<listBateaux.length; i=i+1)
+		{
+			
+			if (listBateaux[i].joueur != socket.id)
+				continue;
+			for (var j=0; j<listBateaux.length; j=j+1)
+			{
+				if (listBateaux[j].joueur == socket.id)
+					continue;
+				if (distance(listBateaux[i].x(), listBateaux[i].y(), listBateaux[j].x(), listBateaux[j].y()) < listBateaux[i].portee)
+					socket.emit('bateauEnnemi', listBateaux[j].id, listBateaux[j].x_dep, listBateaux[j].y_dep, listBateaux[j].x_dest, listBateaux[j].y_dest, listBateaux[j].speed, listBateaux[j].time_move);
+			}
+			
+			
+		}
+		
+	});	
 	
 });
 
