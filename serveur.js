@@ -7,6 +7,20 @@ function distance(x1,y1,x2,y2)
 	return Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
 }
 
+function jeu()
+{
+	listBateaux.push(new Bateau(0,30,30,0,15,16,10));				
+	listBateaux.push(new Bateau(1,30,40,0,11,20,5));				
+	listBateaux.push(new Bateau(2,30,50,0,12,20,5));
+	listBateaux.push(new Bateau(3,30,60,0,10,20,5));				
+	listBateaux.push(new Bateau(4,30,70,0,20,20,5));		                                    
+	listBateaux.push(new Bateau(5,70,30,1,15,16,10));				
+	listBateaux.push(new Bateau(6,70,40,1,11,20,5));				
+	listBateaux.push(new Bateau(7,70,50,1,12,20,5));
+	listBateaux.push(new Bateau(8,70,60,1,10,20,5));				
+	listBateaux.push(new Bateau(9,70,70,1,20,20,5));
+	io.emit("jeu");
+}
 
 
 function Bateau(id,x,y,j,s,r,p) {
@@ -58,7 +72,9 @@ var nbJoueurs = 0;
 var idJoueur = 0;
 
 var listBateaux = [];
-	
+var listJoueurs = new Array();
+
+
 app.use( express.static( "public" ) );
 		
 // Chargement de la page index.html
@@ -68,7 +84,6 @@ app.get('/', function (req, res) {
 });
 
 
-var listJoueurs = new Array();
 
 
 io.sockets.on('connection', function (socket) {
@@ -177,23 +192,7 @@ io.sockets.on('connection', function (socket) {
 				listJoueurs[socket.id].tir = new Date().getTime();			
 		}
 	});
-	
-
-	
-	function jeu()
-	{
-		listBateaux.push(new Bateau(0,30,30,0,15,16,10));				
-		listBateaux.push(new Bateau(1,30,40,0,11,20,5));				
-		listBateaux.push(new Bateau(2,30,50,0,12,20,5));
-		listBateaux.push(new Bateau(3,30,60,0,10,20,5));				
-		listBateaux.push(new Bateau(4,30,70,0,20,20,5));		                                    
-		listBateaux.push(new Bateau(5,70,30,1,15,16,10));				
-		listBateaux.push(new Bateau(6,70,40,1,11,20,5));				
-		listBateaux.push(new Bateau(7,70,50,1,12,20,5));
-		listBateaux.push(new Bateau(8,70,60,1,10,20,5));				
-		listBateaux.push(new Bateau(9,70,70,1,20,20,5));
-		io.emit("jeu");
-	}
+		
 	
 });
 

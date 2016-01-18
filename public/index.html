@@ -72,6 +72,8 @@
 				time = new Date().getTime();
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
+				
+
 				var gradient = ctx.createLinearGradient(0,0,0,canvas.height);
 				gradient.addColorStop(0,"#00BBFF");
 				var time = new Date().getTime() / 10000;				
@@ -79,28 +81,32 @@
 				ctx.fillStyle = gradient;
 				ctx.fillRect(0,0,canvas.width, canvas.height);		
 				
-					// dessiner tous les bateaux.
-					for (var i=0; i<listBateaux.length;i=i+1)
-					{			
-						// dessiner le cercle de portee.
+				// Demander la positions des autres bateaux.
+				socket.emit("positionEnnemi");
+				
+			
+				// dessiner tous les bateaux.
+				for (var i=0; i<listBateaux.length;i=i+1)
+				{			
+					// dessiner le cercle de portee.
+					ctx.beginPath();
+					ctx.arc(listBateaux[i].x() * ratio, listBateaux[i].y() * ratio, listBateaux[i].portee * ratio, 0, 2 * Math.PI);
+					ctx.fillStyle = "rgba(0, 200, 0, 0.2)";
+					ctx.fill();
+									
+					// dessiner le cercle de selection
+					if (listBateaux[i].id == select)
+					{
 						ctx.beginPath();
-						ctx.arc(listBateaux[i].x() * ratio, listBateaux[i].y() * ratio, listBateaux[i].portee * ratio, 0, 2 * Math.PI);
-						ctx.fillStyle = "rgba(0, 200, 0, 0.2)";
-						ctx.fill();
-										
-						// dessiner le cercle de selection
-						if (listBateaux[i].id == select)
-						{
-							ctx.beginPath();
-							ctx.lineWidth="2";
-							ctx.arc(listBateaux[i].x() * ratio, listBateaux[i].y() * ratio, 20, 0, 2 * Math.PI);
-							ctx.stroke();
-						}				
-						ctx.drawImage(sousMarin, (listBateaux[i].x() - 2) * ratio, (listBateaux[i].y() - 2) * ratio, 4*ratio, 4*ratio);
-						//recolorPants(255,20,20,(listBateaux[i].x()-2)*ratio, (listBateaux[i].y()-1)*ratio, 20*ratio, 20*ratio);							
-												
-					}
-					
+						ctx.lineWidth="2";
+						ctx.arc(listBateaux[i].x() * ratio, listBateaux[i].y() * ratio, 20, 0, 2 * Math.PI);
+						ctx.stroke();
+					}				
+					ctx.drawImage(sousMarin, (listBateaux[i].x() - 2) * ratio, (listBateaux[i].y() - 2) * ratio, 4*ratio, 4*ratio);
+					//recolorPants(255,20,20,(listBateaux[i].x()-2)*ratio, (listBateaux[i].y()-1)*ratio, 20*ratio, 20*ratio);							
+											
+				}
+				
 				// dessiner tous les tirs
 				for (var i=0; i<tirs.length;i=i+1)
 				{
@@ -129,7 +135,6 @@
 			
 			// Connexion socket.io
             var socket = io.connect('http://192.168.10.4:8080');
-			socket.emit('nouveau_joueur');
 			var canvas = document.getElementById('canvas');
 			var ctx = canvas.getContext("2d");
 			//var canvasBG = document.getElementById('canvasBG');
@@ -146,6 +151,12 @@
 			var leftUp = true;
 			var rightUp = true;
 			
+			var ratio = canvas.width/100; // Le ratio des éléments à placer selon la taille du jeu.
+			
+			document.oncontextmenu = new Function("return false");			
+			
+			socket.emit('nouveau_joueur');
+
 			
 			canvas.width = window.innerHeight;
 			canvas.height = window.innerHeight;
@@ -159,7 +170,6 @@
 				sourisY = e.pageY - 10;
 			});
 
-			document.oncontextmenu = new Function("return false");			
 			
 			
 			
@@ -209,9 +219,7 @@
 					rightUp = true;
 				}
 			});
-			
-			var ratio = canvas.width/100; // Le ratio des éléments à placer selon la taille du jeu.
-			
+						
 			socket.on('infosPartie', function(num) {
 				idJoueur = num;				
 			});			
@@ -247,6 +255,12 @@
 					}
 				}
 			});
+			
+			socket.on('bateauEnnemi', function(id,x_dep, y_dep, x_dest,y_dest) {
+			
+			
+			});
+			
 			
 			socket.on('move', function(id, px_dep, py_dep, px,py) {
 				for (var i=0; i<listBateaux.length;i=i+1)
