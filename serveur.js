@@ -7,18 +7,31 @@ function distance(x1,y1,x2,y2)
 	return Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
 }
 
+function creerFlotte(idJoueur, xmin, xmax, ymin, ymax)
+{
+	// Id, x, y, joueur, vitesse, portée, puissance
+	var nbBateaux = 5;
+	
+	listBateaux.push(new Bateau(idJoueur*nbBateaux + 0,xmin + (xmax - xmin)*0/(nbBateaux-1),ymin + (ymax - ymin)*0/(nbBateaux-1),idJoueur,8,25,4));				
+	listBateaux.push(new Bateau(idJoueur*nbBateaux + 1,xmin + (xmax - xmin)*1/(nbBateaux-1),ymin + (ymax - ymin)*1/(nbBateaux-1),idJoueur,8,25,4));				
+	listBateaux.push(new Bateau(idJoueur*nbBateaux + 2,xmin + (xmax - xmin)*2/(nbBateaux-1),ymin + (ymax - ymin)*2/(nbBateaux-1),idJoueur,8,25,4));
+	listBateaux.push(new Bateau(idJoueur*nbBateaux + 3,xmin + (xmax - xmin)*3/(nbBateaux-1),ymin + (ymax - ymin)*3/(nbBateaux-1),idJoueur,8,25,4));
+	listBateaux.push(new Bateau(idJoueur*nbBateaux + 4,xmin + (xmax - xmin)*4/(nbBateaux-1),ymin + (ymax - ymin)*4/(nbBateaux-1),idJoueur,8,25,4));
+} 
+
 function jeu()
 {
-	listBateaux.push(new Bateau(0,30,30,0,12,20,4));				
-	listBateaux.push(new Bateau(1,30,40,0,12,20,4));				
-	listBateaux.push(new Bateau(2,30,50,0,12,20,4));
-	listBateaux.push(new Bateau(3,30,60,0,12,20,4));				
-	listBateaux.push(new Bateau(4,30,70,0,12,20,4));		                                    
-	listBateaux.push(new Bateau(5,70,30,1,12,20,4));				
-	listBateaux.push(new Bateau(6,70,40,1,12,20,4));				
-	listBateaux.push(new Bateau(7,70,50,1,12,20,4));
-	listBateaux.push(new Bateau(8,70,60,1,12,20,4));				
-	listBateaux.push(new Bateau(9,70,70,1,12,20,4));
+
+	creerFlotte(0,20,20,30,70);
+	creerFlotte(1,140,140,30,70);
+	
+	if (nbTotalJoueurs > 2)
+			creerFlotte(2,60,100,20,20);
+
+	if (nbTotalJoueurs > 3)
+			creerFlotte(3,60,100,80,80);
+
+		
 	io.emit("jeu");
 }
 
@@ -58,6 +71,7 @@ function Bateau(id,x,y,j,s,r,p) {
 function Joueur(id)  {
 	this.id = id;
 	this.tir = new Date(0).getTime();
+	this.nbBateaux = 5;
 }
 
 
@@ -68,14 +82,16 @@ var express = require('express'),
 //    ent = require('ent'),
 //    fs = require('fs');
 
+var nbTotalJoueurs = 2;
 var nbJoueurs = 0;
 var idJoueur = 0;
 
 var listBateaux = [];
 var listJoueurs = new Array();
 
-
 app.use( express.static( "public" ) );
+
+
 		
 // Chargement de la page index.html
 app.get('/', function (req, res) {
@@ -83,22 +99,17 @@ app.get('/', function (req, res) {
 	var idJoueur = 0;  
 });
 
-
-
-
 io.sockets.on('connection', function (socket) {
 
 	socket.on('nouveau_joueur', function (){
 		nbJoueurs += 1;
 		console.log(nbJoueurs + " joueurs");
-		if (nbJoueurs == 2)
+		if (nbJoueurs == nbTotalJoueurs)
 		{
 			jeu();
 		}
 	});		
 
-
-	
 	socket.on('disconnect', function() {
 		nbJoueurs -= 1;
 	});
@@ -179,12 +190,17 @@ io.sockets.on('connection', function (socket) {
 					for (var i=0; i<listBateaux.length;i=i+1)
 					{				
 						if (distance(listBateaux[i].x(), listBateaux[i].y(), x,y) < p)
-						{
+						{							
+							listJoueurs[listBateaux[i].joueur].nbBateaux -= 1;
+							if (listJoueurs[listBateaux[i].joueur].nbBateaux == 0)
+								io.emit("message", "Le joueur" + (listBateaux[i].joueur +1 ) + " a perdu");
+							
 							socket.broadcast.emit("destruction",listBateaux[i].id);
 							listBateaux.splice(i,1);
-							i--;					
+							i--;							
 						}			
 					}
+					
 				}
 			}, 1000);
 				
