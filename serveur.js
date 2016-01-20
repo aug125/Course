@@ -8,7 +8,9 @@ function distance(x1,y1,x2,y2)
 }
 
 function creerFlotte(idJoueur, xmin, xmax, ymin, ymax)
-{
+{	
+	var listBateaux = mapGames.get(idGame).get("listBateaux");
+
 	// Id, x, y, joueur, vitesse, portée, puissance
 	var nbBateaux = 5;
 	
@@ -17,11 +19,20 @@ function creerFlotte(idJoueur, xmin, xmax, ymin, ymax)
 	listBateaux.push(new Bateau(idJoueur*nbBateaux + 2,xmin + (xmax - xmin)*2/(nbBateaux-1),ymin + (ymax - ymin)*2/(nbBateaux-1),idJoueur,8,25,4));
 	listBateaux.push(new Bateau(idJoueur*nbBateaux + 3,xmin + (xmax - xmin)*3/(nbBateaux-1),ymin + (ymax - ymin)*3/(nbBateaux-1),idJoueur,8,25,4));
 	listBateaux.push(new Bateau(idJoueur*nbBateaux + 4,xmin + (xmax - xmin)*4/(nbBateaux-1),ymin + (ymax - ymin)*4/(nbBateaux-1),idJoueur,8,25,4));
+	
+
+	
 } 
 
 function jeu()
 {
+	var mapGame = new Map(); 
 
+	mapGame.set("listBateaux", []);
+	mapGame.set("listJoueurs", []);
+
+	mapGames.set(idGame,mapGame);	
+	
 	creerFlotte(0,20,20,30,70);
 	creerFlotte(1,140,140,30,70);
 	
@@ -31,8 +42,9 @@ function jeu()
 	if (nbTotalJoueurs > 3)
 			creerFlotte(3,60,100,80,80);
 
+	
 		
-	io.emit("jeu");
+	
 }
 
 
@@ -85,9 +97,8 @@ var express = require('express'),
 var nbTotalJoueurs = 2;
 var nbJoueurs = 0;
 var idJoueur = 0;
-
-var listBateaux = [];
-var listJoueurs = new Array();
+var idGame = 0;
+var mapGames = new Map();
 
 app.use( express.static( "public" ) );
 
@@ -101,12 +112,20 @@ app.get('/', function (req, res) {
 
 io.sockets.on('connection', function (socket) {
 
+
 	socket.on('nouveau_joueur', function (){
 		nbJoueurs += 1;
-		console.log(nbJoueurs + " joueurs");
+		console.log('Nouveau joueur transfere dans la partie ' + idGame);
+		socket.game = idGame;
+		socket.join(idGame);
 		if (nbJoueurs == nbTotalJoueurs)
 		{
+					
 			jeu();
+			io.to(idGame).emit("jeu");
+			idGame +=1;
+			idJoueur = 0;
+			nbJoueurs = 0;			
 		}
 	});		
 
@@ -115,8 +134,12 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('id', function() {
-		console.log("Le joueur " + idJoueur + " joue");
-		listJoueurs.push(new Joueur(idJoueur));			
+
+		var listBateaux = mapGames.get(socket.game).get("listBateaux");
+		var listJoueurs = mapGames.get(socket.game).get("listJoueurs");
+
+		console.log("Le joueur " + idJoueur + " joue dans la partie " + socket.game);
+		listJoueurs.push(new Joueur(idJoueur));		
 		socket.id = idJoueur;		
 		socket.emit("infosPartie", idJoueur);
 						
@@ -131,6 +154,7 @@ io.sockets.on('connection', function (socket) {
 	
 	socket.on('move', function(bateau,px,py)
 	{
+		var listBateaux = mapGames.get(socket.game).get("listBateaux");
 		
 		for (var i=0; i<listBateaux.length;i=i+1)
 		{
@@ -144,7 +168,7 @@ io.sockets.on('connection', function (socket) {
 				listBateaux[i].x_dest = px;
 				listBateaux[i].y_dest = py;
 				listBateaux[i].time_move = new Date().getTime();
-				io.emit("move", listBateaux[i].id, listBateaux[i].x_dep, listBateaux[i].y_dep, px,py); // normalement, à envoyer qu'à ceux qui voient le bateau.
+				io.to(socket.game).emit("move", listBateaux[i].id, listBateaux[i].x_dep, listBateaux[i].y_dep, px,py); // normalement, à envoyer qu'à ceux qui voient le bateau.
 			}
 		}
 	});
@@ -152,6 +176,9 @@ io.sockets.on('connection', function (socket) {
 	
 	socket.on('tir', function(px,py) {
 		// Vérifions si le joueur peut tirer.
+		var listBateaux = mapGames.get(socket.game).get("listBateaux");
+		var listJoueurs = mapGames.get(socket.game).get("listJoueurs");
+
 		var tempsTir = new Date().getTime() - listJoueurs[socket.id].tir;
 		if (tempsTir > 3000)
 		{			
@@ -183,7 +210,7 @@ io.sockets.on('connection', function (socket) {
 					x = listTirsX[j];
 					y = listTirsY[j];
 					p = listTirsP[j];
-					io.emit('tir', x, y, p);
+					io.to(socket.game).emit('tir', x, y, p);
 				
 					// détruire les bateaux.
 							
@@ -193,9 +220,9 @@ io.sockets.on('connection', function (socket) {
 						{							
 							listJoueurs[listBateaux[i].joueur].nbBateaux -= 1;
 							if (listJoueurs[listBateaux[i].joueur].nbBateaux == 0)
-								io.emit("message", "Le joueur" + (listBateaux[i].joueur +1 ) + " a perdu");
+								io.to(socket.game).emit("message", "Le joueur" + (listBateaux[i].joueur +1 ) + " a perdu");
 							
-							socket.broadcast.emit("destruction",listBateaux[i].id);
+							io.to(socket.game).emit("destruction",listBateaux[i].id);
 							listBateaux.splice(i,1);
 							i--;							
 						}			
@@ -211,6 +238,9 @@ io.sockets.on('connection', function (socket) {
 		
 	socket.on('positionEnnemi', function() {
 		
+		var listBateaux = mapGames.get(socket.game).get("listBateaux");
+		var listJoueurs = mapGames.get(socket.game).get("listJoueurs");
+
 		
 		// Pour chaque bateau contrôlé par le joueur, on regarde les bateaux ennemis proches.
 		for (var i=0; i<listBateaux.length; i=i+1)
