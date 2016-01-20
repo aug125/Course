@@ -36,7 +36,7 @@
 			document.oncontextmenu = new Function("return false");
 			
 			// Connexion socket.io
-            var socket = io.connect('http://192.168.10.1:8080');
+            var socket = io.connect('http://192.168.10.1:80');
 			var canvas = document.getElementById('canvas');
 			var textArea = document.getElementById('textarea');
 			var ctx = canvas.getContext("2d");
@@ -184,14 +184,17 @@
 					{
 						ctx.beginPath();
 						if (tempsTir < 0)
+						{
 							ctx.arc(tirs[i].x * ratio,tirs[i].y * ratio,-tempsTir/1000*tirs[i].puissance * ratio,0,Math.PI*2);
+							ctx.stroke();
+						}	
 						else
 						{
 							ctx.arc(tirs[i].x * ratio,tirs[i].y * ratio, Math.min(tempsTir/200,1) * tirs[i].puissance * ratio,0,Math.PI*2);
 							ctx.fillStyle = "rgba(200, 0, 0, 0.2)";
 							ctx.fill();
 						}
-						ctx.stroke();
+						
 					}			
 				}
 				if(this.requestAnimFrame)
