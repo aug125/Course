@@ -9,16 +9,21 @@ function distance(x1,y1,x2,y2)
 
 function creerFlotte(idJoueur, xmin, xmax, ymin, ymax)
 {	
-	var listBateaux = mapGames.get(idGame).get("listBateaux");
+	var listBateaux = mapGames.get(idGameLobby).get("listBateaux");
 
 	// Id, x, y, joueur, vitesse, portée, puissance
 	var nbBateaux = 5;
 	
-	listBateaux.push(new Bateau(idJoueur*nbBateaux + 0,xmin + (xmax - xmin)*0/(nbBateaux-1),ymin + (ymax - ymin)*0/(nbBateaux-1),idJoueur,8,25,4));				
+	// Porte avion
+	listBateaux.push(new Bateau(idJoueur*nbBateaux + 0,xmin + (xmax - xmin)*0/(nbBateaux-1),ymin + (ymax - ymin)*0/(nbBateaux-1),idJoueur,5,35,7));
+
+	// Torpilleurs
 	listBateaux.push(new Bateau(idJoueur*nbBateaux + 1,xmin + (xmax - xmin)*1/(nbBateaux-1),ymin + (ymax - ymin)*1/(nbBateaux-1),idJoueur,8,25,4));				
 	listBateaux.push(new Bateau(idJoueur*nbBateaux + 2,xmin + (xmax - xmin)*2/(nbBateaux-1),ymin + (ymax - ymin)*2/(nbBateaux-1),idJoueur,8,25,4));
-	listBateaux.push(new Bateau(idJoueur*nbBateaux + 3,xmin + (xmax - xmin)*3/(nbBateaux-1),ymin + (ymax - ymin)*3/(nbBateaux-1),idJoueur,8,25,4));
-	listBateaux.push(new Bateau(idJoueur*nbBateaux + 4,xmin + (xmax - xmin)*4/(nbBateaux-1),ymin + (ymax - ymin)*4/(nbBateaux-1),idJoueur,8,25,4));
+	
+	// Sous marins
+	listBateaux.push(new Bateau(idJoueur*nbBateaux + 3,xmin + (xmax - xmin)*3/(nbBateaux-1),ymin + (ymax - ymin)*3/(nbBateaux-1),idJoueur,10,15,3));
+	listBateaux.push(new Bateau(idJoueur*nbBateaux + 4,xmin + (xmax - xmin)*4/(nbBateaux-1),ymin + (ymax - ymin)*4/(nbBateaux-1),idJoueur,10,15,3));
 	
 
 	
@@ -31,7 +36,7 @@ function jeu()
 	mapGame.set("listBateaux", []);
 	mapGame.set("listJoueurs", []);
 
-	mapGames.set(idGame,mapGame);	
+	mapGames.set(idGameLobby,mapGame);	
 	
 	creerFlotte(0,20,20,30,70);
 	creerFlotte(1,140,140,30,70);
@@ -84,6 +89,7 @@ function Joueur(id)  {
 	this.id = id;
 	this.tir = new Date(0).getTime();
 	this.nbBateaux = 5;
+	this.refresh = new Date(0).getTime();
 }
 
 
@@ -95,9 +101,9 @@ var express = require('express'),
 //    fs = require('fs');
 
 var nbTotalJoueurs = 2;
-var nbJoueurs = 0;
+var nbPlayersInLobby = 0;
 var idJoueur = 0;
-var idGame = 0;
+var idGameLobby = 0;
 var mapGames = new Map();
 
 app.use( express.static( "public" ) );
@@ -106,31 +112,31 @@ app.use( express.static( "public" ) );
 		
 // Chargement de la page index.html
 app.get('/', function (req, res) {
-	res.sendFile(__dirname + '/public/index.html');
-	var idJoueur = 0;  
+//	res.sendFile(__dirname + '/public/index.html');
+	console.log("hé");
+	res.sendFile(__dirname + '/public/test.html');
 });
 
 io.sockets.on('connection', function (socket) {
 
-
 	socket.on('nouveau_joueur', function (){
-		nbJoueurs += 1;
-		console.log('Nouveau joueur transfere dans la partie ' + idGame);
-		socket.game = idGame;
-		socket.join(idGame);
-		if (nbJoueurs == nbTotalJoueurs)
-		{
-					
+		nbPlayersInLobby += 1;
+		console.log(nbPlayersInLobby + " joueur(s) dans la salle d'attente de la partie " + idGameLobby);
+		socket.game = idGameLobby;
+		socket.join(idGameLobby);
+		if (nbPlayersInLobby == nbTotalJoueurs)
+		{					
 			jeu();
-			io.to(idGame).emit("jeu");
-			idGame +=1;
+			io.to(idGameLobby).emit("jeu");
+			idGameLobby +=1;
 			idJoueur = 0;
-			nbJoueurs = 0;			
+			nbPlayersInLobby -= nbTotalJoueurs;			
 		}
 	});		
 
 	socket.on('disconnect', function() {
-		nbJoueurs -= 1;
+		if (socket.game == idGameLobby)
+			nbPlayersInLobby -= 1;
 	});
 	
 	socket.on('id', function() {
@@ -142,6 +148,7 @@ io.sockets.on('connection', function (socket) {
 		listJoueurs.push(new Joueur(idJoueur));		
 		socket.id = idJoueur;		
 		socket.emit("infosPartie", idJoueur);
+		socket.emit("message", "Vous êtes le joueur " + (idJoueur+1));
 						
 		for (var i=0; i< listBateaux.length; i=i+1)
 		{
@@ -155,11 +162,14 @@ io.sockets.on('connection', function (socket) {
 	socket.on('move', function(bateau,px,py)
 	{
 		var listBateaux = mapGames.get(socket.game).get("listBateaux");
+		var listJoueurs = mapGames.get(socket.game).get("listJoueurs");
 		
 		for (var i=0; i<listBateaux.length;i=i+1)
 		{
 			if (listBateaux[i].id == bateau && listBateaux[i].joueur == socket.id) // Ouais, faudrait pas qu'il bouge un autre bateau ce con.
 			{
+				// On déplace le bateau.
+
 				var x = listBateaux[i].x();
 				var y = listBateaux[i].y();
 				listBateaux[i].x_dep = x;
@@ -168,7 +178,15 @@ io.sockets.on('connection', function (socket) {
 				listBateaux[i].x_dest = px;
 				listBateaux[i].y_dest = py;
 				listBateaux[i].time_move = new Date().getTime();
-				io.to(socket.game).emit("move", listBateaux[i].id, listBateaux[i].x_dep, listBateaux[i].y_dep, px,py); // normalement, à envoyer qu'à ceux qui voient le bateau.
+				socket.emit("move", listBateaux[i].id, listBateaux[i].x_dep, listBateaux[i].y_dep, px,py); // normalement, à envoyer qu'à ceux qui voient le bateau.
+
+				// On autorise à tout le monde un refresh immediat en cas d'ordre de mouvement.
+				for (var j=0; j<listJoueurs.length;j=j+1)
+				{
+					listJoueurs[j].refresh = new Date().getTime() - 240;
+				}					
+				io.to(socket.game).emit("ennemiMove");
+				
 			}
 		}
 	});
@@ -196,8 +214,9 @@ io.sockets.on('connection', function (socket) {
 				if (socket.id != listBateaux[j].joueur || distance(listBateaux[j].x(), listBateaux[j].y(), px, py) > listBateaux[j].portee)
 					continue;
 				tir = true;
-				var x = px + random(-4,4);
-				var y = py + random(-4,4);
+				var r = 0.1;
+				var x = px + random(-r,r);
+				var y = py + random(-r,r);
 				
 				listTirsX.push(x);
 				listTirsY.push(y);
@@ -240,7 +259,11 @@ io.sockets.on('connection', function (socket) {
 		
 		var listBateaux = mapGames.get(socket.game).get("listBateaux");
 		var listJoueurs = mapGames.get(socket.game).get("listJoueurs");
-
+		
+		var refresh = new Date().getTime() - listJoueurs[socket.id].refresh;
+		if (refresh < 240)
+			return;
+		
 		
 		// Pour chaque bateau contrôlé par le joueur, on regarde les bateaux ennemis proches.
 		for (var i=0; i<listBateaux.length; i=i+1)
@@ -254,9 +277,7 @@ io.sockets.on('connection', function (socket) {
 					continue;
 				if (distance(listBateaux[i].x(), listBateaux[i].y(), listBateaux[j].x(), listBateaux[j].y()) < listBateaux[i].portee)
 					socket.emit('bateauEnnemi', listBateaux[j].id, listBateaux[j].x_dep, listBateaux[j].y_dep, listBateaux[j].x_dest, listBateaux[j].y_dest, listBateaux[j].speed, listBateaux[j].time_move);
-			}
-			
-			
+			}			
 		}
 		
 	});	
@@ -264,4 +285,4 @@ io.sockets.on('connection', function (socket) {
 });
 
 
-server.listen(80);
+server.listen(8080);
