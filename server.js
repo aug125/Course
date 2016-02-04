@@ -97,25 +97,28 @@ var express = require('express'),
 	app = express(),
     server = require('http').createServer(app),
     io = require('socket.io').listen(server);
-//    ent = require('ent'),
-//    fs = require('fs');
 
+	
 var nbTotalJoueurs = 2;
 var nbPlayersInLobby = 0;
 var idJoueur = 0;
 var idGameLobby = 0;
 var mapGames = new Map();
 
+app.use( express.static( "views" ) );
 app.use( express.static( "public" ) );
-
+app.set('view engine', 'ejs');
 
 		
 // Chargement de la page index.html
-app.get('/', function (req, res) {
-//	res.sendFile(__dirname + '/public/index.html');
-	console.log("hé");
-	res.sendFile(__dirname + '/public/test.html');
+app.get('/', function (req, res) {	
+	res.render('index.ejs');	
+	console.log("test");
 });
+
+/*app.get('/game/', function(req, res) {
+	res.sendFile(__dirname + '/public/index.html');
+});*/
 
 io.sockets.on('connection', function (socket) {
 
@@ -214,7 +217,7 @@ io.sockets.on('connection', function (socket) {
 				if (socket.id != listBateaux[j].joueur || distance(listBateaux[j].x(), listBateaux[j].y(), px, py) > listBateaux[j].portee)
 					continue;
 				tir = true;
-				var r = 0.1;
+				var r = 5;
 				var x = px + random(-r,r);
 				var y = py + random(-r,r);
 				
@@ -239,8 +242,8 @@ io.sockets.on('connection', function (socket) {
 						{							
 							listJoueurs[listBateaux[i].joueur].nbBateaux -= 1;
 							if (listJoueurs[listBateaux[i].joueur].nbBateaux == 0)
-								io.to(socket.game).emit("message", "Le joueur" + (listBateaux[i].joueur +1 ) + " a perdu");
-							
+								io.to(socket.game).emit("message", "Le joueur " + (listBateaux[i].joueur +1 ) + " a perdu");
+																					
 							io.to(socket.game).emit("destruction",listBateaux[i].id);
 							listBateaux.splice(i,1);
 							i--;							
@@ -248,8 +251,30 @@ io.sockets.on('connection', function (socket) {
 					}
 					
 				}
-			}, 1000);
 				
+				var nbRestant = 0;
+				var numRestant = -1;
+				for (var i=0; i<listJoueurs.length; i+=1)
+				{
+					if (listJoueurs[i].nbBateaux > 0)
+					{
+						nbRestant +=1;
+						numRestant = i;
+					}
+				}
+				console.log(nbRestant);
+				if (nbRestant == 1)
+				{
+					io.to(socket.game).emit("message", "Vainqueur : Joueur " + (numRestant+1));
+				}
+				if (nbRestant == 0)
+				{
+					io.to(socket.game).emit("message", "Pas de vainqueur !");
+				}
+
+				
+				
+			}, 1000);			
 			if (tir)
 				listJoueurs[socket.id].tir = new Date().getTime();			
 		}
