@@ -65,37 +65,34 @@
 			//var canvasBG = document.getElementById('canvasBG');
 			//var ctxBG = canvasBG.getContext("2d");
 			
-			var listBateaux = [];
-			var listBateauxEnnemis = [];
+			var listVaisseaux = [];					
 			var tirs = [];
 			var idJoueur;
 			var time;
 			var sourisX = 0;
 			var sourisY = 0;
 			var select = -1;
-			var sousMarinRouge = new Image();
-			var sousMarinVert = new Image();
+			var vaisseau = new Image();			
 			var leftUp = true;
 			var rightUp = true;
 			var timeDetectionEnnemi = new Date().getTime();
 						
 			document.oncontextmenu = new Function("return false");			
 			
+			var vaisseauJoueur = new Image();
+
 			console.log(canvas.height);	
 			canvas.height = canvas.clientHeight;
 			canvas.width = canvas.clientWidth;
 			console.log(canvas.height);	
 		
-			socket.emit('nouveau_joueur');
+			socket.emit('newPlayer');
 						
 			//fonctions
 									
 			function Tir(x,y,t,p) 
 			{
-			  this.x = x;
-			  this.y = y;
-			  this.time = new Date().getTime() + t * 1000;
-			  this.puissance = p;
+
 			}
 
 			function distance(x1,y1,x2,y2)
@@ -105,94 +102,41 @@
 			
 			function initialiser()
 			{
-				socket.emit('id');				
-				sousMarinRouge.src = 'pictures/sousMarinRouge.svg';				
-				sousMarinVert.src = 'pictures/sousMarinVert.svg';				
-				
-				sousMarinRouge.onload = function() 
-				{
-				
-				}
-				sousMarinVert.onload = function() 
+				socket.emit('init');
+				vaisseauJoueur.src = 'Core/Pictures/vaisseau.png';				
+
+				vaisseauJoueur.onload = function() 
 				{
 				
 				}
 			}
 			
-			
 			function renderingLoop()
 			{				
 				var ratio = canvas.height/100; // Le ratio des éléments à placer selon la taille du jeu.
 			
+				// 
 				var time = new Date().getTime();
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
+
 				var gradient = ctx.createLinearGradient(0,0,0,canvas.height);
 				gradient.addColorStop(0,"#00BBFF");
 				gradient.addColorStop(1,"#0022FF");	
 				ctx.fillStyle = gradient;
 				ctx.fillRect(0,0,canvas.width, canvas.height);		
+							
+				// dessiner 
 				
-				// Demander la positions des autres bateaux.
-				if (time - timeDetectionEnnemi > 250)
-				{
-					socket.emit("positionEnnemi");
-					timeDetectionEnnemi = time;
-				}
-			
-				// dessiner tous les bateaux.
-				for (var i=0; i<listBateaux.length;i=i+1)
-				{			
 					// dessiner le cercle de portee.
-					ctx.beginPath();
-					ctx.arc(listBateaux[i].x() * ratio, listBateaux[i].y() * ratio, listBateaux[i].portee * ratio, 0, 2 * Math.PI);
+				ctx.beginPath();
+/*					ctx.arc();
 					ctx.fillStyle = "rgba(0, 200, 0, 0.2)";
 					ctx.fill();
-									
-					// dessiner le cercle de selection
-					if (listBateaux[i].id == select)
-					{
-						ctx.beginPath();
-						ctx.lineWidth="2";
-						ctx.arc(listBateaux[i].x() * ratio, listBateaux[i].y() * ratio, 20, 0, 2 * Math.PI);
-						ctx.stroke();
-					}				
-					ctx.drawImage(sousMarinVert, (listBateaux[i].x() - 2) * ratio, (listBateaux[i].y() - 2) * ratio, 4*ratio, 4*ratio);
-					//recolorPants(255,20,20,(listBateaux[i].x()-2)*ratio, (listBateaux[i].y()-1)*ratio, 20*ratio, 20*ratio);							
-											
-				}
+*/
+//					ctx.drawImage(sousMarinVert, (listBateaux[i].x() - 2) * ratio, (listBateaux[i].y() - 2) * ratio, 4*ratio, 4*ratio);
 				
-				for (var i=0; i<listBateauxEnnemis.length;i=i+1)
-				{		
-					var alpha = Math.min(1, Math.max(0,1 - (new Date().getTime() - listBateauxEnnemis[i].derniereFoisVu)/900 + 0.25));			
-					ctx.globalAlpha = alpha;
-					ctx.drawImage(sousMarinRouge, (listBateauxEnnemis[i].x() - 2) * ratio, (listBateauxEnnemis[i].y() - 2) * ratio, 4*ratio, 4*ratio);
-											
-				}
-
-				ctx.globalAlpha = 1;
 				
-				// dessiner tous les tirs
-				for (var i=0; i<tirs.length;i=i+1)
-				{
-					var tempsTir = new Date().getTime() - tirs[i].time;
-					if (tempsTir < 1000)
-					{
-						ctx.beginPath();
-						if (tempsTir < 0)
-						{
-							ctx.arc(tirs[i].x * ratio,tirs[i].y * ratio,-tempsTir/1000*tirs[i].puissance * ratio,0,Math.PI*2);
-							ctx.stroke();
-						}	
-						else
-						{
-							ctx.arc(tirs[i].x * ratio,tirs[i].y * ratio, Math.min(tempsTir/200,1) * tirs[i].puissance * ratio,0,Math.PI*2);
-							ctx.fillStyle = "rgba(200, 0, 0, 0.2)";
-							ctx.fill();
-						}
-						
-					}			
-				}
 				if(this.requestAnimFrame)
 					this.requestAnimFrame.call(window,this.renderingLoop.bind(this));		
 			}
@@ -237,29 +181,6 @@
 				{
 					leftUp = false;
 					// Soit on selectionne un bateau, soit on tire.
-					for (var i=0; i<listBateaux.length; i=i+1)
-					{
-			
-						var selected = false;
-						if (listBateaux[i].joueur == idJoueur && distance(listBateaux[i].x(), listBateaux[i].y(), sourisX/ratio, sourisY/ratio) < 5)
-						{
-							select = listBateaux[i].id;
-							selected = true;
-							break;
-						}
-					}	
-					if (selected == false)
-					{
-						socket.emit('tir', sourisX/ratio, sourisY/ratio);
-					}
-				}
-				else if (e.which == 3 && rightUp) // bouton droit
-				{
-					if (select != -1)
-					{
-						socket.emit('move', select, sourisX/ratio, sourisY/ratio);
-						rightUp = false;
-					}
 				}
 			});		
 			
@@ -277,8 +198,7 @@
 				}
 			});
 						
-// Sockets
-						
+			// Sockets						
 			socket.on('infosPartie', function(num) {
 				console.log('infos');
 				idJoueur = num;				
@@ -288,84 +208,22 @@
 				 $('#chat').append("<p>" + msg + "</p>");			
 			});
 			
-			socket.on('bateau', function(id,px,py,pspeed,prange,ppuissance) {
-				console.log('bateau');
-
-				listBateaux.push(new Bateau(id,px,py,idJoueur,pspeed,prange,ppuissance));
+			socket.on('vaisseau', function(id,px,py,pspeed,prange,ppuissance) {
+				console.log('vaisseau');
+//				listVaisseau.push(new Bateau(id,px,py,idJoueur,pspeed,prange,ppuissance));
 			});
-
-			
-
-			
+						
 			socket.on('jeu', function () {
+				console.log('jeu');
 				initialiser();
 				renderingLoop();
-			});
-
-			socket.on('pre_tir', function (x,y,p) {
-				console.log('pretir');			
-				tirs.push(new Tir(x,y,1,p));
 			});
 			
 			socket.on('tir', function (x,y,p) {	
 				console.log('tir');
 				tirs.push(new Tir(x,y,0,p));			
 			});
-
-			socket.on('destruction', function (id) {				
-				console.log('destruction');
-
-				for (var i=0; i<listBateaux.length;i=i+1)
-				{
-					if (listBateaux[i].id == id)
-					{										
-						listBateaux.splice(i,1);
-						break;
-					}
-				}
-			});
 			
-			socket.on('bateauEnnemi', function(id,x_dep, y_dep, x_dest,y_dest, speed, time_move) {
-					console.log('bateauEnnemi');
-
-			
-				// Supprimer l'ancien bateau stocké
-				for (var i=0; i<listBateauxEnnemis.length;i=i+1)
-				{
-					if (listBateauxEnnemis[i].id == id || (new Date().getTime() - listBateauxEnnemis[i].derniereFoisVu) > 900)
-					{
-						listBateauxEnnemis.splice(i,1);
-						i=i-1;
-					}
-				}
-			
-				listBateauxEnnemis.push(new BateauEnnemi(id,x_dep, y_dep, x_dest,y_dest,1,speed, time_move));
-			});
-			
-			
-			
-			socket.on('move', function(id, px_dep, py_dep, px,py) {
-				console.log('move');
-
-				for (var i=0; i<listBateaux.length;i=i+1)
-				{
-					if (listBateaux[i].id == id) //
-					{
-						listBateaux[i].x_dep = px_dep;
-						listBateaux[i].y_dep = py_dep;
-						listBateaux[i].x_dest = px;
-						listBateaux[i].y_dest = py;
-						listBateaux[i].time_move = new Date().getTime();
-					}
-				}
-			});
-			
-			socket.on('ennemiMove', function(id,x_dep, y_dep, x_dest,y_dest, speed, time_move) {
-				socket.emit("positionEnnemi");
-				timeDetectionEnnemi = new Date().getTime();
-			});
-				
-
         </script>
     </body>
 </html>
