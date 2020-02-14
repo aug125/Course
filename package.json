@@ -5,6 +5,7 @@
     "dependencies": {
         "ejs": "~1.0.0",
         "express": "~4.13.3",
+        "phaser": "^3.22.0",
         "socket": "*",
         "socket.io": "^2.3.0"
     }

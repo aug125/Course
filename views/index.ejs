@@ -1,10 +1,12 @@
 ﻿<html>
 	<head>
-		 <% include partials/head %>	
+		 <script src="https://cdn.jsdelivr.net/npm/phaser@3.22.0/dist/phaser-arcade-physics.min.js"></script> 
+		 <script src="/socket.io/socket.io.js"></script>
 	</head>
-	
 	<body>
-		<!-- Barre de navigation en haut -->	
+
+	<body>
+		<!-- Barre de navigation en haut 	
 		<div class="container-fluid">
 			<nav class="navbar navbar-inverse navbar-fixed-top">
 			  <div class="container">
@@ -23,7 +25,7 @@
 					<li><a href="#about">About</a></li>
 					<li><a href="#contact">Contact</a></li>
 				  </ul>
-				</div><!--/.nav-collapse -->
+				</div><!--/.nav-collapse --
 			  </div>
 			</nav>	
 		</div>
@@ -37,21 +39,109 @@
 				</div>
 			</div>
 		</div>	 	 
-
+-->		
 		<script>
 			
+			var config = {
+				type: Phaser.AUTO,
+				width: 1000,
+				height:1000,
+				physics: {
+        			default: 'arcade'
+		    	},
+				scene: {
+					preload: preload,
+					create: create,
+					update: update
+				}
+				
+			};
+
+			var game = new Phaser.Game(config);
 			
-			// type de boucle d'animation.
-			this.requestAnimFrame = (function(){ return window.requestAnimationFrame
-			 || window.webkitRequestAnimationFrame
-			 || window.mozRequestAnimationFrame
-			 || window.oRequestAnimationFrame
-			 || window.msRequestAnimationFrame
-			 || null})();
-			
-			
-			
-			// Code
+
+			function preload ()
+			{
+				this.load.image('vaisseau', 'vaisseau.png');
+				this.load.image('star', 'star.png');
+			}
+
+			function create ()
+			{
+				camera = this.cameras.main;
+				camera.setSize(1000, 1000);
+
+				
+				//  This will run in Canvas mode, so let's gain a little speed and display
+				game.renderer.clearBeforeRender = false;
+    			game.renderer.roundPixels = true;
+
+				// Ajout des étoiles en arrière plan
+				bg = this.add.group({ key: 'star', frameQuantity: 50 });
+
+
+
+				var rect = new Phaser.Geom.Rectangle(camera.width, camera.height, camera.width, camera.height);
+    			Phaser.Actions.RandomRectangle(bg.getChildren(), rect);			
+
+
+				// Définir couleur arrière plan
+				camera.setBackgroundColor('rgba(0, 0, 0, 0.5)');				
+
+				player = this.physics.add.image(0, 0, 'vaisseau');
+
+				// Caméra suit le joueur
+				camera.startFollow(player, false, 0.5, 0.5);
+
+			}
+
+			function update ()
+			{
+				// Gestion des inputs du joueur
+				cursors = this.input.keyboard.createCursorKeys();
+				if (cursors.left.isDown)
+				{
+					player.setAngularVelocity(-200);
+
+				}
+				else if (cursors.right.isDown)
+				{
+					player.setAngularVelocity(200);
+				}
+				else
+				{
+					player.setAngularVelocity(0);
+				}
+				if (cursors.up.isDown)
+				{
+					velocity = this.physics.velocityFromRotation(player.rotation, 200);
+					player.setAccelerationX(velocity.x);
+					player.setAccelerationY(velocity.y);
+					//player.setAcceleration(velocity);
+				}
+				else
+				{
+					player.setAccelerationX (0);
+					player.setAccelerationY (0);
+				}
+
+				// Mettre toutes les étoiles dans l'image
+				stars = bg.getChildren();
+  				for (i = 0; i < stars.length; i++) 
+			    {
+					if (stars[i].x < camera.worldView.x)
+						stars[i].x += camera.width;
+					if (stars[i].x > camera.worldView.x  + camera.width)
+						stars[i].x -= camera.width;
+
+					if (stars[i].y < camera.worldView.y)
+						stars[i].y += camera.width;
+					if (stars[i].y > camera.worldView.y + camera.height)
+						stars[i].y -= camera.width;
+					console.log(camera.worldView.x);
+				}
+
+			}	
 						
 			document.oncontextmenu = new Function("return false");
 			
@@ -60,10 +150,7 @@
 			var socket = io.connect('http://127.0.0.1:8080');
 			var canvas = document.getElementById('canvas');
 			var textArea = document.getElementById('chat');
-			var divGame = document.getElementById('div_game');
-			var ctx = canvas.getContext("2d");
-			//var canvasBG = document.getElementById('canvasBG');
-			//var ctxBG = canvasBG.getContext("2d");
+			var divGame = document.getElementById('div_game');			
 			
 			var listVaisseaux = [];					
 			var tirs = [];
@@ -80,11 +167,6 @@
 			document.oncontextmenu = new Function("return false");			
 			
 			var vaisseauJoueur = new Image();
-
-			console.log(canvas.height);	
-			canvas.height = canvas.clientHeight;
-			canvas.width = canvas.clientWidth;
-			console.log(canvas.height);	
 		
 			socket.emit('newPlayer');
 						
@@ -99,105 +181,9 @@
 			{
 				return Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
 			}
-			
-			function initialiser()
-			{
-				socket.emit('init');
-				vaisseauJoueur.src = 'Core/Pictures/vaisseau.png';				
 
-				vaisseauJoueur.onload = function() 
-				{
+
 				
-				}
-			}
-			
-			function renderingLoop()
-			{				
-				var ratio = canvas.height/100; // Le ratio des éléments à placer selon la taille du jeu.
-			
-				// 
-				var time = new Date().getTime();
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
-				
-
-				var gradient = ctx.createLinearGradient(0,0,0,canvas.height);
-				gradient.addColorStop(0,"#00BBFF");
-				gradient.addColorStop(1,"#0022FF");	
-				ctx.fillStyle = gradient;
-				ctx.fillRect(0,0,canvas.width, canvas.height);		
-							
-				// dessiner 
-				
-					// dessiner le cercle de portee.
-				ctx.beginPath();
-/*					ctx.arc();
-					ctx.fillStyle = "rgba(0, 200, 0, 0.2)";
-					ctx.fill();
-*/
-//					ctx.drawImage(sousMarinVert, (listBateaux[i].x() - 2) * ratio, (listBateaux[i].y() - 2) * ratio, 4*ratio, 4*ratio);
-				
-				
-				if(this.requestAnimFrame)
-					this.requestAnimFrame.call(window,this.renderingLoop.bind(this));		
-			}
-
-			function getOffset(e) {
-				var cx = 0;
-				var cy = 0;
-			 
-				while(e && !isNaN(e.offsetLeft) && !isNaN(e.offsetTop)) {
-					cx += e.offsetLeft - e.scrollLeft;
-					cy += e.offsetTop - e.scrollTop;
-					e = e.offsetParent;
-				}
-				return { top: cy, left: cx };
-			}
-			
-			
-			// Evenement souris
-			
-            // mouvement souris
-			canvas.addEventListener("mousemove", function(e)
-			{
-			
-				if(e.offsetX || e.offsetY) {
-					sourisX = e.pageX - getOffset(document.getElementById('canvas')).left - window.pageXOffset;
-					sourisY = e.pageY - getOffset(document.getElementById('canvas')).top - window.pageYOffset;
-				}
-				else if(e.layerX || e.layerY) {
-					sourisX = (e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft) - getOffset(document.getElementById('canvas')).left - window.pageXOffset;
-					sourisY = (e.clientY + document.body.scrollTop + document.documentElement.scrollTop) - getOffset(document.getElementById('canvas')).top;
-				}  					
-			});
-			
-
-			
-			// clic souris
-			canvas.addEventListener("mousedown", function(e)
-			{
-				var ratio = canvas.height/100; // Le ratio des éléments à placer selon la taille du jeu.
-
-				if (e.which == 1 && leftUp) // bouton gauche
-				{
-					leftUp = false;
-					// Soit on selectionne un bateau, soit on tire.
-				}
-			});		
-			
-			canvas.addEventListener("mouseup", function(e)
-			{
-				if (e.which == 1)
-				{
-					leftUp = true;
-				}
-
-		
-				if (e.which == 3)
-				{
-					rightUp = true;
-				}
-			});
-						
 			// Sockets						
 			socket.on('infosPartie', function(num) {
 				console.log('infos');
@@ -215,8 +201,6 @@
 						
 			socket.on('jeu', function () {
 				console.log('jeu');
-				initialiser();
-				renderingLoop();
 			});
 			
 			socket.on('tir', function (x,y,p) {	

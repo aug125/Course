@@ -33,6 +33,10 @@ var idGameLobby = 0;
 var mapGames = new Map();
 
 console.log(__dirname + "\\Core");
+
+app.use( express.static( "public" ) );
+
+
 app.use( express.static(__dirname + "\\Core" ) );
 app.use( express.static(__dirname + "\\Core\\Entity" ) );
 app.use( express.static(__dirname + "\\Core\\Pictures" ) );
@@ -45,20 +49,19 @@ app.use( express.static(__dirname + "./Core" ) );
 app.use( express.static(__dirname + "./Core/Entity" ) );
 app.use( express.static(__dirname + "./Core/Pictures" ) );
 
-app.use( express.static("\\Core" ) );
-app.use( express.static("\\Core\\Entity" ) );
-app.use( express.static("\\Core\\Pictures" ) );
+app.use( express.static("Core" ) );
+app.use( express.static("Core/Entity" ) );
+app.use( express.static("Core/Pictures" ) );
 
-app.use( express.static("/Core" ) );
-app.use( express.static("/Core/Entity" ) );
-app.use( express.static("/Core/Pictures" ) );
+app.use( express.static('Core') );
+app.use( express.static('Core/Entity' ) );
+app.use( express.static('Core/Pictures' ) );
 
 app.use( express.static("./Core" ) );
 app.use( express.static("./Core/Entity" ) );
 app.use( express.static("./Core/Pictures" ) );
 
 
-app.use( express.static( "public" ) );
 app.set('view engine', 'ejs');
 
 		
