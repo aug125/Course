@@ -1,9 +1,6 @@
-function Vaisseau(id,x,y,j,s,r) {
-  
-	this.id = id;
-	this.x = x;
-	this.y = y;
-	this.isPlayer = j;
-	this.speed = s;
-	this.rotation = r;
+function Vaisseau() {
+
+	this.maxVelocity = 500;
+	this.acceleration = 200;
+	this.vitesseRotation = 300;	
 }
