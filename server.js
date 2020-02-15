@@ -14,13 +14,6 @@ function jeu()
 
 }
 
-function Joueur(id)  {
-	this.id = id;
-	this.tir = new Date(0).getTime();
-	this.refresh = new Date(0).getTime();
-}
-
-
 var express = require('express'),
 	app = express(),
     server = require('http').createServer(app),

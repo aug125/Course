@@ -41,6 +41,7 @@
 		</div>	 	 
 -->		
 		<script type="text/javascript" src="vaisseau.js"></script>
+		<script type="text/javascript" src="tir.js"></script>
 		<script>
 			var config = {
 				type: Phaser.AUTO,
@@ -58,8 +59,8 @@
 			};
 
 			var game = new Phaser.Game(config);
-			//  This will run in Canvas mode, so let's gain a little speed and display
-
+			var bullets = [];
+			var bulletTime = 0;
 
 			function preload ()
 			{
@@ -73,37 +74,45 @@
 
 			function create ()
 			{
+
+				// Création des "balles"...
+			
+					tirs = this.add.group({
+					classType: Tir,
+					maxSize: 100,
+					runChildUpdate: true
+				});
+
+
+				// Création du vaisseau
 				vaisseauJoueur = new Vaisseau();
 
+				// Création de la caméra
 				camera = this.cameras.main;
 				camera.setSize(1000, 1000);
 
 				// Ajout des étoiles en arrière plan
-				bg = this.add.group({ key: 'star', frameQuantity: 50 });
-
+				bg = this.add.group({ key: 'star', frameQuantity: 50 });				
 				var rect = new Phaser.Geom.Rectangle(camera.width, camera.height, camera.width, camera.height);
     			Phaser.Actions.RandomRectangle(bg.getChildren(), rect);			
-
 
 				// Définir couleur arrière plan
 				camera.setBackgroundColor('rgba(0, 0, 0, 2)');
 
-				//player = this.physics.add.image(0, 0, 'vaisseau');
 				player = this.physics.add.image(0, 0, 'vaisseau');
 
+				// Définir vitesse max du vaisseau (et ralentissement naturel)
 				player.body.maxVelocity.set(vaisseauJoueur.maxVelocity);
 				player.body.drag.set(100);
 
-
-
 				// Caméra suit le joueur
-				camera.startFollow(player, false, 0.5, 0.5);
+				camera.startFollow(player, false, 0.2, 0.2);
 
 	
 
 			}
 
-			function update ()
+			function update (time, delta)
 			{
 				// Gestion des inputs du joueur
 				cursors = this.input.keyboard.createCursorKeys();
@@ -139,7 +148,16 @@
 					player.setAccelerationY (0);
 				}
 
-				console.log(player.body.speed);
+				// Tirer
+				if (cursors.space.isDown)
+				{
+					tir = tirs.get();
+					if (tir)
+					{
+						tir.fire(player.x, player.y, player.rotation, vaisseauJoueur.vitesseTir + player.body.speed);
+						lastFired = time + 50;
+					}
+				}
 
 				//Vérifier s'il a atteint la vitesse limite
 
@@ -169,16 +187,9 @@
 			var textArea = document.getElementById('chat');
 			var divGame = document.getElementById('div_game');			
 			
-			var listVaisseaux = [];					
-			var tirs = [];
 			var idJoueur;
-			var time;
-			var sourisX = 0;
-			var sourisY = 0;
-			var select = -1;
 			var vaisseau = new Image();			
-			var leftUp = true;
-			var rightUp = true;
+			var bulletTime = 0;
 						
 			document.oncontextmenu = new Function("return false");			
 			
@@ -192,12 +203,6 @@
 			{
 				return Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
 			}
-
-			function vitesse(x,y)
-			{
-				return Math.sqrt(x*x + y*y);
-			}
-
 				
 			// Sockets						
 			socket.on('infosPartie', function(num) {
@@ -218,10 +223,6 @@
 				console.log('jeu');
 			});
 			
-			socket.on('tir', function (x,y,p) {	
-				console.log('tir');
-				tirs.push(new Tir(x,y,0,p));			
-			});
 			
         </script>
     </body>
