@@ -1,35 +1,29 @@
 var Tir = new Phaser.Class({
 
-    Extends: Phaser.GameObjects.Image,
+    Extends: Phaser.Physics.Arcade.Image,
 
     initialize:
 
     function Tir (scene)
     {
         Phaser.GameObjects.Image.call(this, scene, 0, 0, 'star');
-        var _velocity = (0,0);
+        this.velocity = (0,0);
     },
 
-    fire: function (x, y, rotation, velocity, speed)
+    fire: function (x, y, rotation, velocity, speed, isPlayer)
     {
+        this.isPlayer = isPlayer;
         this.setPosition(x, y);
         this.setRotation(rotation);
         this.setActive(true);
         this.setVisible(true);        
-        this.speed = speed;
+        this.speed = speed; // Vitesse, par rapport à sa direction
         this.start = Date.now();        
-        _velocity = velocity;
+        this.body.setVelocity(Math.cos(rotation) * speed + velocity.x, Math.sin(rotation) * speed + velocity.y);
     },
 
     update: function (time, delta)
     {
-        let speed = this.speed * delta / 1000;
-        let velocityX = _velocity.x * delta / 1000;
-        let velocityY = _velocity.y * delta / 1000;
-
-        this.x += Math.cos(this.rotation) * speed + velocityX;
-        this.y += Math.sin(this.rotation) * speed + velocityY;
-
         // Durée de vie
         let lifeTime = 3000;
 
@@ -37,6 +31,6 @@ var Tir = new Phaser.Class({
         {
             this.setActive(false);
             this.setVisible(false);
-        }
+        }   
     }
 });

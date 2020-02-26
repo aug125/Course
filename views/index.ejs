@@ -5,8 +5,9 @@
 	</head>
 	<body>
 
-		<script type="text/javascript" src="vaisseau.js"></script>
+		<script type="text/javascript" src="ennemi.js"></script>
 		<script type="text/javascript" src="tir.js"></script>
+		<script type="text/javascript" src="stats.js"></script>
 
 		<script>
 			var config = {
@@ -25,19 +26,32 @@
 			};
 
 			var game = new Phaser.Game(config);
-			var lastFired = 0;	
+			var lastFired = 0;
+			var lastEnnemiApparu = 0;
 
-			function callback(player, tir)
+			function joueurTouche(player, tir)
 			{
 				console.log('connards');
 			}
 
+			function ennemiTouche(ennemi, tir)
+			{
+				if (tir.isPlayer == true)
+				{
+					ennemi.remove();
+				}
+			}
+
+
 			function preload ()
 			{
 
+				// Parait que c'est mieux avec ça...
 				game.renderer.clearBeforeRender = false;
 				game.renderer.roundPixels = true;
 
+
+				// Charger les images
 				this.load.image('vaisseau', 'vaisseau.png');
 				this.load.image('star', 'star.png');
 			}
@@ -55,11 +69,23 @@
 					runChildUpdate: true
 				});
 
+
+				// Création des ennemis			
+				ennemis = this.physics.add.group({
+					classType: Ennemi,
+					maxSize: 500,
+					runChildUpdate: true
+				});
+
+
 				// Créer le callback en cas de tir
-				this.physics.add.overlap(player, tirs, callback, null, this);
+				this.physics.add.overlap(player, tirs, joueurTouche, null, this);
+
+				// Créer le callback en cas de tir
+				this.physics.add.overlap(ennemis, tirs, ennemiTouche, null, this);
 
 				// Création du vaisseau
-				vaisseauJoueur = new Vaisseau();
+				playerStats = new playerStats(this);
 
 				// Création de la caméra
 				camera = this.cameras.main;
@@ -82,16 +108,12 @@
 				// Définir couleur arrière plan
 				camera.setBackgroundColor('rgba(0, 0, 0, 2)');
 
-				// Définir champ de vision
+				// Définir Taille vaisseau
 				player.setScale(0.5);
 
 				// Définir vitesse max du vaisseau (et ralentissement naturel)
-				player.body.maxVelocity.set(vaisseauJoueur.maxVelocity);
+				player.body.maxVelocity.set(playerStats.maxVelocity);
 				player.body.drag.set(100);
-
-				// Définir taille du vaisseau 
-				player.body.width = 100;
-				player.body.height = 100;
 
 				// Caméra suit le joueur
 				camera.startFollow(player, false);
@@ -102,16 +124,29 @@
 
 			function update (time, delta)
 			{
+
+				// Création des ennemis				
+				if (time > lastEnnemiApparu + 3000)
+				{
+					ennemi = ennemis.get();
+					if (ennemi)
+					{
+						ennemi.display(5,5);
+						lastEnnemiApparu = time;
+					}
+				}
+				
+
 				// Gestion des inputs du joueur
 				cursors = this.input.keyboard.createCursorKeys();
 				if (cursors.left.isDown)
 				{
-					player.setAngularVelocity(-vaisseauJoueur.vitesseRotation);
+					player.setAngularVelocity(-playerStats.vitesseRotation);
 
 				}
 				else if (cursors.right.isDown)
 				{
-					player.setAngularVelocity(vaisseauJoueur.vitesseRotation);
+					player.setAngularVelocity(playerStats.vitesseRotation);
 				}
 				else
 				{
@@ -119,13 +154,13 @@
 				}
 				if (cursors.up.isDown)
 				{
-					velocity = this.physics.velocityFromRotation(player.rotation, vaisseauJoueur.acceleration);
+					velocity = this.physics.velocityFromRotation(player.rotation, playerStats.acceleration);
 					player.setAccelerationX(velocity.x);
-					player.setAccelerationY(velocity.y);					
+					player.setAccelerationY(velocity.y);				
 				}
 				else if (cursors.down.isDown)
 				{
-					velocity = this.physics.velocityFromRotation(player.rotation + Math.PI, vaisseauJoueur.acceleration);
+					velocity = this.physics.velocityFromRotation(player.rotation + Math.PI, playerStats.acceleration);
 					player.setAccelerationX(velocity.x);
 					player.setAccelerationY(velocity.y);					
 				}
@@ -140,12 +175,12 @@
 				if (cursors.space.isDown)
 				{
 					// Vérifier que le tir précédent soit suffisamment lointain
-					if (time > lastFired + vaisseauJoueur.rechargementTir)
+					if (time > lastFired + playerStats.rechargementTir)
 					{
 						tir = tirs.get();
 						if (tir)
 						{
-							tir.fire(player.x, player.y, player.rotation, player.body.velocity, vaisseauJoueur.vitesseTir);
+							tir.fire(player.x, player.y, player.rotation, player.body.velocity, playerStats.vitesseTir, true);
 							lastFired = time;
 						}
 					}
@@ -179,8 +214,6 @@
 			var bulletTime = 0;
 						
 			document.oncontextmenu = new Function("return false");			
-			
-			var vaisseauJoueur = new Image();
 		
 			socket.emit('newPlayer');
 						
