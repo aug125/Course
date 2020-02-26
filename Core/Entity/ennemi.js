@@ -10,19 +10,22 @@ var Ennemi = new Phaser.Class({
           Phaser.GameObjects.Image.call(this, scene, 0, 0, 'vaisseau');
           this.scene = scene;
           this.lastFired = 0;
+          this.stats = new ennemiStats();          
 
     },
 
-    display: function (x, y)
+    display: function ()
     {
-		this.x = x;
-		this.y = y;
 		this.setActive(true);
 		this.setVisible(true);  
-		this.setPosition(x, y);
-        this.setRotation(40);
-        this.speed = 100;
-        //this.body.setVelocity(Math.cos(this.rotation) * this.speed, Math.sin(this.rotation) * this.speed);
+
+        //Positionner le vaisseau autour du joueur
+        // Choisir un angle
+        let angleApparition = Math.random() * Math.PI*2;
+        let distanceApparition = 1000;
+        this.setPosition(player.x + Math.cos(angleApparition) * distanceApparition, player.y + Math.sin(angleApparition) * distanceApparition);
+        this.setRotation(angleApparition + Math.PI); // L'ennemi fait face au joueur
+        this.body.maxVelocity.set(this.stats.maxVelocity);
 	},
 
     update: function (time, delta)
@@ -37,12 +40,12 @@ var Ennemi = new Phaser.Class({
         }       
 
         if ( ecartAngle > Math.PI) {
-            this.body.setAngularVelocity(-50);
+            this.body.setAngularVelocity(-this.stats.vitesseRotation);
         }
         else {
-            this.body.setAngularVelocity(50);
+            this.body.setAngularVelocity(this.stats.vitesseRotation);
         }
-        let velocity = this.scene.physics.velocityFromRotation(this.rotation, 20);
+        let velocity = this.scene.physics.velocityFromRotation(this.rotation, this.stats.acceleration);
         this.body.setAccelerationX(velocity.x);
         this.body.setAccelerationY(velocity.y);
 
@@ -53,7 +56,7 @@ var Ennemi = new Phaser.Class({
             {
                 console.log("tir");
 
-                tir.fire(this.x, this.y, this.rotation, this.body.velocity, 200, false);
+                tir.fire(this.x, this.y, this.rotation, this.body.velocity, this.stats.vitesseTir, false);
                 this.lastFired = time;
             }
         }
