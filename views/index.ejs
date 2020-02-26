@@ -28,17 +28,25 @@
 			var game = new Phaser.Game(config);
 			var lastFired = 0;
 			var lastEnnemiApparu = 0;
+			var score = 0;
+			var scoreText;
+			
 
 			function joueurTouche(player, tir)
 			{
-				console.log('connards');
+				if (tir.isPlayer == false)
+				{
+					this.physics.pause();
+				}
 			}
 
 			function ennemiTouche(ennemi, tir)
 			{
-				if (tir.isPlayer == true)
+				if (tir.isPlayer == true && ennemi.active == true)
 				{
 					ennemi.remove();
+					score++;
+					scoreText.setText('Score: ' + score);
 				}
 			}
 
@@ -77,6 +85,8 @@
 					runChildUpdate: true
 				});
 
+				scoreText = this.add.text(0, 0, 'Score: 0', { fontSize: '32px', fill: '#555' });
+				scoreText.setScrollFactor(0,0);
 
 				// Créer le callback en cas de tir
 				this.physics.add.overlap(player, tirs, joueurTouche, null, this);
