@@ -10,7 +10,7 @@ var Ennemi = new Phaser.Class({
           Phaser.GameObjects.Image.call(this, scene, 0, 0, 'vaisseau');
           this.scene = scene;
           this.lastFired = 0;
-          this.stats = new ennemiStats();          
+          this.stats = new Stats("ennemi");          
 
     },
 
