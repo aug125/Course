@@ -6,12 +6,20 @@ var Tir = new Phaser.Class({
 
     function Tir (scene)
     {
-        Phaser.GameObjects.Image.call(this, scene, 0, 0, 'star');
-        this.velocity = (0,0);
+        this.scene = scene;
+        Phaser.GameObjects.Image.call(this, scene, 0, 0, 'tir');
     },
 
-    fire: function (x, y, rotation, velocity, speed, isPlayer)
+    fire: function (x, y, rotation, velocity, speed, isPlayer, precisionTir)
     {
+
+       if (isPlayer)
+            this.setTint(0x00dd00);
+        else
+            this.setTint(0xee0000);
+
+        rotation += (Math.random() * 2 - 1) * precisionTir; 
+
         this.isPlayer = isPlayer;
         this.setPosition(x, y);
         this.setRotation(rotation);
