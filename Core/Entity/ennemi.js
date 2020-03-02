@@ -50,7 +50,7 @@ var Ennemi = new Phaser.Class({
         this.body.setAccelerationY(velocity.y);
 
         // Faire tirer le vaisseau
-        if (time - this.lastFired > 1000) {
+        if (time - this.lastFired > 1000 && gameOver == false) {
             tir = tirs.get();
             if (tir)
             {

@@ -12,8 +12,11 @@
 		<script>
 			var config = {
 				type: Phaser.AUTO,
-				width: 1600,
-				height:1000,
+				width: window.innerWidth - 100,
+				height:window.innerHeight - 100,
+				scale: {
+      				mode: Phaser.Scale.NONE          			
+    			},
 				physics: {
         			default: 'arcade'
 		    	},
@@ -30,13 +33,23 @@
 			var lastEnnemiApparu = 0;
 			var score = 0;
 			var scoreText;
-			
+			var gameOver = false;
 
 			function joueurTouche(player, tir)
 			{
 				if (tir.isPlayer == false)
 				{
-					this.physics.pause();
+					// Arrêt du joueur
+					player.setVelocity(0,0);
+					player.setAccelerationX (0);
+					player.setAccelerationY (0);
+					player.setAngularVelocity(0);
+					player.setVisible(false);
+
+					gameOver = true;
+
+					// Score au milieu
+					scoreText.setPosition(500, 500);
 				}
 			}
 
@@ -86,7 +99,7 @@
 					runChildUpdate: true
 				});
 
-				scoreText = this.add.text(0, 0, 'Score: 0', { fontSize: '32px', fill: '#555' });
+				scoreText = this.add.text(0, 0, 'Score: 0', { fontSize: '64px', fill: '#FFF' });
 				scoreText.setScrollFactor(0,0);
 
 				// Créer le callback en cas de tir
@@ -96,11 +109,13 @@
 				this.physics.add.overlap(ennemis, tirs, ennemiTouche, null, this);
 
 				// Création du vaisseau
-				playerStats = new Stats("player");
+				playerStats = new Stats("player");				
 
+				// Resize selon l'écran
 				// Création de la caméra
 				camera = this.cameras.main;
-				camera.setSize(1600, 1000);
+				console.log(game.config.width);
+				camera.setSize(game.config.width, game.config.height);
 
 				// Ajout des étoiles en arrière plan
 				bg = this.add.group({ key: 'star', frameQuantity: 50 });				
@@ -135,6 +150,10 @@
 
 			function update (time, delta)
 			{
+				if (gameOver == true){
+					return;
+				}
+
 
 				// Création des ennemis				
 				if (time > lastEnnemiApparu + 3000)
