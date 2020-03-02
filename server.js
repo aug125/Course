@@ -1,20 +1,4 @@
-﻿function random(min, max) {
-  return Math.random() * (max - min) + min;
-}
-
-function distance(x1,y1,x2,y2)
-{
-	return Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-}
-
-function jeu()
-{
-	var mapGame = new Map(); 
-	mapGames.set(idGameLobby,mapGame);	
-
-}
-
-var express = require('express'),
+﻿var express = require('express'),
 	app = express(),
     server = require('http').createServer(app),
     io = require('socket.io').listen(server);
@@ -47,7 +31,10 @@ io.sockets.on('connection', function (socket) {
 		console.log(nbPlayersInLobby + " joueur(s) dans la salle d'attente de la partie " + idGameLobby);
 		socket.game = idGameLobby;
 		socket.join(idGameLobby);
-		jeu();
+	
+		var mapGame = new Map(); 
+		mapGames.set(idGameLobby,mapGame);	
+
 		io.to(idGameLobby).emit("jeu");		
 	});		
 
