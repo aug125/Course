@@ -2,7 +2,9 @@
 	<head>
 		 <script src="https://cdn.jsdelivr.net/npm/phaser@3.22.0/dist/phaser-arcade-physics.min.js"></script> 
 		 <script src="/socket.io/socket.io.js"></script>
+		 <link rel="stylesheet" href="style.css">
 	</head>
+		
 	<body>
 
 		<script type="text/javascript" src="game.js"></script>
@@ -10,7 +12,17 @@
 		<script type="text/javascript" src="tir.js"></script>
 		<script type="text/javascript" src="stats.js"></script>
 
+		<div class="buttons" id="buttons">
+			<button onclick="pilote()">Pilote</button>
+			<button onclick="meca()">Mécanitien</button>
+		</div>
+
 		<script>
+
+			function pilote(){
+				game = new Phaser.Game(config);
+			}
+
 			var config = {
 				type: Phaser.AUTO,
 				width: window.innerWidth - 30,
@@ -45,10 +57,6 @@
 						
 				
 			// Sockets						
-			socket.on('infosPartie', function(num) {
-				console.log('infos');
-				idJoueur = num;				
-			});			
 			
 			socket.on('message', function(msg) {
 				 $('#chat').append("<p>" + msg + "</p>");			
@@ -59,10 +67,22 @@
 			});
 						
 			socket.on('jeu', function () {
-				game = new Phaser.Game(config);
+				console.log('jeu');
+				socket.emit('askId');
 			});
-			
-			
+
+			socket.on('sendId', function(id) {
+				console.log("id joueur : " + id);
+				if (id == 0) // Il s'agit du premier joueur. Celui-ci va choisir le rôle
+				{
+					document.getElementById("buttons").style.display = "inline";
+				}
+				else
+				{
+					// Celui-ci va attendre le choix de l'autre.
+				}
+			});
+						
         </script>
     </body>
 </html>

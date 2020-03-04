@@ -11,6 +11,10 @@ div.chat {
 	height:100%;
 }
 
+div.buttons {
+	display: none;
+}
+
 canvas {
 	width: 100%;
 	height:auto;

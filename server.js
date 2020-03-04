@@ -12,6 +12,7 @@ var mapGames = new Map();
 
 app.use( express.static( "public" ) );
 
+app.use( express.static("views" ) );
 app.use( express.static("Core" ) );
 app.use( express.static("Core/Entity" ) );
 app.use( express.static("Core/Pictures" ) );
@@ -32,10 +33,16 @@ io.sockets.on('connection', function (socket) {
 		socket.game = idGameLobby;
 		socket.join(idGameLobby);
 	
-		var mapGame = new Map(); 
-		mapGames.set(idGameLobby,mapGame);	
 
-		io.to(idGameLobby).emit("jeu");		
+		if (nbPlayersInLobby == 2) {
+
+			// Création de la partie
+			io.to(idGameLobby).emit("jeu");			
+			var mapGame = new Map(); 
+			mapGames.set(idGameLobby,mapGame);
+			idJoueur = 0;
+			idGameLobby++;
+		}		
 	});		
 
 	socket.on('disconnect', function() {
@@ -43,18 +50,16 @@ io.sockets.on('connection', function (socket) {
 			nbPlayersInLobby -= 1;
 	});
 	
-	socket.on('initPilote', function() {
+	socket.on('askId', function() {
 
 		console.log("Le joueur " + idJoueur + " joue dans la partie " + socket.game);
-		listJoueurs.push(new Joueur(idJoueur));		
 		socket.id = idJoueur;		
-		socket.emit("infosPartie", idJoueur);
-		socket.emit("message", "Vous êtes le joueur " + (idJoueur+1));
-
-		idJoueur +=1;
-
+		socket.emit('sendId', idJoueur);
+		idJoueur += 1;
 	});		
-	
+
+
+
 });	
 
 
