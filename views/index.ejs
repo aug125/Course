@@ -7,23 +7,32 @@
 		
 	<body>
 
-		<script type="text/javascript" src="game.js"></script>
+		<script type="text/javascript" src="meca_game.js"></script>
+		<script type="text/javascript" src="pilote_game.js"></script>
 		<script type="text/javascript" src="ennemi.js"></script>
 		<script type="text/javascript" src="tir.js"></script>
 		<script type="text/javascript" src="stats.js"></script>
 
 		<div class="buttons" id="buttons">
-			<button onclick="pilote()">Pilote</button>
-			<button onclick="meca()">Mécanitien</button>
+			<button onclick="button_pilote()">Pilote</button>
+			<button onclick="button_meca()">Mécanitien</button>
 		</div>
 
 		<script>
 
-			function pilote(){
-				game = new Phaser.Game(config);
+			function button_pilote(){
+				game = new Phaser.Game(config_pilote);
+				document.getElementById("buttons").style.display = "none";
+				socket.emit('role', 'pilote');
 			}
 
-			var config = {
+			function button_meca(){
+				game = new Phaser.Game(config_meca);
+				document.getElementById("buttons").style.display = "none";
+				socket.emit('role', 'meca');
+			}
+
+			var config_pilote = {
 				type: Phaser.AUTO,
 				width: window.innerWidth - 30,
 				height:window.innerHeight - 30,
@@ -34,22 +43,43 @@
         			default: 'arcade'
 		    	},
 				scene: {
-					preload: preload,
-					create: create,
-					update: update
+					preload: pilote_preload,
+					create: pilote_create,
+					update: pilote_update
 				}
-				
+			};
+
+			var config_meca = {
+				type: Phaser.AUTO,
+				width: window.innerWidth - 30,
+				height:window.innerHeight - 30,
+
+				scale: {
+					mode: Phaser.Scale.NONE          			
+				},
+				physics: {
+					default: 'arcade'
+				},
+				scene: {
+					preload: meca_preload,
+					create: meca_create,
+					update: meca_update
+				}
 			};
 
 
 			var idJoueur;
 			var game;
+			var firstPlayer = false;
 			document.oncontextmenu = new Function("return false");
 			
 			// Connexion socket.io
 //            var socket = io.connect('http://192.168.10.3:8080');
 			var socket = io.connect('http://127.0.0.1:8080');
 			
+
+			// DEBUG
+			//game = new Phaser.Game(config_meca);			
 						
 			document.oncontextmenu = new Function("return false");			
 		
@@ -61,11 +91,7 @@
 			socket.on('message', function(msg) {
 				 $('#chat').append("<p>" + msg + "</p>");			
 			});
-			
-			socket.on('vaisseau', function(id,px,py,pspeed,prange,ppuissance) {
-				console.log('vaisseau');
-			});
-						
+									
 			socket.on('jeu', function () {
 				console.log('jeu');
 				socket.emit('askId');
@@ -73,8 +99,9 @@
 
 			socket.on('sendId', function(id) {
 				console.log("id joueur : " + id);
-				if (id == 0) // Il s'agit du premier joueur. Celui-ci va choisir le rôle
+				if (id % 2 == 1) // Il s'agit du premier joueur. Celui-ci va choisir le rôle
 				{
+					firstPlayer = true;
 					document.getElementById("buttons").style.display = "inline";
 				}
 				else
@@ -82,7 +109,29 @@
 					// Celui-ci va attendre le choix de l'autre.
 				}
 			});
-						
+
+			socket.on('role', function(role) {
+				console.log("role envoyé par le premier joueur : " + role);
+				console.log("Premier joueur : " + firstPlayer);
+				if (firstPlayer == true) {
+					// Rôle déjà choisi.
+					return;
+				}
+				if (role == "pilote"){
+					game = new Phaser.Game(config_meca);
+				}
+				else {
+					game = new Phaser.Game(config_pilote);
+				}
+
+			});
+
+
+			// Sockets de jeu
+			socket.on("power",  function(powerValue) {
+				pilote.onPowerChanged(powerValue);
+			});
+    						
         </script>
     </body>
 </html>

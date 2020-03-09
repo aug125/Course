@@ -37,11 +37,13 @@ io.sockets.on('connection', function (socket) {
 		if (nbPlayersInLobby == 2) {
 
 			// Création de la partie
-			io.to(idGameLobby).emit("jeu");			
+			io.to(socket.game).emit("jeu");			
 			var mapGame = new Map(); 
-			mapGames.set(idGameLobby,mapGame);
+			mapGames.set(socket.game,mapGame);
 			idJoueur = 0;
 			idGameLobby++;
+			nbPlayersInLobby -= 2;
+			
 		}		
 	});		
 
@@ -56,10 +58,18 @@ io.sockets.on('connection', function (socket) {
 		socket.id = idJoueur;		
 		socket.emit('sendId', idJoueur);
 		idJoueur += 1;
-	});		
+	});
 
+	socket.on('role', function(role) {
+		console.log("Envoi du rôle choisi par le premier joueur");
+		io.to(socket.game).emit('role', role);
+	});
 
-
+	// sockets de jeu
+	socket.on('power', function(powerValue) {
+		console.log("power " +  powerValue);
+		io.to(socket.game).emit('power', powerValue);
+	});	
 });	
 
 
