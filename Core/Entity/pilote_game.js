@@ -19,7 +19,7 @@ pilote.joueurTouche = function(player, tir) {
         player.setAngularVelocity(0);
         player.setVisible(false);
 
-        gameOver = true;
+        pilote.gameOver = true;
 
         // Score au milieu
         pilote.scoreText.setPosition(500, 500);
@@ -37,8 +37,10 @@ pilote.ennemiTouche = function(ennemi, tir){
 
 
 pilote.onPowerChanged = function(newPowerValue){
-    console.log(newPowerValue);
-    pilote.power = newPowerValue;    
+
+    // Changement de puissance
+    pilote.power = newPowerValue;
+    pilote.player.body.maxVelocity.set(baseShipStats.maxVelocity * pilote.power);    
 };
 
 function pilote_preload ()
@@ -58,7 +60,7 @@ function pilote_preload ()
 function pilote_create ()
 {
     // Création du joueur !
-    player = this.physics.add.image(0, 0, 'vaisseau');
+    pilote.player = this.physics.add.image(0, 0, 'vaisseau');
 
 
     // Création des "tirs"			
@@ -80,13 +82,13 @@ function pilote_create ()
     pilote.scoreText.setScrollFactor(0,0);
 
     // Créer le callback en cas de tir
-    this.physics.add.overlap(player, tirs, pilote.joueurTouche, null, this);
+    this.physics.add.overlap(pilote.player, tirs, pilote.joueurTouche, null, this);
 
     // Créer le callback en cas de tir
     this.physics.add.overlap(ennemis, tirs, pilote.ennemiTouche, null, this);
 
     // Création du vaisseau
-    playerStats = new Stats("player");				
+    baseShipStats = new Stats("player");				
 
     // Resize selon l'écran
     // Création de la caméra
@@ -111,14 +113,14 @@ function pilote_create ()
     camera.setBackgroundColor('rgba(0, 0, 0, 2)');
 
     // Définir Taille vaisseau
-    player.setScale(0.5);
+    pilote.player.setScale(0.5);
 
     // Définir vitesse max du vaisseau (et ralentissement naturel)
-    player.body.maxVelocity.set(playerStats.maxVelocity);
-    player.body.drag.set(100);
+    pilote.player.body.maxVelocity.set(baseShipStats.maxVelocity * pilote.power);
+    pilote.player.body.drag.set(100);
 
     // Caméra suit le joueur
-    camera.startFollow(player, false);
+    camera.startFollow(pilote.player, false);
 
 
 
@@ -129,9 +131,6 @@ function pilote_update (time, delta)
     if (pilote.gameOver == true){
         return;
     }
-
-    // Gestion des stats du joueur
-    player.body.maxVelocity.set(playerStats.maxVelocity * pilote.power);
 
     // Création des ennemis				
     if (time > pilote.lastEnnemiApparu + 31000)
@@ -149,46 +148,46 @@ function pilote_update (time, delta)
     cursors = this.input.keyboard.createCursorKeys();
     if (cursors.left.isDown)
     {
-        player.setAngularVelocity(-playerStats.vitesseRotation);
+        pilote.player.setAngularVelocity(-baseShipStats.vitesseRotation * pilote.power);
 
     }
     else if (cursors.right.isDown)
     {
-        player.setAngularVelocity(playerStats.vitesseRotation);
+        pilote.player.setAngularVelocity(baseShipStats.vitesseRotation * pilote.power);
     }
     else
     {
-        player.setAngularVelocity(0);
+        pilote.player.setAngularVelocity(0);
     }
     if (cursors.up.isDown)
     {
-        velocity = this.physics.velocityFromRotation(player.rotation, playerStats.acceleration);
-        player.setAccelerationX(velocity.x);
-        player.setAccelerationY(velocity.y);				
+        velocity = this.physics.velocityFromRotation(pilote.player.rotation, baseShipStats.acceleration);
+        pilote.player.setAccelerationX(velocity.x);
+        pilote.player.setAccelerationY(velocity.y);				
     }
     else if (cursors.down.isDown)
     {
-        velocity = this.physics.velocityFromRotation(player.rotation + Math.PI, playerStats.acceleration);
-        player.setAccelerationX(velocity.x);
-        player.setAccelerationY(velocity.y);					
+        velocity = this.physics.velocityFromRotation(pilote.player.rotation + Math.PI, baseShipStats.acceleration);
+        pilote.player.setAccelerationX(velocity.x);
+        pilote.player.setAccelerationY(velocity.y);					
     }
 
     else
     {
-        player.setAccelerationX (0);
-        player.setAccelerationY (0);
+        pilote.player.setAccelerationX (0);
+        pilote.player.setAccelerationY (0);
     }
 
     // Tirer
     if (cursors.space.isDown)
     {
         // Vérifier que le tir précédent soit suffisamment lointain
-        if (time > pilote.lastFired + playerStats.rechargementTir)
+        if (time > pilote.lastFired + baseShipStats.rechargementTir)
         {
             tir = tirs.get();
             if (tir)
             {
-                tir.fire(player.x, player.y, player.rotation, player.body.velocity, playerStats.vitesseTir, true, playerStats.precisionTir);
+                tir.fire(pilote.player.x, pilote.player.y, pilote.player.rotation, pilote.player.body.velocity, baseShipStats.vitesseTir, true, baseShipStats.precisionTir);
                 pilote.lastFired = time;
             }
         }

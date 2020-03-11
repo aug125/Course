@@ -23,14 +23,14 @@ var Ennemi = new Phaser.Class({
         // Choisir un angle
         let angleApparition = Math.random() * Math.PI*2;
         let distanceApparition = 1000;
-        this.setPosition(player.x + Math.cos(angleApparition) * distanceApparition, player.y + Math.sin(angleApparition) * distanceApparition);
+        this.setPosition(pilote.player.x + Math.cos(angleApparition) * distanceApparition, pilote.player.y + Math.sin(angleApparition) * distanceApparition);
         this.setRotation(angleApparition + Math.PI); // L'ennemi fait face au joueur
         this.body.maxVelocity.set(this.stats.maxVelocity);
 	},
 
     update: function (time, delta)
     {
-        let angle = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y);
+        let angle = Phaser.Math.Angle.Between(this.x, this.y, pilote.player.x, pilote.player.y);
         let ecartAngle = angle - this.rotation;
         while (ecartAngle < 0) {
             ecartAngle += Math.PI * 2;
@@ -50,7 +50,7 @@ var Ennemi = new Phaser.Class({
         this.body.setAccelerationY(velocity.y);
 
         // Faire tirer le vaisseau
-        if (time - this.lastFired > 1000 && gameOver == false) {
+        if (time - this.lastFired > 1000 && pilote.gameOver == false) {
             tir = tirs.get();
             if (tir)
             {

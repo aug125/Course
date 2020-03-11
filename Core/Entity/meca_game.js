@@ -1,17 +1,20 @@
 var meca = {}; 
-meca.power = 0.0;
-meca.powerChanged = false;
+
+// Puissance
+meca.power;
+
+// Sliders
 
 
 meca.onPowerChanged = function(newValue){
-    meca.power = (1-newValue);
-    console.log(meca.power);
-    meca.powerChanged = true;
+    meca.power.value = (1-newValue);    
+    meca.power.isChanged = true;
 };
 
 meca.sendSettings = function() {
-    if (meca.powerChanged == true) {
-        socket.emit("power", meca.power);
+    if (meca.power.isChanged == true) {
+        socket.emit("power", meca.power.value);
+        meca.power.isChanged = false;
     }
 };
 
@@ -22,48 +25,56 @@ function meca_preload ()
     url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexsliderplugin.min.js';
     this.load.plugin('rexsliderplugin', url, true);
   
-    url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/assets/images/white-dot.png';      
-    this.load.image('dot', url);
-
+    this.load.image('manette', 'manette.png');
 
 }
 
 function meca_create ()
 {
-
-    // Création du slider de puissance
-    this.puissance = this.add.image(400, 300, 'dot').setScale(10, 10);
-    this.puissance.slider = this.plugins.get('rexsliderplugin').add(this.puissance, {
-        endPoints: [{
-                x: this.puissance.x,
-                y: this.puissance.y
-            },
-            {
-                x: this.puissance.x,
-                y: this.puissance.y + 100 
-            }
-        ],
-        value: 1
-    });
-    this.puissance.text = this.add.text(this.puissance.x - 20,this.puissance.y + 40, '0');
-
-    this.add.graphics()
-        .lineStyle(3, 0x888888, 1)
-        .strokePoints(this.puissance.slider.endPoints);
-
-    this.cursorKeys = this.input.keyboard.createCursorKeys();
-
-    this.puissance.slider.on('valuechange', function(newValue, prevValue){ meca.onPowerChanged(newValue) });    
-
-    // Gestion du relachement du clic gauche
-    this.input.on('pointerup', function (pointer) {        
-        meca.sendSettings();        
-    }, this);
-
+    meca.power = meca.createSlider(this, "toto", 0, 100, 300,400);
+ 
 }
 
 function meca_update (time, delta) {
-    this.puissance.text.setText(Math.round(meca.power * 100) + " GW");
+    meca.power.text.setText(Math.round(meca.power.value * 100) + " GW");
 }	
 
+meca.createSlider = function(game,  text, minValue, maxValue, posX, posY) {
+
+
+        // Création du slider de puissance
+        object = game.add.image(posX, posY, 'manette');
+        object.originY = 1;
+        object.slider = game.plugins.get('rexsliderplugin').add(object, {
+           endPoints: [{
+                   x: object.x,
+                   y: object.y - 150
+               },
+               {
+                   x: object.x,
+                   y: object.y + 150 
+               }
+           ],
+           value: 1
+        });
+
+        // Trait
+        game.add.graphics()
+        .lineStyle(3, 0x888888, 1)
+        .strokePoints(object.slider.endPoints);
+
+        object.value = 0;
+        object.text = game.add.text(object.x - 20,object.y + 40, object.value +" GW");
+   
+        game.cursorKeys = game.input.keyboard.createCursorKeys();
+
+        object.slider.on('valuechange', function(newValue, prevValue){ meca.onPowerChanged(newValue) });    
+   
+       // Gestion du relachement du clic gauche
+       game.input.on('pointerup', function (pointer) {        
+           meca.sendSettings();        
+       }, game);
+       return object;
+
+};
 
