@@ -66,10 +66,17 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	// sockets de jeu
-	socket.on('power', function(powerValue) {
-		console.log("power " +  powerValue);
+	socket.on('power', function(powerValue) {		
 		io.to(socket.game).emit('power', powerValue);
 	});	
+
+
+	// sockets de jeu
+	socket.on('weapon', function(weaponValue) {		
+		io.to(socket.game).emit('weapon', weaponValue);
+	});	
+	
+	
 });	
 
 

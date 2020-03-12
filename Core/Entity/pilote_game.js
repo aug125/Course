@@ -8,6 +8,7 @@ pilote.gameOver = false;
 pilote.player;
 
 pilote.power = 0;
+pilote.weapon = 0;
 
 pilote.joueurTouche = function(player, tir) {
     if (tir.isPlayer == false)
@@ -42,6 +43,20 @@ pilote.onPowerChanged = function(newPowerValue){
     pilote.power = newPowerValue;
     pilote.player.body.maxVelocity.set(baseShipStats.maxVelocity * pilote.power);    
 };
+
+pilote.onWeaponChanged = function(newWeaponValue){
+
+    // Changement de puissance
+    pilote.weapon = newWeaponValue;
+};
+
+pilote.onShieldChanged = function(newShieldValue){
+
+    // Changement de puissance
+    pilote.shield = newShieldValue;
+};
+
+
 
 function pilote_preload ()
 {
@@ -103,9 +118,10 @@ function pilote_create ()
     // Colorer les étoiles pour que ça fasse un peu plus gai
     
     bg.getChildren().forEach(function(element) {
-        let red = 200 + Math.floor(Math.random() * 55);				
-        let green = 200 + Math.floor(Math.random() * 55);
-        let blue = 200 + Math.floor(Math.random() * 55);				
+        let variable = 80;
+        let red = 255 - variable + Math.floor(Math.random() * variable);				
+        let green = 255 - variable + Math.floor(Math.random() * variable);
+        let blue = 255 - variable + Math.floor(Math.random() * variable);				
         element.setTint(red*256*256 + green*256 + blue);
     });
 
@@ -181,14 +197,18 @@ function pilote_update (time, delta)
     // Tirer
     if (cursors.space.isDown)
     {
-        // Vérifier que le tir précédent soit suffisamment lointain
-        if (time > pilote.lastFired + baseShipStats.rechargementTir)
+        if (pilote.weapon > 0.001)
         {
-            tir = tirs.get();
-            if (tir)
+
+            // Vérifier que le tir précédent soit suffisamment lointain
+            if (time > pilote.lastFired + baseShipStats.rechargementTir / pilote.weapon)
             {
-                tir.fire(pilote.player.x, pilote.player.y, pilote.player.rotation, pilote.player.body.velocity, baseShipStats.vitesseTir, true, baseShipStats.precisionTir);
-                pilote.lastFired = time;
+                tir = tirs.get();
+                if (tir)
+                {
+                    tir.fire(pilote.player.x, pilote.player.y, pilote.player.rotation, pilote.player.body.velocity, baseShipStats.vitesseTir, true, baseShipStats.precisionTir);
+                    pilote.lastFired = time;
+                }
             }
         }
     }

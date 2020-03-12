@@ -15,7 +15,7 @@
 
 		<div class="buttons" id="buttons">
 			<button onclick="button_pilote()">Pilote</button>
-			<button onclick="button_meca()">Mécanitien</button>
+			<button onclick="button_meca()">Mécanicien</button>
 		</div>
 
 		<script>
@@ -131,7 +131,18 @@
 			socket.on("power",  function(powerValue) {
 				pilote.onPowerChanged(powerValue);
 			});
-    						
+				
+			// Sockets de jeu
+			socket.on("weapon",  function(weaponValue) {
+				console.log(weaponValue);
+				pilote.onWeaponChanged(weaponValue);
+			});	
+			
+			// Sockets de jeu
+			socket.on("shield",  function(shieldValue) {
+				pilote.onShieldChanged(shieldValue);
+			});			
+
         </script>
     </body>
 </html>
