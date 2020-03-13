@@ -1,5 +1,5 @@
 
-var pilote = {}; 
+let pilote = {}; 
 pilote.lastFired = 0;
 pilote.lastEnnemiApparu = 0;
 pilote.score = 0;
@@ -112,16 +112,16 @@ function pilote_create ()
 
     // Ajout des étoiles en arrière plan
     bg = this.add.group({ key: 'star', frameQuantity: 50 });				
-    var rect = new Phaser.Geom.Rectangle(camera.width, camera.height, camera.width, camera.height);
+    let rect = new Phaser.Geom.Rectangle(camera.width, camera.height, camera.width, camera.height);
     Phaser.Actions.RandomRectangle(bg.getChildren(), rect);			
 
     // Colorer les étoiles pour que ça fasse un peu plus gai
     
     bg.getChildren().forEach(function(element) {
-        let variable = 80;
-        let red = 255 - variable + Math.floor(Math.random() * variable);				
-        let green = 255 - variable + Math.floor(Math.random() * variable);
-        let blue = 255 - variable + Math.floor(Math.random() * variable);				
+        const variableColor = 80;
+        const red = 255 - variableColor + Math.floor(Math.random() * variableColor);				
+        const green = 255 - variableColor + Math.floor(Math.random() * variableColor);
+        const blue = 255 - variableColor + Math.floor(Math.random() * variableColor);				
         element.setTint(red*256*256 + green*256 + blue);
     });
 
@@ -147,6 +147,23 @@ function pilote_update (time, delta)
     if (pilote.gameOver == true){
         return;
     }
+
+
+    // Mettre toutes les étoiles dans l'image
+    stars = bg.getChildren();
+      for (i = 0; i < stars.length; i++) 
+    {
+        if (stars[i].x < camera.worldView.x)
+            stars[i].x += camera.width;
+        if (stars[i].x > camera.worldView.x  + camera.width)
+            stars[i].x -= camera.width;
+
+        if (stars[i].y < camera.worldView.y)
+            stars[i].y += camera.height;
+        if (stars[i].y > camera.worldView.y + camera.height)
+            stars[i].y -= camera.height;
+    }
+
 
     // Création des ennemis				
     if (time > pilote.lastEnnemiApparu + 31000)
@@ -212,21 +229,5 @@ function pilote_update (time, delta)
             }
         }
     }
-
-    // Mettre toutes les étoiles dans l'image
-    stars = bg.getChildren();
-      for (i = 0; i < stars.length; i++) 
-    {
-        if (stars[i].x < camera.worldView.x)
-            stars[i].x += camera.width;
-        if (stars[i].x > camera.worldView.x  + camera.width)
-            stars[i].x -= camera.width;
-
-        if (stars[i].y < camera.worldView.y)
-            stars[i].y += camera.height;
-        if (stars[i].y > camera.worldView.y + camera.height)
-            stars[i].y -= camera.height;
-    }
-
 }	
 

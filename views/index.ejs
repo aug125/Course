@@ -32,12 +32,13 @@
 				socket.emit('role', 'meca');
 			}
 
-			var config_pilote = {
+			const config_pilote = {
 				type: Phaser.AUTO,
-				width: window.innerWidth - 30,
-				height:window.innerHeight - 30,
+				width: 1600,
+				height:1200,
 				scale: {
-      				mode: Phaser.Scale.NONE          			
+					mode: Phaser.Scale.FIT,
+					autoCenter: Phaser.Scale.CENTER_BOTH   			
     			},
 				physics: {
         			default: 'arcade'
@@ -49,13 +50,14 @@
 				}
 			};
 
-			var config_meca = {
+			const config_meca = {
 				type: Phaser.AUTO,
-				width: window.innerWidth - 30,
-				height:window.innerHeight - 30,
+				width: 1600,
+				height:1200,
 
 				scale: {
-					mode: Phaser.Scale.NONE          			
+					mode: Phaser.Scale.FIT,
+					autoCenter: Phaser.Scale.CENTER_BOTH   			
 				},
 				physics: {
 					default: 'arcade'
@@ -68,19 +70,15 @@
 			};
 
 
-			var idJoueur;
-			var game;
-			var firstPlayer = false;
+			let game;
+			let firstPlayer = false;
 			document.oncontextmenu = new Function("return false");
 			
 			// Connexion socket.io
-//            var socket = io.connect('http://192.168.10.3:8080');
-			var socket = io.connect('http://127.0.0.1:8080');
-			
-
-			// DEBUG
-			//game = new Phaser.Game(config_meca);			
+//            let socket = io.connect('http://192.168.10.3:8080');
+			let socket = io.connect('http://127.0.0.1:8080');
 						
+					
 			document.oncontextmenu = new Function("return false");			
 		
 			socket.emit('newPlayer');

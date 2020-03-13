@@ -1,13 +1,13 @@
-﻿var express = require('express'),
+﻿let express = require('express'),
 	app = express(),
     server = require('http').createServer(app),
     io = require('socket.io').listen(server);
 
 	
-var nbPlayersInLobby = 0;
-var idJoueur = 0;
-var idGameLobby = 0;
-var mapGames = new Map();
+let nbPlayersInLobby = 0;
+let idJoueur = 0;
+let idGameLobby = 0;
+let mapGames = new Map();
 
 
 app.use( express.static( "public" ) );
@@ -38,7 +38,7 @@ io.sockets.on('connection', function (socket) {
 
 			// Création de la partie
 			io.to(socket.game).emit("jeu");			
-			var mapGame = new Map(); 
+			let mapGame = new Map(); 
 			mapGames.set(socket.game,mapGame);
 			idJoueur = 0;
 			idGameLobby++;

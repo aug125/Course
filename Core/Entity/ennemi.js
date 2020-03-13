@@ -1,4 +1,4 @@
-var Ennemi = new Phaser.Class({
+let Ennemi = new Phaser.Class({
 
 	
     Extends: Phaser.GameObjects.Image,

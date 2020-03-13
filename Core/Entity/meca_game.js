@@ -1,4 +1,4 @@
-var meca = {}; 
+let meca = {}; 
 
 // Puissance
 meca.power;
@@ -14,6 +14,10 @@ meca.sendSettings = function() {
         socket.emit("weapon", meca.weapon.value);
         meca.weapon.isChanged = false;
     }
+    if (meca.shield.isChanged == true) {
+        socket.emit("shield", meca.shield.value);
+        meca.shield.isChanged = false;
+    }
     
 };
 
@@ -25,6 +29,10 @@ function meca_preload ()
     this.load.plugin('rexsliderplugin', url, true);
   
     this.load.image('manette', 'manette.png');
+    
+    // Nécessaire pour corriger le bug du slider
+    this.scale.setGameSize(game.config.width, game.config.height);
+
 
 }
 
@@ -36,8 +44,10 @@ function meca_create ()
         meca.sendSettings();        
     }, this);    
 
-    meca.power  = meca.createSlider(this, "PUISSANCE", game.config.width / 4, game.config.height * 3 /5, 1, '#ffaaaa');
-    meca.weapon = meca.createSlider(this, "ARME", game.config.width / 2, game.config.height * 3 /5, 1, '#aaffaa');
+    meca.power  = meca.createSlider(this, "PUISSANCE", game.config.width / 5, game.config.height * 3 /5, 1, '#ffaaaa');
+    meca.weapon = meca.createSlider(this, "ARMEMENT", game.config.width* 2 / 5, game.config.height * 3 /5, 1, '#aaffaa');
+    meca.shield = meca.createSlider(this, "BOUCLIER", game.config.width * 3 / 5, game.config.height * 3 /5, 1, '#aaaaff');
+    meca.shield = meca.createSlider(this, "REPARATIONS", game.config.width * 4 / 5, game.config.height * 3 /5, 1, '#bbbbbb');
  
 }
 
