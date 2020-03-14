@@ -1,4 +1,4 @@
-let Tir = new Phaser.Class({
+var Tir = new Phaser.Class({
 
     Extends: Phaser.Physics.Arcade.Image,
 
