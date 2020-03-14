@@ -100,8 +100,9 @@ function pilote_create ()
     pilote.baseShipStats = new Stats("player"); 
 
     // Créations du bouclier
-    pilote.player.shield = this.physics.add.image(0, 0, 'bouclier').setAlpha(pilote.realShield);
-
+    pilote.player.shield = this.physics.add.image(0, 0, 'bouclier').setAlpha(pilote.realShield).setScale(0.6);;
+    // Mettre le bouclier au premier plan
+    pilote.player.shield.setDepth(1);
     // Création des "tirs"			
     tirs = this.physics.add.group({
         classType: Tir,

@@ -59,7 +59,7 @@ function meca_create ()
     meca.textEnergieValue = this.add.text(200, game.config.height *4.4/5, meca.energy + " GW" ).setStyle({
         fontSize: '55px',
         fontFamily: 'Arial',
-        color: "#ffffff",
+        color: "#44ff44",
         align: 'center'
     });
 
