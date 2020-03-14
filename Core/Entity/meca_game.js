@@ -1,9 +1,6 @@
 let meca = {}; 
 
-// Puissance
-meca.power;
 
-// Sliders
 
 meca.sendSettings = function() {
     if (meca.power.isChanged == true) {
@@ -18,7 +15,10 @@ meca.sendSettings = function() {
         socket.emit("shield", meca.shield.value);
         meca.shield.isChanged = false;
     }
-    
+    if (meca.repare.isChanged == true) {
+        socket.emit("repare", meca.repare.value);
+        meca.repare.isChanged = false;
+    }    
 };
 
 
@@ -38,16 +38,36 @@ function meca_preload ()
 
 function meca_create ()
 {
+    // Statistiques du vaisseau
+    meca.baseShipStats = new Stats("meca");
+    meca.energy = meca.baseShipStats.initialCharge;
 
-       // Gestion du relachement du clic gauche
+    // Gestion du relachement du clic gauche
     this.input.on('pointerup', function (pointer) {        
         meca.sendSettings();        
     }, this);    
 
+    // Ajout du texte de puissance restante
+    meca.textEnergie = this.add.text(160,game.config.height *4.1/5, "ÉNERGIE RESTANTE").setStyle({
+        fontSize: '35px',
+        fontFamily: 'Arial',
+        color: "#ffffff",
+        align: 'center'
+    });
+
+    // Ajout du texte de puissance restante
+    meca.textEnergieValue = this.add.text(200, game.config.height *4.4/5, meca.energy + " GW" ).setStyle({
+        fontSize: '55px',
+        fontFamily: 'Arial',
+        color: "#ffffff",
+        align: 'center'
+    });
+
+    // Ajout des sliders
     meca.power  = meca.createSlider(this, "PUISSANCE", game.config.width / 5, game.config.height * 3 /5, 1, '#ffaaaa');
     meca.weapon = meca.createSlider(this, "ARMEMENT", game.config.width* 2 / 5, game.config.height * 3 /5, 1, '#aaffaa');
     meca.shield = meca.createSlider(this, "BOUCLIER", game.config.width * 3 / 5, game.config.height * 3 /5, 1, '#aaaaff');
-    meca.shield = meca.createSlider(this, "REPARATIONS", game.config.width * 4 / 5, game.config.height * 3 /5, 1, '#bbbbbb');
+    meca.repare = meca.createSlider(this, "REPARATIONS", game.config.width * 4 / 5, game.config.height * 3 /5, 1, '#bbbbbb');
  
 }
 
@@ -106,6 +126,15 @@ meca.createSlider = function(game,  text, posX, posY, size, color) {
                 object.isChanged = true; 
                 object.value = (1-newValue); 
                 object.textValue.setText(Math.round(object.value * 100) + " GW");
+                meca.energy = Math.round(meca.baseShipStats.initialCharge - (meca.power.value + meca.weapon.value + meca.shield.value + meca.repare.value) * 100);
+                meca.textEnergieValue.setText(meca.energy + " GW");
+                if (meca.energy >= 0) {
+                    meca.textEnergieValue.setColor("#44ff44");
+                }
+                else {
+                    meca.textEnergieValue.setColor("#ff4444");
+                }
+
             }
         );
 

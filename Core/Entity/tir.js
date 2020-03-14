@@ -10,7 +10,7 @@ let Tir = new Phaser.Class({
         Phaser.GameObjects.Image.call(this, scene, 0, 0, 'tir');
     },
 
-    fire: function (x, y, rotation, velocity, speed, isPlayer, precisionTir)
+    fire: function (x, y, rotation, velocity, speed, isPlayer, precisionTir, damage)
     {
 
        if (isPlayer)
@@ -26,7 +26,8 @@ let Tir = new Phaser.Class({
         this.setActive(true);
         this.setVisible(true);        
         this.speed = speed; // Vitesse, par rapport à sa direction
-        this.start = Date.now();        
+        this.start = Date.now();  
+        this.damage = damage;      
         this.body.setVelocity(Math.cos(rotation) * speed + velocity.x, Math.sin(rotation) * speed + velocity.y);
     },
 
@@ -40,5 +41,11 @@ let Tir = new Phaser.Class({
             this.setActive(false);
             this.setVisible(false);
         }   
+    },
+
+    remove: function() {
+        this.setActive(false);
+        this.setVisible(false);
+        this.damage = 0;
     }
 });

@@ -70,12 +70,15 @@ io.sockets.on('connection', function (socket) {
 		io.to(socket.game).emit('power', powerValue);
 	});	
 
-
-	// sockets de jeu
+	
 	socket.on('weapon', function(weaponValue) {		
 		io.to(socket.game).emit('weapon', weaponValue);
 	});	
-	
+
+	// sockets de jeu
+	socket.on('shield', function(shieldValue) {		
+		io.to(socket.game).emit('shield', shieldValue);
+	});
 	
 });	
 

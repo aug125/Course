@@ -54,7 +54,7 @@ let Ennemi = new Phaser.Class({
             tir = tirs.get();
             if (tir)
             {
-                tir.fire(this.x, this.y, this.rotation, this.body.velocity, this.stats.vitesseTir, false, this.stats.precisionTir);
+                tir.fire(this.x, this.y, this.rotation, this.body.velocity, this.stats.vitesseTir, false, this.stats.precisionTir, this.stats.degats);
                 this.lastFired = time;
             }
         }

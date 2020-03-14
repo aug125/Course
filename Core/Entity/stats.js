@@ -7,6 +7,10 @@ class Stats{
 			this.vitesseTir = 500; // Vitesse du projectile
 			this.rechargementTir = 300; // Temps avant le prochain tir
 			this.precisionTir = 0.1; // Précision du tir. 0 = tire en face
+			this.maxBouclier = 100;
+			this.rechargementBouclier = 20; // Rechargement bouclier par seconde
+			this.degats = 40; // dégats au bouclier/coque
+
 		}
 		if (owner == "ennemi") {
 			this.maxVelocity = 100; // Vitesse max
@@ -15,7 +19,10 @@ class Stats{
 			this.vitesseTir = 300; // Vitesse du projectile
 			this.rechargementTir = 900; // Temps avant le prochain tir
 			this.precisionTir = 0.1; // Précision du tir. 0 = tire en face
+			this.degats = 10; // dégats au bouclier/coque
 		}
-
+		if (owner == "meca") {
+			this.initialCharge = 200; // GW du vaisseau
+		}
 	}
 }
