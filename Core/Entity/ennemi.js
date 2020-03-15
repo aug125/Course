@@ -7,10 +7,10 @@ let Ennemi = new Phaser.Class({
 
     function Ennemi (scene)
     {
-          Phaser.GameObjects.Image.call(this, scene, 0, 0, 'vaisseau');
-          this.scene = scene;
-          this.lastFired = 0;
-          this.stats = new Stats("ennemi");          
+        Phaser.GameObjects.Image.call(this, scene, 0, 0, 'vaisseau');
+        this.scene = scene;
+        this.lastFired = 0;
+        this.stats = new Stats("ennemi");          
 
     },
 
@@ -51,7 +51,7 @@ let Ennemi = new Phaser.Class({
 
         // Faire tirer le vaisseau
         if (time - this.lastFired > 1000 && pilote.gameOver == false) {
-            tir = tirs.get();
+            let tir = pilote.tirs.get();
             if (tir)
             {
                 tir.fire(this.x, this.y, this.rotation, this.body.velocity, this.stats.vitesseTir, false, this.stats.precisionTir, this.stats.degats);

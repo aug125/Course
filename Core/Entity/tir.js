@@ -33,6 +33,7 @@ var Tir = new Phaser.Class({
 
     update: function (time, delta)
     {
+        return;
         // Durée de vie
         let lifeTime = 3000;
 
