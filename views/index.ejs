@@ -20,18 +20,20 @@
 
 		<script>
 
-			pilote = new Pilote();
-
+			let isPilote = true;
 			function button_pilote(){
+				pilote = new Pilote();
 				game = new Phaser.Game(config_pilote);
 				document.getElementById("buttons").style.display = "none";
 				socket.emit('role', 'pilote');
 			}
 
 			function button_meca(){
+				meca = new Meca();
 				game = new Phaser.Game(config_meca);
 				document.getElementById("buttons").style.display = "none";
 				socket.emit('role', 'meca');
+				isPilote = false;
 			}
 
 			const config_pilote = {
@@ -46,9 +48,9 @@
         			default: 'arcade'
 		    	},
 				scene: {
-					preload: pilote.preload,
-					create: pilote.create,
-					update: pilote.update
+					preload: pilote_preload,
+					create: pilote_create,
+					update: pilote_update
 				}
 			};
 
@@ -93,7 +95,6 @@
 			});
 									
 			socket.on('jeu', function () {
-				console.log('jeu');
 				socket.emit('askId');
 			});
 
@@ -118,9 +119,12 @@
 					return;
 				}
 				if (role == "pilote"){
+					meca = new Meca();
 					game = new Phaser.Game(config_meca);
+					isPilote = false;
 				}
 				else {
+					pilote = new Pilote();
 					game = new Phaser.Game(config_pilote);
 				}
 
@@ -129,18 +133,23 @@
 
 			// Sockets de jeu
 			socket.on("power",  function(powerValue) {
-				pilote.onPowerChanged(powerValue);
+				if (isPilote) {
+					pilote.onPowerChanged(powerValue);
+				}
 			});
 				
 			// Sockets de jeu
 			socket.on("weapon",  function(weaponValue) {
-				console.log(weaponValue);
-				pilote.onWeaponChanged(weaponValue);
+				if (isPilote) {
+					pilote.onWeaponChanged(weaponValue);
+				}
 			});	
 			
 			// Sockets de jeu
 			socket.on("shield",  function(shieldValue) {
-				pilote.onShieldChanged(shieldValue);
+				if (isPilote) {
+					pilote.onShieldChanged(shieldValue);
+				}
 			});			
 
         </script>

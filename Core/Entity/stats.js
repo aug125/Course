@@ -18,7 +18,7 @@ class Stats{
 			this.vitesseRotation = 150; // Vitesse de rotation du vaisseau
 			this.vitesseTir = 300; // Vitesse du projectile
 			this.rechargementTir = 900; // Temps avant le prochain tir
-			this.precisionTir = 0.1; // Précision du tir. 0 = tire en face
+			this.precisionTir = 0.0; // Précision du tir. 0 = tire en face
 			this.degats = 10; // dégats au bouclier/coque
 		}
 		if (owner == "meca") {

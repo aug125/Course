@@ -31,9 +31,15 @@ var Tir = new Phaser.Class({
         this.body.setVelocity(Math.cos(rotation) * speed + velocity.x, Math.sin(rotation) * speed + velocity.y);
     },
 
+
+    remove: function() {
+        this.setActive(false);
+        this.setVisible(false);
+        this.damage = 0;
+    },
+
     update: function (time, delta)
     {
-        return;
         // Durée de vie
         let lifeTime = 3000;
 
@@ -41,12 +47,8 @@ var Tir = new Phaser.Class({
         {
             this.setActive(false);
             this.setVisible(false);
+            this.damage = 0;
         }   
-    },
-
-    remove: function() {
-        this.setActive(false);
-        this.setVisible(false);
-        this.damage = 0;
     }
+
 });
