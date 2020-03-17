@@ -1,7 +1,11 @@
 class Meca { 
 
     constructor() {
-        this.baseShipStats;
+        this.shipStats = new Stats("meca");
+
+        // Statistiques initiales du vaisseau
+        this.energy = this.shipStats.initialCharge;
+        this.temperature = this.shipStats.initialTemperature;
     }
 
     sendSettings = function() {
@@ -27,8 +31,7 @@ class Meca {
     preload (phaser) {
 
         let url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexsliderplugin.min.js';
-        phaser.load.plugin('rexsliderplugin', url, true);
-    
+        phaser.load.plugin('rexsliderplugin', url, true);    
         phaser.load.image('manette', 'manette.png');
         
         // Nécessaire pour corriger le bug du slider
@@ -39,9 +42,6 @@ class Meca {
 
     create (phaser) {
 
-        // Statistiques du vaisseau
-        this.baseShipStats = new Stats("meca");
-        this.energy = this.baseShipStats.initialCharge;
 
         // Gestion du relachement du clic gauche
         phaser.input.on('pointerup', function (pointer) {        
@@ -56,13 +56,22 @@ class Meca {
             align: 'center'
         });
 
-        // Ajout du texte de puissance restante
-        this.textEnergieValue = phaser.add.text(200, game.config.height *4.4/5, meca.energy + " GW" ).setStyle({
+        this.textEnergieValue = phaser.add.text(200, game.config.height *4.4/5, this.energy + " GW" ).setStyle({
             fontSize: '55px',
             fontFamily: 'Arial',
             color: "#44ff44",
             align: 'center'
         });
+
+        // Ajout du texte de la température
+        this.textTemperature = phaser.add.text(700, game.config.height *4.4/5, this.temperature + "°C" ).setStyle({
+            fontSize: '55px',
+            fontFamily: 'Arial',
+            color: "#0046cc",
+            align: 'center'
+        });
+
+
 
         // Ajout des sliders
         this.power  = this.createSlider(phaser, "PUISSANCE", game.config.width / 5, game.config.height * 3 /5, 1, '#ffaaaa');
@@ -72,11 +81,22 @@ class Meca {
     
     }
 
-    update (time, delta, phaser) {
+    update (time, delta, phaser) {        
+        
+            // Modification de température
+            this.temperature -= this.energy * this.shipStats.coefficientChaleur * (delta / 1000);
+            console.log(this.temperature);
+            this.temperature = Math.max(this.shipStats.initialTemperature, this.temperature); 
+            this.temperature = Math.min(this.shipStats.maxTemperature, this.temperature);
+            console.log(this.temperature);
+            this.textTemperature.setText(Math.round(this.temperature) + "°C");
+
+            // Couleur d'affichage de la température
+            const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,70,204,204,0,0, 70, this.temperature - this.shipStats.initialTemperature );
+            this.textTemperature.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
     }	
 
    createSlider(game,  text, posX, posY, size, color) {
-        console.log(this.baseShipStats.initialCharge);
 
         // Création du slider de puissance
         let object = game.add.image(posX, posY, 'manette');
@@ -134,7 +154,7 @@ class Meca {
 
     }
     onValueChanged(newValue) {
-        const initialCharge = this.baseShipStats.initialCharge;
+        const initialCharge = this.shipStats.initialCharge;
         const sumEnegyUsed = this.power.value + this.weapon.value + this.shield.value + this.repare.value;        
         this.energy = Math.round(initialCharge - (sumEnegyUsed * 100));
         this.textEnergieValue.setText(Math.abs(this.energy) + " GW");
