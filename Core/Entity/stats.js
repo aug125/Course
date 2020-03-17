@@ -24,6 +24,7 @@ class Stats{
 		if (owner == "meca") {
 			this.initialCharge = 200; // GW du vaisseau
 			this.initialTemperature = 30; // Température de base
+			this.dangerTemperature = 100; // Température maximale
 			this.maxTemperature = 100; // Température maximale
 			this.coefficientChaleur = 0.01; // Influe sur la vitesse de montée et de descente de température		
 		}
