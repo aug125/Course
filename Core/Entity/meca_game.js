@@ -85,10 +85,8 @@ class Meca {
         
             // Modification de température
             this.temperature -= this.energy * this.shipStats.coefficientChaleur * (delta / 1000);
-            console.log(this.temperature);
             this.temperature = Math.max(this.shipStats.initialTemperature, this.temperature); 
             this.temperature = Math.min(this.shipStats.maxTemperature, this.temperature);
-            console.log(this.temperature);
             this.textTemperature.setText(Math.round(this.temperature) + "°C");
 
             // Couleur d'affichage de la température
@@ -96,12 +94,12 @@ class Meca {
             this.textTemperature.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
     }	
 
-   createSlider(game,  text, posX, posY, size, color) {
+   createSlider(phaser,  text, posX, posY, size, color) {
 
         // Création du slider de puissance
-        let object = game.add.image(posX, posY, 'manette');
+        let object = phaser.add.image(posX, posY, 'manette');
         object.originY = 1;        
-        object.slider = game.plugins.get('rexsliderplugin').add(object, {
+        object.slider = phaser.plugins.get('rexsliderplugin').add(object, {
         endPoints: [{
                 x: object.x,
                 y: object.y - 100 * size
@@ -117,7 +115,7 @@ class Meca {
         object.isChanged = false;
 
         // Trait
-        game.add.graphics()
+        phaser.add.graphics()
         .lineStyle(3, 0x888888, 1)
         .strokePoints(object.slider.endPoints);
 
@@ -126,14 +124,14 @@ class Meca {
 
 
         object.value = 0;
-        object.textValue = game.add.text(object.x - 45,object.y + 40, object.value +" GW")
+        object.textValue = phaser.add.text(object.x - 45,object.y + 40, object.value +" GW")
         .setStyle({
             fontSize: '32px',
             fontFamily: 'Arial',
             color: '#ffffff',
             align: 'center'
         });
-        object.textName = game.add.text(object.x - 100,object.y + 80, text)
+        object.textName = phaser.add.text(object.x - 100,object.y + 80, text)
         .setStyle({
             fontSize: '38px',
             fontFamily: 'Arial',
@@ -149,7 +147,7 @@ class Meca {
             meca.onValueChanged();
         });
 
-        game.cursorKeys = game.input.keyboard.createCursorKeys();
+        game.cursorKeys = phaser.input.keyboard.createCursorKeys();
         return object;
 
     }
