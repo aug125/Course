@@ -4,8 +4,17 @@ class Meca {
         this.shipStats = new Stats("meca");
 
         // Statistiques initiales du vaisseau
-        this.energy = this.shipStats.initialCharge;
+        this.sumEnergyUsed = 0;
         this.temperature = this.shipStats.initialTemperature;
+        this.nextFailureVerification = Date.now();
+        this.failuresPresent = [];
+        this.failuresExisting = [];
+
+        this.initializeFailures();
+    }
+
+    initializeFailures() {
+        this.failuresExisting.push(new Failure("DIRECTION_GAUCHE_BLOQUEE", 50));
     }
 
     sendSettings = function() {
@@ -49,17 +58,17 @@ class Meca {
         }, phaser);    
 
         // Ajout du texte de puissance restante
-        this.textEnergie = phaser.add.text(160,game.config.height *4.1/5, "RESERVE").setStyle({
+        this.textEnergie = phaser.add.text(160,game.config.height *4.1/5, "CONSOMMATION DU VAISSEAU").setStyle({
             fontSize: '35px',
             fontFamily: 'Arial',
             color: "#ffffff",
             align: 'center'
         });
 
-        this.textEnergieValue = phaser.add.text(200, game.config.height *4.4/5, this.energy + " GW" ).setStyle({
+        this.textEnergieValue = phaser.add.text(200, game.config.height *4.4/5, this.sumEnergyUsed + " GW" ).setStyle({
             fontSize: '55px',
             fontFamily: 'Arial',
-            color: "#44ff44",
+            color: "#00c815",
             align: 'center'
         });
 
@@ -74,96 +83,122 @@ class Meca {
 
 
         // Ajout des sliders
-        this.power  = this.createSlider(phaser, "PUISSANCE", game.config.width / 5, game.config.height * 3 /5, 1, '#ffaaaa');
-        this.weapon = this.createSlider(phaser, "ARMEMENT", game.config.width* 2 / 5, game.config.height * 3 /5, 1, '#aaffaa');
-        this.shield = this.createSlider(phaser, "BOUCLIER", game.config.width * 3 / 5, game.config.height * 3 /5, 1, '#aaaaff');
-        this.repare = this.createSlider(phaser, "REPARATIONS", game.config.width * 4 / 5, game.config.height * 3 /5, 1, '#bbbbbb');
+        this.power  = this.createModule(phaser, "PUISSANCE", game.config.width * 1 / 5, game.config.height * 1 /5, 1, '0xff5500');
+        this.weapon = this.createModule(phaser, "ARMEMENT", game.config.width* 4 / 5, game.config.height * 1 /5, 1, '0x55ff00');
+        this.shield = this.createModule(phaser, "BOUCLIER", game.config.width * 1 / 5, game.config.height * 3 /5, 1, '0x0055ff');
+        this.repare = this.createModule(phaser, "REPARATIONS", game.config.width * 4 / 5, game.config.height * 3 /5, 1, '0xffffff');
     
     }
 
     update (time, delta, phaser) {        
         
-            // Modification de température
-            this.temperature -= this.energy * this.shipStats.coefficientChaleur * (delta / 1000);
-            this.temperature = Math.max(this.shipStats.initialTemperature, this.temperature); 
+            // Définir la température à atteindre
+            let targetTemperature = this.shipStats.initialTemperature + (this.sumEnergyUsed * (this.shipStats.maxTemperature-this.shipStats.initialTemperature) / this.shipStats.consommationMaxTemperature);
+            const diffTemperature = targetTemperature - this.temperature;
+            
+            // Modifier la température
+            this.temperature += diffTemperature * this.shipStats.coefficientChaleur * delta / 1000;
+
             this.temperature = Math.min(this.shipStats.maxTemperature, this.temperature);
+            this.temperature = Math.max(this.shipStats.initialTemperature, this.temperature);
+
             this.textTemperature.setText(Math.round(this.temperature) + "°C");
 
             // Couleur d'affichage de la température
             const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,70,204,204,0,0, 70, this.temperature - this.shipStats.initialTemperature );
             this.textTemperature.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
-    }	
 
-   createSlider(phaser,  text, posX, posY, size, color) {
+            // Gestion des pannes
+
+            // Vérifier s'il s'est  écoulé suffisemment de temps.
+            if (Date.now() < this.nextFailureVerification){
+                return;
+            }
+
+            // Définir la prochaine vérification
+            const min = this.shipStats.dureeMinimaleEntrePannes;
+            const max = this.shipStats.dureeMaximaleEntrePannes;
+            const nextFailureVerificationInterval = Math.random() * (max - min) + min
+            this.nextFailureVerification = Date.now() + nextFailureVerificationInterval * 1000;
+
+            // TODO: algo pour voir si on ajoute une panne. 
+            console.log("Pannes");
+        }	
+
+   createModule(phaser, text, posX, posY, size, color) {
+
+        const colorSharp = color.replace("0x", "#");
+
+        let graphics = phaser.add.graphics();
+        let module = {};
+
+
+        module.state = 100;
+
+        // Création de l'arrière plan
+        graphics.lineStyle(2, color, 1);
+        graphics.strokeRoundedRect(posX-250, posY-150, 500, 300, 32);
 
         // Création du slider de puissance
-        let object = phaser.add.image(posX, posY, 'manette');
-        object.originY = 1;        
-        object.slider = phaser.plugins.get('rexsliderplugin').add(object, {
+        module.manette = phaser.add.image(posX, posY, 'manette');
+        module.manette.originY = 1;        
+        module.slider = phaser.plugins.get('rexsliderplugin').add(module.manette, {
         endPoints: [{
-                x: object.x,
-                y: object.y - 100 * size
+                x: module.manette.x + 80,
+                y: module.manette.y - 100 
             },
             {
-                x: object.x,
-                y: object.y + 100 * size
+                x: module.manette.x + 80,
+                y: module.manette.y + 100
             }
         ],
         value: 1
         });
 
-        object.isChanged = false;
+        module.isChanged = false;
 
         // Trait
         phaser.add.graphics()
         .lineStyle(3, 0x888888, 1)
-        .strokePoints(object.slider.endPoints);
+        .strokePoints(module.slider.endPoints);
 
         // Mettre la manette au premier plan
-        object.setDepth(1);
+        module.manette.setDepth(1);
 
 
-        object.value = 0;
-        object.textValue = phaser.add.text(object.x - 45,object.y + 40, object.value +" GW")
+        module.value = 0;
+        module.textValue = phaser.add.text(posX-200, posY-80, module.value +" GW")
         .setStyle({
             fontSize: '32px',
             fontFamily: 'Arial',
-            color: '#ffffff',
+            color: colorSharp,
             align: 'center'
         });
-        object.textName = phaser.add.text(object.x - 100,object.y + 80, text)
+        module.textName = phaser.add.text(posX-200, posY-120, text)
         .setStyle({
             fontSize: '38px',
             fontFamily: 'Arial',
-            color: color,
+            color: colorSharp,
             align: 'center'
         });
 
         
-        object.slider.on('valuechange', function(newValue, prevValue){  
-            object.isChanged = true; 
-            object.value = (1-newValue); 
-            object.textValue.setText(Math.round(object.value * 100) + " GW");
+        module.slider.on('valuechange', function(newValue, prevValue){  
+            module.isChanged = true; 
+            module.value = (1-newValue); 
+            module.textValue.setText(Math.round(module.value * 100) + " GW");
             meca.onValueChanged();
         });
 
         game.cursorKeys = phaser.input.keyboard.createCursorKeys();
-        return object;
+        return module;
 
     }
     onValueChanged(newValue) {
-        const initialCharge = this.shipStats.initialCharge;
-        const sumEnegyUsed = this.power.value + this.weapon.value + this.shield.value + this.repare.value;        
-        this.energy = Math.round(initialCharge - (sumEnegyUsed * 100));
-        this.textEnergieValue.setText(Math.abs(this.energy) + " GW");
-        if (this.energy >= 0) {
-            this.textEnergie.setText("RESERVE");
-            this.textEnergieValue.setColor("#44ff44");
-        }
-        else {
-            this.textEnergie.setText("SURCHARGE");
-            this.textEnergieValue.setColor("#ff4444");
-        }
+        this.sumEnergyUsed = 100 * (this.power.value + this.weapon.value + this.shield.value + this.repare.value);
+        this.textEnergieValue.setText(Math.round(this.sumEnergyUsed ) + " GW");
+        const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,200,20,200,0,0, this.shipStats.consommationMaxTemperature, Math.round(Math.min(this.sumEnergyUsed, this.shipStats.consommationMaxTemperature)));
+        this.textEnergieValue.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
     }
 
 }

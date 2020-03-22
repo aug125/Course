@@ -22,11 +22,14 @@ class Stats{
 			this.degats = 10; // dégats au bouclier/coque
 		}
 		if (owner == "meca") {
-			this.initialCharge = 200; // GW du vaisseau
+			this.nbModules = 4; // Nombre de modules
 			this.initialTemperature = 30; // Température de base
-			this.dangerTemperature = 100; // Température maximale
+			this.dangerTemperature = 100; 
 			this.maxTemperature = 100; // Température maximale
-			this.coefficientChaleur = 0.01; // Influe sur la vitesse de montée et de descente de température		
+			this.consommationMaxTemperature = 300; // La consommation permettant d'atteindre la température maximale
+			this.coefficientChaleur = 0.03; // Influe sur la vitesse de montée et de descente de température		
+			this.dureeMinimaleEntrePannes = 3; // Durée minimale entre l'ajout de pannes en seconde
+			this.dureeMaximaleEntrePannes = 10; // Durée maximale entre l'ajout des pannes en seconde
 		}
 	}
 }
