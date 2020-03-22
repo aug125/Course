@@ -30,20 +30,25 @@ let Ennemi = new Phaser.Class({
 
     update: function (time, delta)
     {
-        let angle = Phaser.Math.Angle.Between(this.x, this.y, pilote.player.x, pilote.player.y);
-        let ecartAngle = angle - this.rotation;
-        while (ecartAngle < 0) {
-            ecartAngle += Math.PI * 2;
-        }
-        while (ecartAngle > Math.PI * 2) {
-            ecartAngle -= Math.PI * 2;
-        }       
+        if ( pilote.gameOver == false) {
+            let angle = Phaser.Math.Angle.Between(this.x, this.y, pilote.player.x, pilote.player.y);
+            let ecartAngle = angle - this.rotation;
+            while (ecartAngle < 0) {
+                ecartAngle += Math.PI * 2;
+            }
+            while (ecartAngle > Math.PI * 2) {
+                ecartAngle -= Math.PI * 2;
+            }       
 
-        if ( ecartAngle > Math.PI) {
-            this.body.setAngularVelocity(-this.stats.vitesseRotation);
+            if ( ecartAngle > Math.PI) {
+                this.body.setAngularVelocity(-this.stats.vitesseRotation);
+            }
+            else {
+                this.body.setAngularVelocity(this.stats.vitesseRotation);
+            }
         }
         else {
-            this.body.setAngularVelocity(this.stats.vitesseRotation);
+            this.body.setAngularVelocity(0);
         }
         let velocity = this.scene.physics.velocityFromRotation(this.rotation, this.stats.acceleration);
         this.body.setAccelerationX(velocity.x);

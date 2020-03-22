@@ -9,6 +9,7 @@ class Meca {
         this.nextFailureVerification = Date.now();
         this.failuresPresent = [];
         this.failuresExisting = [];
+        this.listModules = new Map();
 
         this.initializeFailures();
     }
@@ -18,21 +19,21 @@ class Meca {
     }
 
     sendSettings = function() {
-        if (this.power.isChanged == true) {
-            socket.emit("power", this.power.value);
-            this.power.isChanged = false;
+        if (this.listModules.get("power").isChanged == true) {
+            socket.emit("power", this.listModules.get("power").value);
+            this.listModules.get("power").isChanged = false;
         }
-        if (this.weapon.isChanged == true) {
-            socket.emit("weapon", this.weapon.value);
-            this.weapon.isChanged = false;
+        if (this.listModules.get("weapon").isChanged == true) {
+            socket.emit("weapon", this.listModules.get("weapon").value);
+            this.listModules.get("weapon").isChanged = false;
         }
-        if (this.shield.isChanged == true) {
-            socket.emit("shield", this.shield.value);
-            this.shield.isChanged = false;
+        if (this.listModules.get("shield").isChanged == true) {
+            socket.emit("shield", this.listModules.get("shield").value);
+            this.listModules.get("shield").isChanged = false;
         }
-        if (this.repare.isChanged == true) {
-            socket.emit("repare", this.repare.value);
-            this.repare.isChanged = false;
+        if (this.listModules.get("repare").isChanged == true) {
+            socket.emit("repare", this.listModules.get("repare").value);
+            this.listModules.get("repare").isChanged = false;
         }    
     };
 
@@ -83,10 +84,10 @@ class Meca {
 
 
         // Ajout des sliders
-        this.power  = this.createModule(phaser, "PUISSANCE", game.config.width * 1 / 5, game.config.height * 1 /5, 1, '0xff5500');
-        this.weapon = this.createModule(phaser, "ARMEMENT", game.config.width* 4 / 5, game.config.height * 1 /5, 1, '0x55ff00');
-        this.shield = this.createModule(phaser, "BOUCLIER", game.config.width * 1 / 5, game.config.height * 3 /5, 1, '0x0055ff');
-        this.repare = this.createModule(phaser, "REPARATIONS", game.config.width * 4 / 5, game.config.height * 3 /5, 1, '0xffffff');
+        this.listModules.set("power", this.createModule(phaser, "PUISSANCE", game.config.width * 1 / 5, game.config.height * 1 /5, 1, '0xff5500'));
+        this.listModules.set("weapon", this.createModule(phaser, "ARMEMENT", game.config.width* 4 / 5, game.config.height * 1 /5, 1, '0x55ff00'));
+        this.listModules.set("shield", this.createModule(phaser, "BOUCLIER", game.config.width * 1 / 5, game.config.height * 3 /5, 1, '0x0055ff'));
+        this.listModules.set("repare", this.createModule(phaser, "REPARATIONS", game.config.width * 4 / 5, game.config.height * 3 /5, 1, '0xffffff'));
     
     }
 
@@ -121,8 +122,21 @@ class Meca {
             const nextFailureVerificationInterval = Math.random() * (max - min) + min
             this.nextFailureVerification = Date.now() + nextFailureVerificationInterval * 1000;
 
-            // TODO: algo pour voir si on ajoute une panne. 
-            console.log("Pannes");
+            // Une température trop élevée inflige des dégâts à un (ou plusieurs) module(s) au hasard
+            const probaFailure = (this.temperature - this.shipStats.dangerTemperature) / (this.shipStats.maxTemperature - this.shipStats.dangerTemperature); 
+
+            this.listModules.forEach(module => {
+
+                const rand = Math.random();
+                if (rand < probaFailure) {
+                    // On met des dégats au module
+                    const randDamage = Math.random() * this.shipStats.degatsMaxSurchauffe;
+                    module.state -= randDamage;
+                    module.textState.setText("État : " + Math.round(module.state) + "%"); 
+                }
+
+            });
+
         }	
 
    createModule(phaser, text, posX, posY, size, color) {
@@ -167,7 +181,7 @@ class Meca {
 
 
         module.value = 0;
-        module.textValue = phaser.add.text(posX-200, posY-80, module.value +" GW")
+        module.textValue = phaser.add.text(posX-200, posY-50, module.value +" GW")
         .setStyle({
             fontSize: '32px',
             fontFamily: 'Arial',
@@ -182,6 +196,13 @@ class Meca {
             align: 'center'
         });
 
+        module.textState = phaser.add.text(posX-200, posY+60, "État : " + module.state + "%")
+        .setStyle({
+            fontSize: '38px',
+            fontFamily: 'Arial',
+            color: colorSharp,
+            align: 'center'
+        });
         
         module.slider.on('valuechange', function(newValue, prevValue){  
             module.isChanged = true; 
@@ -195,7 +216,12 @@ class Meca {
 
     }
     onValueChanged(newValue) {
-        this.sumEnergyUsed = 100 * (this.power.value + this.weapon.value + this.shield.value + this.repare.value);
+
+        this.sumEnergyUsed = 0;
+        this.listModules.forEach(module => {
+            this.sumEnergyUsed += module.value;
+        });
+        this.sumEnergyUsed *= 100;
         this.textEnergieValue.setText(Math.round(this.sumEnergyUsed ) + " GW");
         const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,200,20,200,0,0, this.shipStats.consommationMaxTemperature, Math.round(Math.min(this.sumEnergyUsed, this.shipStats.consommationMaxTemperature)));
         this.textEnergieValue.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
