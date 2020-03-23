@@ -24,13 +24,14 @@ class Stats{
 		if (owner == "meca") {
 			this.nbModules = 4; // Nombre de modules
 			this.initialTemperature = 30; // Température de base
-			this.dangerTemperature = 50; // Température minimale du danger 
-			this.maxTemperature = 100; // Température maximale
+			this.dangerTemperature = 500; // Température minimale du danger 
+			this.maxTemperature = 1000; // Température maximale
 			this.consommationMaxTemperature = 300; // La consommation permettant d'atteindre la température maximale
-			this.coefficientChaleur = 0.03; // Influe sur la vitesse de montée et de descente de température		
+			this.coefficientChaleur = 0.3; // Influe sur la vitesse de montée et de descente de température		
 			this.dureeMinimaleEntrePannes = 3; // Durée minimale entre l'ajout de pannes en seconde
 			this.dureeMaximaleEntrePannes = 10; // Durée maximale entre l'ajout des pannes en seconde
 			this.degatsMaxSurchauffe = 30; // Dégat maximal que peut provoquer une surchauffe.
+			this.vitesseReparation = 2; // Vitesse de réparation par seconde
 		}
 	}
 }
