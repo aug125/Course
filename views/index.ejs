@@ -131,26 +131,38 @@
 			});
 
 
-			// Sockets de jeu
+			// Reception de tous les sockets. L'envoi se fait directement dans meca et pilote.
+
+			// Sockets MECA->PILOTE
 			socket.on("power",  function(powerValue) {
 				if (isPilote) {
 					pilote.onPowerChanged(powerValue);
 				}
 			});
 				
-			// Sockets de jeu
 			socket.on("weapon",  function(weaponValue) {
 				if (isPilote) {
 					pilote.onWeaponChanged(weaponValue);
 				}
 			});	
 			
-			// Sockets de jeu
 			socket.on("shield",  function(shieldValue) {
 				if (isPilote) {
 					pilote.onShieldChanged(shieldValue);
 				}
 			});			
+			socket.on("gameOver",  function() {
+				if (isPilote) {
+					pilote.onGameOverReceived();
+				}
+			});	
+
+			// Sockets PILOTE->MECA
+			socket.on("damage",  function(damage) {
+				if (!isPilote) {
+					meca.onDamageReceived(damage);
+				}
+			});		
 
         </script>
     </body>

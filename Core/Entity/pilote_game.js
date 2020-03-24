@@ -18,6 +18,21 @@ class Pilote {
         
     }
 
+    setGameOver() {
+        // Arrêt du joueur
+        this.player.setVelocity(0,0);
+        this.player.setAccelerationX (0);
+        this.player.setAccelerationY (0);
+        this.player.setAngularVelocity(0);
+        this.player.setVisible(false);
+        this.player.shield.setAlpha(0);
+
+        this.gameOver = true;
+
+        // Score au milieu
+        this.scoreText.setPosition(500, 500);
+
+    };
 
     joueurTouche = function(player, tir) {
         if (tir.isPlayer == false)
@@ -25,24 +40,11 @@ class Pilote {
 
             // Le bouclier encaisse en premier
             this.realShield -= tir.damage;
-            tir.remove();
             if (this.realShield <= 0)
             {
-
-
-                // Arrêt du joueur
-                player.setVelocity(0,0);
-                player.setAccelerationX (0);
-                player.setAccelerationY (0);
-                player.setAngularVelocity(0);
-                player.setVisible(false);
-                player.shield.setAlpha(0);
-
-                this.gameOver = true;
-
-                // Score au milieu
-                this.scoreText.setPosition(500, 500);
+                socket.emit("damage", tir.damage);
             }
+            tir.remove();
         }
     };
 
@@ -55,6 +57,9 @@ class Pilote {
         }
     };
 
+    onGameOverReceived() {
+        this.setGameOver();
+    };
 
     onPowerChanged (newPowerValue){
         // Changement de puissance
@@ -202,7 +207,7 @@ class Pilote {
         this.player.shield.setAlpha(this.realShield / this.baseShipStats.maxBouclier);
 
         // Création des ennemis				
-        if (time > this.lastEnnemiApparu + 1000)
+        if (time > this.lastEnnemiApparu + 5000)
         {
             let ennemi = this.ennemis.get();
             if (ennemi)

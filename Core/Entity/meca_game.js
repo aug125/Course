@@ -59,22 +59,22 @@ class Meca {
         }, phaser);    
 
         // Ajout du texte de puissance restante
-        this.textEnergie = phaser.add.text(160,game.config.height *4.1/5, "CONSOMMATION DU VAISSEAU").setStyle({
-            fontSize: '35px',
-            fontFamily: 'Arial',
-            color: "#ffffff",
-            align: 'center'
-        });
-
-        this.textEnergieValue = phaser.add.text(200, game.config.height *4.4/5, this.sumEnergyUsed + " GW" ).setStyle({
+        this.textEnergieValue = phaser.add.text(game.config.width /2 - 100,game.config.height /2, this.sumEnergyUsed + " GW" ).setStyle({
             fontSize: '55px',
             fontFamily: 'Arial',
             color: "#00c815",
             align: 'center'
         });
 
+        this.textEnergie = phaser.add.text(game.config.width /2 - 100 ,game.config.height /2 + 100, "CONSOMMATION DU VAISSEAU").setStyle({
+            fontSize: '35px',
+            fontFamily: 'Arial',
+            color: "#ffffff",
+            align: 'center'
+        });
+
         // Ajout du texte de la température
-        this.textTemperature = phaser.add.text(700, game.config.height *4.4/5, this.temperature + "°C" ).setStyle({
+        this.textTemperature = phaser.add.text(game.config.width /2 + 50 ,game.config.height /2, this.temperature + "°C" ).setStyle({
             fontSize: '55px',
             fontFamily: 'Arial',
             color: "#0046cc",
@@ -84,11 +84,11 @@ class Meca {
 
 
         // Ajout des sliders
-        this.listModules.set("power", this.createModule(phaser, "PUISSANCE", game.config.width * 1 / 5, game.config.height * 1 /5, 1, '0xff5500'));
-        this.listModules.set("weapon", this.createModule(phaser, "ARMEMENT", game.config.width* 4 / 5, game.config.height * 1 / 5, 1, '0x55ff00'));
-        this.listModules.set("shield", this.createModule(phaser, "BOUCLIER", game.config.width * 1 / 5, game.config.height * 4 / 5, 1, '0x0055ff'));
-        this.listModules.set("repare", this.createModule(phaser, "REPARATIONS", game.config.width * 4 / 5, game.config.height * 4 /5, 1, '0xee21dd', false));
-        this.listModules.set("principal", this.createModule(phaser, "SYSTÈME PRINCIPAL", game.config.width  / 2 , game.config.height  / 2, 1.5, '0xffffff', true, false));
+        this.listModules.set("power", this.createModule(phaser, "power",  "PUISSANCE", game.config.width * 1 / 5, game.config.height * 1 /5, 1, '0xff5500'));
+        this.listModules.set("weapon", this.createModule(phaser, "weapon", "ARMEMENT", game.config.width* 4 / 5, game.config.height * 1 / 5, 1, '0x55ff00'));
+        this.listModules.set("shield", this.createModule(phaser, "shield", "BOUCLIER", game.config.width * 1 / 5, game.config.height * 4 / 5, 1, '0x0055ff'));
+        this.listModules.set("repare", this.createModule(phaser, "repare", "REPARATIONS", game.config.width * 4 / 5, game.config.height * 4 /5, 1, '0xee21dd', false));
+        this.listModules.set("principal", this.createModule(phaser, "principal", "SYSTÈME PRINCIPAL", game.config.width  / 2 , game.config.height  / 2, 1.5, '0xffffff', true, false));
     
     }
 
@@ -110,9 +110,9 @@ class Meca {
             const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,70,204,204,0,0, this.shipStats.maxTemperature-this.shipStats.initialTemperature, this.temperature - this.shipStats.initialTemperature );
             this.textTemperature.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
 
-            // Gestion des pannes
+            // Gestion de la surchauffe
 
-            // Vérifier s'il s'est  écoulé suffisemment de temps.
+            // Vérifier s'il s'est  écoulé suffisemment de temps avant un accident de surchauffe
             if (Date.now() >= this.nextFailureVerification){
  
                 // Définir la prochaine vérification
@@ -131,9 +131,8 @@ class Meca {
                     }
                     const rand = Math.random();
                     if (rand < probaFailure) {
-                        // On met des dégats au module
                         const randDamage = Math.random() * this.shipStats.degatsMaxSurchauffe;
-                        module.state -= randDamage;
+                        this.damageModule(module, randDamage);
                     }
 
                 });
@@ -169,6 +168,9 @@ class Meca {
                         module.state += this.listModules.get("repare").value / nbBrokenModules * this.shipStats.vitesseReparation * delta / 1000;
                         module.state = Math.min(module.state, 100);
                     }
+                    else {
+                        this.enableModule(module, true);
+                    }
                 });                
             }
 
@@ -182,19 +184,27 @@ class Meca {
             
         }	
 
-   createModule(phaser, text, posX, posY, size, color, state = true, slider = true) {
+   createModule(phaser, name, text, posX, posY, size, color, state = true, slider = true) {
 
         const colorSharp = color.replace("0x", "#");
 
-        let graphics = phaser.add.graphics();
         let module = {};
-
+        module.name = name;
+        module.isActivated = true;
+        module.hasSlider = slider;
         module.hasState = state;
         module.state = 100;
+        module.x = posX;
+        module.y = posY;
+        module.size = size;
+
+        let graphics = phaser.add.graphics();        
 
         // Création de l'arrière plan
         graphics.lineStyle(2, color, 1);
-        graphics.strokeRoundedRect(posX-250, posY-150, 500, 300, 32);
+        graphics.strokeRoundedRect(posX-250, posY-150, 500 * size, 300, 32);
+
+        module.disableGraphics = phaser.add.graphics();
 
         module.value = 0;
 
@@ -259,12 +269,49 @@ class Meca {
                 color: colorSharp,
                 align: 'center'
             });
-    }
+        }
 
-        game.cursorKeys = phaser.input.keyboard.createCursorKeys();
         return module;
 
     }
+
+    enableModule(module, activate) {
+        if (activate == false && module.isActivated == true) {
+            module.disableGraphics.fillStyle(0x886666, 1);
+            module.disableGraphics.fillRoundedRect(module.x-250, module.y-150, 500 * module.size, 300, 32);
+            module.state = 0;
+            if (module.hasSlider == true) {
+                module.slider.value = 1; // Valeur inversée...
+                module.slider.setEnable(false);
+                module.isChanged = true;
+                meca.sendSettings(); 
+            }
+        }
+        else if (activate == true && module.isActivated == false) {
+            module.disableGraphics.clear();
+            if (module.hasSlider == true) {
+                module.slider.setEnable(true);
+            }
+        }
+        
+        module.isActivated = activate;
+    }
+
+    damageModule(module, damage) {
+
+        // On met des dégats au module
+        module.state -= damage;
+        module.state = Math.max(module.state, 0);
+        
+        // Vérifier si le module est HS
+        if (module.state < 1) {
+            this.enableModule(module, false);
+            if (module.name == "principal") {
+                socket.emit("gameOver");
+            }                        
+        }
+    }
+
     onValueChanged(newValue) {
 
         this.sumEnergyUsed = 0;
@@ -275,6 +322,17 @@ class Meca {
         this.textEnergieValue.setText(Math.round(this.sumEnergyUsed ) + " GW");
         const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,200,20,200,0,0, this.shipStats.consommationMaxTemperature, Math.round(Math.min(this.sumEnergyUsed, this.shipStats.consommationMaxTemperature)));
         this.textEnergieValue.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
+    }
+
+    // Received from pilote
+    onDamageReceived(damage) {
+        let module;
+        const modules = Array.from(this.listModules.values());
+        // Prendre un module au hasard       
+        do {
+            module = modules[Math.floor(Math.random()*modules.length)];
+        } while (module.hasState == false);
+        this.damageModule(module, damage);        
     }
 
 }

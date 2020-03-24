@@ -65,7 +65,7 @@ io.sockets.on('connection', function (socket) {
 		io.to(socket.game).emit('role', role);
 	});
 
-	// sockets de jeu
+	// MECA => PILOTE
 	socket.on('power', function(powerValue) {		
 		io.to(socket.game).emit('power', powerValue);
 	});	
@@ -75,11 +75,18 @@ io.sockets.on('connection', function (socket) {
 		io.to(socket.game).emit('weapon', weaponValue);
 	});	
 
-	// sockets de jeu
 	socket.on('shield', function(shieldValue) {		
 		io.to(socket.game).emit('shield', shieldValue);
 	});
 	
+	// PILOTE => MECA
+	socket.on('damage', function(damage) {		
+		io.to(socket.game).emit('damage', damage);
+	});
+
+	socket.on('gameOver', function() {		
+		io.to(socket.game).emit('gameOver');
+	});		
 });	
 
 

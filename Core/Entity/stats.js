@@ -19,7 +19,7 @@ class Stats{
 			this.vitesseTir = 300; // Vitesse du projectile
 			this.rechargementTir = 900; // Temps avant le prochain tir
 			this.precisionTir = 0.0; // Précision du tir. 0 = tire en face
-			this.degats = 10; // dégats au bouclier/coque
+			this.degats = 25; // dégats au bouclier/coque
 		}
 		if (owner == "meca") {
 			this.nbModules = 4; // Nombre de modules
@@ -31,7 +31,7 @@ class Stats{
 			this.dureeMinimaleEntrePannes = 3; // Durée minimale entre l'ajout de pannes en seconde
 			this.dureeMaximaleEntrePannes = 10; // Durée maximale entre l'ajout des pannes en seconde
 			this.degatsMaxSurchauffe = 30; // Dégat maximal que peut provoquer une surchauffe.
-			this.vitesseReparation = 2; // Vitesse de réparation par seconde
+			this.vitesseReparation = 5; // Vitesse de réparation par seconde
 		}
 	}
 }
