@@ -58,24 +58,25 @@ class Meca {
             meca.sendSettings();        
         }, phaser);    
 
-        // Ajout du texte de puissance restante
-        this.textEnergieValue = phaser.add.text(game.config.width /2 - 100,game.config.height /2, this.sumEnergyUsed + " GW" ).setStyle({
-            fontSize: '55px',
-            fontFamily: 'Arial',
-            color: "#00c815",
-            align: 'center'
-        });
 
-        this.textEnergie = phaser.add.text(game.config.width /2 - 100 ,game.config.height /2 + 100, "CONSOMMATION DU VAISSEAU").setStyle({
-            fontSize: '35px',
+        this.textEnergie = phaser.add.text(game.config.width /2 - 30  ,game.config.height /2 - 20, "CONSOMMATION TOTALE").setStyle({
+            fontSize: '18px',
             fontFamily: 'Arial',
             color: "#ffffff",
             align: 'center'
         });
 
+        // Ajout du texte de puissance restante
+        this.textEnergieValue = phaser.add.text(game.config.width /2 + 100,game.config.height /2, this.sumEnergyUsed + " GW" ).setStyle({
+            fontSize: '24px',
+            fontFamily: 'Arial',
+            color: "#00c815",
+            align: 'center'
+        });
+
         // Ajout du texte de la température
-        this.textTemperature = phaser.add.text(game.config.width /2 + 50 ,game.config.height /2, this.temperature + "°C" ).setStyle({
-            fontSize: '55px',
+        this.textTemperature = phaser.add.text(game.config.width /2 - 50  ,game.config.height /2 + 200, this.temperature + "°C" ).setStyle({
+            fontSize: '46px',
             fontFamily: 'Arial',
             color: "#0046cc",
             align: 'center'
@@ -86,9 +87,9 @@ class Meca {
         // Ajout des sliders
         this.listModules.set("power", this.createModule(phaser, "power",  "PUISSANCE", game.config.width * 1 / 5, game.config.height * 1 /5, 1, '0xff5500'));
         this.listModules.set("weapon", this.createModule(phaser, "weapon", "ARMEMENT", game.config.width* 4 / 5, game.config.height * 1 / 5, 1, '0x55ff00'));
-        this.listModules.set("shield", this.createModule(phaser, "shield", "BOUCLIER", game.config.width * 1 / 5, game.config.height * 4 / 5, 1, '0x0055ff'));
-        this.listModules.set("repare", this.createModule(phaser, "repare", "REPARATIONS", game.config.width * 4 / 5, game.config.height * 4 /5, 1, '0xee21dd', false));
-        this.listModules.set("principal", this.createModule(phaser, "principal", "SYSTÈME PRINCIPAL", game.config.width  / 2 , game.config.height  / 2, 1.5, '0xffffff', true, false));
+        this.listModules.set("shield", this.createModule(phaser, "shield", "BOUCLIER", game.config.width * 1 / 5, 600, 1, '0x0055ff'));
+        this.listModules.set("repare", this.createModule(phaser, "repare", "REPARATIONS", game.config.width * 4 / 5, 600, 1, '0xee21dd', false));
+        this.listModules.set("principal", this.createModule(phaser, "principal", "SYSTÈME PRINCIPAL", game.config.width  / 2 , game.config.height  / 2, 1, '0xffffff', true, false));
     
     }
 
@@ -202,7 +203,7 @@ class Meca {
 
         // Création de l'arrière plan
         graphics.lineStyle(2, color, 1);
-        graphics.strokeRoundedRect(posX-250, posY-150, 500 * size, 300, 32);
+        graphics.strokeRoundedRect(posX-250, posY-150, 450 * size, 400, 32);
 
         module.disableGraphics = phaser.add.graphics();
 
@@ -262,9 +263,9 @@ class Meca {
         });
 
         if(state) {
-            module.textState = phaser.add.text(posX-200, posY+60, "État : " + module.state + "%")
+            module.textState = phaser.add.text(posX-200, posY+60, "ÉTAT : " + module.state + "%")
             .setStyle({
-                fontSize: '38px',
+                fontSize: '24px',
                 fontFamily: 'Arial',
                 color: colorSharp,
                 align: 'center'

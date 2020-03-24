@@ -39,7 +39,7 @@
 			const config_pilote = {
 				type: Phaser.AUTO,
 				width: 1600,
-				height:1200,
+				height:900,
 				scale: {
 					mode: Phaser.Scale.FIT,
 					autoCenter: Phaser.Scale.CENTER_BOTH   			
@@ -57,7 +57,7 @@
 			const config_meca = {
 				type: Phaser.AUTO,
 				width: 1600,
-				height:1200,
+				height:900,
 
 				scale: {
 					mode: Phaser.Scale.FIT,
@@ -77,7 +77,10 @@
 			let game;
 			let firstPlayer = false;
 			document.oncontextmenu = new Function("return false");
-			
+
+			/*pilote = new Pilote();
+			game = new Phaser.Game(config_pilote);
+			*/
 			// Connexion socket.io
 //            let socket = io.connect('http://192.168.10.3:8080');
 			let socket = io.connect('http://127.0.0.1:8080');
