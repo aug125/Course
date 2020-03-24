@@ -42,7 +42,10 @@ class Pilote {
             this.realShield -= tir.damage;
             if (this.realShield <= 0)
             {
+                this.camera.shake(200,0.02);
                 socket.emit("damage", tir.damage);
+                //  You can set your own intensity and duration
+                
             }
             tir.remove();
         }
@@ -132,7 +135,8 @@ class Pilote {
                     
         // Resize selon l'écran
         // Création de la caméra
-        phaser.cameras.main.setSize(game.config.width, game.config.height);
+        this.camera = phaser.cameras.main;
+        this.camera.setSize(game.config.width, game.config.height);
 
         // Ajout des étoiles en arrière plan
         this.bg = phaser.add.group({ key: 'star', frameQuantity: 50 });				
@@ -168,6 +172,7 @@ class Pilote {
 
     update(time, delta, phaser)
     {
+
         if (this.gameOver == true){
             return;
         }
@@ -222,6 +227,7 @@ class Pilote {
         let cursors = phaser.input.keyboard.createCursorKeys();
         if (cursors.left.isDown)
         {
+
             this.player.setAngularVelocity(-this.baseShipStats.vitesseRotation * this.meca_power);
 
         }

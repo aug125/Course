@@ -51,7 +51,8 @@ class Meca {
     }
 
     create (phaser) {
-
+        // Enregistrement de la caméra...
+        this.camera = phaser.cameras.main;
 
         // Gestion du relachement du clic gauche
         phaser.input.on('pointerup', function (pointer) {        
@@ -279,7 +280,7 @@ class Meca {
     enableModule(module, activate) {
         if (activate == false && module.isActivated == true) {
             module.disableGraphics.fillStyle(0x886666, 1);
-            module.disableGraphics.fillRoundedRect(module.x-250, module.y-150, 500 * module.size, 300, 32);
+            module.disableGraphics.fillRoundedRect(module.x-250, module.y-150, 450 * module.size, 400, 32);
             module.state = 0;
             if (module.hasSlider == true) {
                 module.slider.value = 1; // Valeur inversée...
@@ -327,6 +328,7 @@ class Meca {
 
     // Received from pilote
     onDamageReceived(damage) {
+        this.camera.shake(200,0.02);
         let module;
         const modules = Array.from(this.listModules.values());
         // Prendre un module au hasard       
