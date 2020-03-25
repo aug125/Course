@@ -10,6 +10,8 @@ class Meca {
         this.failuresPresent = [];
         this.failuresExisting = [];
         this.listModules = new Map();
+        this.gameOver = false;
+
 
         this.initializeFailures();
     }
@@ -39,6 +41,8 @@ class Meca {
 
 
     preload (phaser) {
+
+        this.phaser = phaser;
 
         let url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexsliderplugin.min.js';
         phaser.load.plugin('rexsliderplugin', url, true);    
@@ -95,7 +99,11 @@ class Meca {
     }
 
     update (time, delta, phaser) {        
-        
+            
+            if (this.gameOver == true) {
+                return;
+            }
+
             // Définir la température à atteindre
             let targetTemperature = this.shipStats.initialTemperature + (this.sumEnergyUsed * (this.shipStats.maxTemperature-this.shipStats.initialTemperature) / this.shipStats.consommationMaxTemperature);
             const diffTemperature = targetTemperature - this.temperature;
@@ -309,7 +317,18 @@ class Meca {
         if (module.state < 1) {
             this.enableModule(module, false);
             if (module.name == "principal") {
+                // Game over. On supprime tout, on affiche le game over, on envoie l'info au pilote
                 socket.emit("gameOver");
+                this.gameOver = true;
+                this.phaser.scene.stop();
+                this.phaser.scene.start();
+                this.phaser.add.text(game.config.width /2 - 30  ,game.config.height /2 - 20, "BOUM").setStyle({
+                    fontSize: '64px',
+                    fontFamily: 'Arial',
+                    color: "#ffffff",
+                    align: 'center'
+                });
+
             }                        
         }
     }
