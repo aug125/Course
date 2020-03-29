@@ -66,7 +66,6 @@ class Pilote {
     onPowerChanged (newPowerValue){
         // Changement de puissance
         this.meca_power = newPowerValue;
-        this.player.body.maxVelocity.set(this.baseShipStats.maxVelocity * this.meca_power);    
     };
 
     onWeaponChanged = function(newWeaponValue){
@@ -162,7 +161,7 @@ class Pilote {
         this.player.setScale(0.6);
 
         // Définir vitesse max du vaisseau (et ralentissement naturel)
-        this.player.body.maxVelocity.set(this.baseShipStats.maxVelocity * this.meca_power);
+        this.player.body.maxVelocity.set(this.baseShipStats.maxVelocity);
         this.player.body.drag.set(100);
 
 
@@ -213,7 +212,7 @@ class Pilote {
         this.player.shield.setAlpha(this.realShield / this.baseShipStats.maxBouclier);
 
         // Création des ennemis				
-        if (time > this.lastEnnemiApparu + 5000)
+        if (time > this.lastEnnemiApparu + 15000)
         {
             let ennemi = this.ennemis.get();
             if (ennemi)
@@ -242,7 +241,7 @@ class Pilote {
         }
         if (cursors.up.isDown)
         {
-            const velocity = phaser.physics.velocityFromRotation(this.player.rotation, this.baseShipStats.acceleration);
+            const velocity = phaser.physics.velocityFromRotation(this.player.rotation, this.baseShipStats.acceleration * this.meca_power);
             this.player.setAccelerationX(velocity.x);
             this.player.setAccelerationY(velocity.y);				
         }
