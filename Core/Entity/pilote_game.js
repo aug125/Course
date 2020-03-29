@@ -19,6 +19,7 @@ class Pilote {
     }
 
     setGameOver() {
+        console.log("gameOver");
         // Arrêt du joueur
         this.player.setVelocity(0,0);
         this.player.setAccelerationX (0);
@@ -29,9 +30,7 @@ class Pilote {
 
         this.gameOver = true;
 
-        // Score au milieu
-        this.scoreText.setPosition(500, 500);
-
+        this.phaser.scene.start('GameOver');
     };
 
     joueurTouche = function(player, tir) {
@@ -95,6 +94,8 @@ class Pilote {
         phaser.load.image('star', 'star.png');
         phaser.load.image('tir', 'tir.png');
         phaser.load.image('bouclier', 'bouclier.png');
+
+        this.phaser = phaser;
     };
 
     create(phaser)

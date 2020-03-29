@@ -316,19 +316,12 @@ class Meca {
         // Vérifier si le module est HS
         if (module.state < 1) {
             this.enableModule(module, false);
-            if (module.name == "principal") {
+            if (module.name == "principal" && this.gameOver == false) {
                 // Game over. On supprime tout, on affiche le game over, on envoie l'info au pilote
                 socket.emit("gameOver");
-                this.gameOver = true;
-                this.phaser.scene.stop();
-                this.phaser.scene.start();
-                this.phaser.add.text(game.config.width /2 - 30  ,game.config.height /2 - 20, "BOUM").setStyle({
-                    fontSize: '64px',
-                    fontFamily: 'Arial',
-                    color: "#ffffff",
-                    align: 'center'
-                });
-
+                this.gameOver = true;                
+                // Passage à l'état game over 
+                this.phaser.scene.start('GameOver');
             }                        
         }
     }

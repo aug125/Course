@@ -11,6 +11,7 @@
 		<script type="text/javascript" src="failure.js"></script>
 		<script type="text/javascript" src="meca_game.js"></script>
 		<script type="text/javascript" src="pilote_game.js"></script>
+		<script type="text/javascript" src="gameOver_game.js"></script>
 		<script type="text/javascript" src="ennemi.js"></script>
 		<script type="text/javascript" src="stats.js"></script>
 
@@ -47,11 +48,12 @@
 				physics: {
         			default: 'arcade'
 		    	},
-				scene: {
+				scene: [{
 					preload: pilote_preload,
 					create: pilote_create,
 					update: pilote_update
-				}
+				},
+				GameOver]
 			};
 
 			const config_meca = {
@@ -66,13 +68,14 @@
 				physics: {
 					default: 'arcade'
 				},
-				scene: {
+				scene: [{
 					preload: meca_preload,
 					create: meca_create,
 					update: meca_update
-				}
+				},
+				GameOver]
 			};
-
+			
 
 			let game;
 			let firstPlayer = false;
@@ -82,8 +85,8 @@
 			game = new Phaser.Game(config_pilote);
 			*/
 			// Connexion socket.io
-//			let socket = io.connect('http://127.0.0.1:8080');
-			let socket = io.connect('http://192.168.1.110:8080');
+			let socket = io.connect('http://127.0.0.1:8080');
+//			let socket = io.connect('http://192.168.1.110:8080');
 						
 					
 			document.oncontextmenu = new Function("return false");			
