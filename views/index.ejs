@@ -170,6 +170,12 @@
 				}
 			});		
 
+			// Sockets PILOTE->TOUS
+			socket.on("score",  function(score) {
+				console.log(score);
+				GameOver.onScoreReceived(score);				
+			});		
+
         </script>
     </body>
 </html>

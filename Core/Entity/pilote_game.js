@@ -4,7 +4,7 @@ class Pilote {
     constructor(){
         this.lastFired = 0;
         this.lastEnnemiApparu = 0;
-        this.score = 1;
+        this.score = 0;
         this.scoreText;
         this.gameOver = false;
         this.player;
@@ -19,6 +19,7 @@ class Pilote {
     }
 
     setGameOver() {
+        socket.emit("score", this.score);
         console.log("gameOver");
         // Arrêt du joueur
         this.player.setVelocity(0,0);
@@ -29,7 +30,6 @@ class Pilote {
         this.player.shield.setAlpha(0);
 
         this.gameOver = true;
-
         this.phaser.scene.start('GameOver');
     };
 

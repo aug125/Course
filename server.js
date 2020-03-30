@@ -86,7 +86,14 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('gameOver', function() {		
 		io.to(socket.game).emit('gameOver');
-	});		
+	});
+
+	// PILOTE => TOUS
+	socket.on('score', function(score) {		
+		console.log("score");
+		io.to(socket.game).emit('score', score);
+	});
+
 });	
 
 server.listen(8080, function () {
