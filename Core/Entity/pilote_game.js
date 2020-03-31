@@ -30,7 +30,7 @@ class Pilote {
         this.player.shield.setAlpha(0);
 
         this.gameOver = true;
-        this.phaser.scene.start('GameOver');
+        this.phaser.scene.start('GameOver', { score: this.score});
     };
 
     joueurTouche = function(player, tir) {
@@ -167,6 +167,24 @@ class Pilote {
 
         // Caméra suit le joueur
         phaser.cameras.main.startFollow(this.player.body.position, false);
+
+
+        // Sockets
+        let self = this;
+        socket.on("power",  function(powerValue) {
+            self.onPowerChanged(powerValue);        
+        });
+
+        socket.on("weapon",  function(weaponValue) {
+            self.onWeaponChanged(weaponValue);
+        });	
+        
+        socket.on("shield",  function(shieldValue) {
+            self.onShieldChanged(shieldValue);
+        });			
+        socket.on("gameOver",  function() {
+            self.onGameOverReceived();
+        });	
 
     };
 

@@ -2,8 +2,8 @@ class Stats{
 	constructor(owner){
 		if (owner == "player") {
 			this.maxVelocity = 300; // Vitesse max
-			this.acceleration = 200; // Accélération du vaisseau
-			this.vitesseRotation = 300; // Vitesse de rotation du vaisseau
+			this.acceleration = 300; // Accélération du vaisseau
+			this.vitesseRotation = 250; // Vitesse de rotation du vaisseau
 			this.vitesseTir = 500; // Vitesse du projectile
 			this.rechargementTir = 300; // Temps avant le prochain tir
 			this.precisionTir = 0.1; // Précision du tir. 0 = tire en face
@@ -26,8 +26,8 @@ class Stats{
 			this.initialTemperature = 30; // Température de base
 			this.dangerTemperature = 500; // Température minimale du danger 
 			this.maxTemperature = 1000; // Température maximale
-			this.consommationMaxTemperature = 300; // La consommation permettant d'atteindre la température maximale
-			this.coefficientChaleur = 0.3; // Influe sur la vitesse de montée et de descente de température		
+			this.consommationMaxTemperature = 400; // La consommation permettant d'atteindre la température maximale
+			this.coefficientChaleur = 0.2; // Influe sur la vitesse de montée et de descente de température		
 			this.dureeMinimaleEntrePannes = 3; // Durée minimale entre l'ajout de pannes en seconde
 			this.dureeMaximaleEntrePannes = 10; // Durée maximale entre l'ajout des pannes en seconde
 			this.degatsMaxSurchauffe = 30; // Dégat maximal que peut provoquer une surchauffe.

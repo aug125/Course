@@ -96,6 +96,13 @@ class Meca {
         this.listModules.set("repare", this.createModule(phaser, "repare", "REPARATIONS", game.config.width * 4 / 5, 600, 1, '0xee21dd', false));
         this.listModules.set("principal", this.createModule(phaser, "principal", "SYSTÈME PRINCIPAL", game.config.width  / 2 , game.config.height  / 2, 1, '0xffffff', true, false));
     
+        let self = this;
+
+        //Sockets
+        socket.on("damage",  function(damage) {
+            self.onDamageReceived(damage);
+        });	
+
     }
 
     update (time, delta, phaser) {        

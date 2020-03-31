@@ -6,24 +6,29 @@ class GameOver extends Phaser.Scene {
         console.log("constructeur");
     }
 
-    printScore(score) {
-        this.phaser.add.text(game.config.width /2 - 70, game.config.height /2 + 40, "Score : " + score, { fontSize: '64px', fill: '#FFF' });
+    init (data)
+    {
+
     }
-    
-    preload = function() {
+
+    preload() {
         this.phaser = this;
     }
-    create = function(){  
-        this.add.text(game.config.width /2 - 70  ,game.config.height /2 - 20, 'Game Over', { fontSize: '64px', fill: '#FFF' });
+    create = function(){ 
+        
+        let self = this;
+        // Sockets PILOTE->TOUS
+        socket.on("score",  function(score) {
+            console.log(score);
+            self.add.text(game.config.width /2 - 70  ,game.config.height /2 - 20, 'Score:' + score, { fontSize: '64px', fill: '#FFF' });
+        });		
+        
     }
 
     update = function(time, delta) {
     }
 
-    static onScoreReceived(score) {
-        console.log(this);
-        this.printScore(score);
+    onScoreReceived(score) {
     }
 
-    
 }

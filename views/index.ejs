@@ -85,7 +85,7 @@
 			game = new Phaser.Game(config_pilote);
 			*/
 			// Connexion socket.io
-			let socket = io.connect('http://127.0.0.1:8080');
+			var socket = io.connect('http://127.0.0.1:8080');
 //			let socket = io.connect('http://192.168.1.110:8080');
 						
 					
@@ -135,46 +135,6 @@
 				}
 
 			});
-
-
-			// Reception de tous les sockets. L'envoi se fait directement dans meca et pilote.
-
-			// Sockets MECA->PILOTE
-			socket.on("power",  function(powerValue) {
-				if (isPilote) {
-					pilote.onPowerChanged(powerValue);
-				}
-			});
-				
-			socket.on("weapon",  function(weaponValue) {
-				if (isPilote) {
-					pilote.onWeaponChanged(weaponValue);
-				}
-			});	
-			
-			socket.on("shield",  function(shieldValue) {
-				if (isPilote) {
-					pilote.onShieldChanged(shieldValue);
-				}
-			});			
-			socket.on("gameOver",  function() {
-				if (isPilote) {
-					pilote.onGameOverReceived();
-				}
-			});	
-
-			// Sockets PILOTE->MECA
-			socket.on("damage",  function(damage) {
-				if (!isPilote) {
-					meca.onDamageReceived(damage);
-				}
-			});		
-
-			// Sockets PILOTE->TOUS
-			socket.on("score",  function(score) {
-				console.log(score);
-				GameOver.onScoreReceived(score);				
-			});		
 
         </script>
     </body>
