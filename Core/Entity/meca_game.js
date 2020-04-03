@@ -1,6 +1,7 @@
-class Meca { 
+class Meca extends Phaser.Scene { 
 
     constructor() {
+        super('Meca');
         this.shipStats = new Stats("meca");
 
         // Statistiques initiales du vaisseau
@@ -40,31 +41,30 @@ class Meca {
     };
 
 
-    preload (phaser) {
-
-        this.phaser = phaser;
+    preload () {
 
         let url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexsliderplugin.min.js';
-        phaser.load.plugin('rexsliderplugin', url, true);    
-        phaser.load.image('manette', 'manette.png');
+        this.load.plugin('rexsliderplugin', url, true);    
+        this.load.image('manette', 'manette.png');
         
         // Nécessaire pour corriger le bug du slider
-        phaser.scale.setGameSize(game.config.width, game.config.height);
+        this.scale.setGameSize(game.config.width, game.config.height);
 
 
     }
 
-    create (phaser) {
+    create () {
         // Enregistrement de la caméra...
-        this.camera = phaser.cameras.main;
+        this.camera = this.cameras.main;
 
         // Gestion du relachement du clic gauche
-        phaser.input.on('pointerup', function (pointer) {        
-            meca.sendSettings();        
-        }, phaser);    
+        let self = this;
+        this.input.on('pointerup', function (pointer) {        
+            self.sendSettings();        
+        }, this);    
 
 
-        this.textEnergie = phaser.add.text(game.config.width /2 - 30  ,game.config.height /2 - 20, "CONSOMMATION TOTALE").setStyle({
+        this.textEnergie = this.add.text(game.config.width /2 - 30  ,game.config.height /2 - 20, "CONSOMMATION TOTALE").setStyle({
             fontSize: '18px',
             fontFamily: 'Arial',
             color: "#ffffff",
@@ -72,7 +72,7 @@ class Meca {
         });
 
         // Ajout du texte de puissance restante
-        this.textEnergieValue = phaser.add.text(game.config.width /2 + 100,game.config.height /2, this.sumEnergyUsed + " GW" ).setStyle({
+        this.textEnergieValue = this.add.text(game.config.width /2 + 100,game.config.height /2, this.sumEnergyUsed + " GW" ).setStyle({
             fontSize: '24px',
             fontFamily: 'Arial',
             color: "#00c815",
@@ -80,7 +80,7 @@ class Meca {
         });
 
         // Ajout du texte de la température
-        this.textTemperature = phaser.add.text(game.config.width /2 - 50  ,game.config.height /2 + 200, this.temperature + "°C" ).setStyle({
+        this.textTemperature = this.add.text(game.config.width /2 - 50  ,game.config.height /2 + 200, this.temperature + "°C" ).setStyle({
             fontSize: '46px',
             fontFamily: 'Arial',
             color: "#0046cc",
@@ -90,14 +90,12 @@ class Meca {
 
 
         // Ajout des sliders
-        this.listModules.set("power", this.createModule(phaser, "power",  "PUISSANCE", game.config.width * 1 / 5, game.config.height * 1 /5, 1, '0xff5500'));
-        this.listModules.set("weapon", this.createModule(phaser, "weapon", "ARMEMENT", game.config.width* 4 / 5, game.config.height * 1 / 5, 1, '0x55ff00'));
-        this.listModules.set("shield", this.createModule(phaser, "shield", "BOUCLIER", game.config.width * 1 / 5, 600, 1, '0x0055ff'));
-        this.listModules.set("repare", this.createModule(phaser, "repare", "REPARATIONS", game.config.width * 4 / 5, 600, 1, '0xee21dd', false));
-        this.listModules.set("principal", this.createModule(phaser, "principal", "SYSTÈME PRINCIPAL", game.config.width  / 2 , game.config.height  / 2, 1, '0xffffff', true, false));
+        this.listModules.set("power", this.createModule(this, "power",  "PUISSANCE", game.config.width * 1 / 5, game.config.height * 1 /5, 1, '0xff5500'));
+        this.listModules.set("weapon", this.createModule(this, "weapon", "ARMEMENT", game.config.width* 4 / 5, game.config.height * 1 / 5, 1, '0x55ff00'));
+        this.listModules.set("shield", this.createModule(this, "shield", "BOUCLIER", game.config.width * 1 / 5, 600, 1, '0x0055ff'));
+        this.listModules.set("repare", this.createModule(this, "repare", "REPARATIONS", game.config.width * 4 / 5, 600, 1, '0xee21dd', false));
+        this.listModules.set("principal", this.createModule(this, "principal", "SYSTÈME PRINCIPAL", game.config.width  / 2 , game.config.height  / 2, 1, '0xffffff', true, false));
     
-        let self = this;
-
         //Sockets
         socket.on("damage",  function(damage) {
             self.onDamageReceived(damage);
@@ -105,7 +103,7 @@ class Meca {
 
     }
 
-    update (time, delta, phaser) {        
+    update (time, delta) {        
             
             if (this.gameOver == true) {
                 return;
@@ -261,12 +259,12 @@ class Meca {
                 color: colorSharp,
                 align: 'center'
             });
-
+            let self = this;
             module.slider.on('valuechange', function(newValue, prevValue){  
                 module.isChanged = true; 
                 module.value = (1-newValue); 
                 module.textValue.setText(Math.round(module.value * 100) + " GW");
-                meca.onValueChanged();
+                self.onValueChanged();
             });            
         }
 
@@ -294,6 +292,7 @@ class Meca {
 
     enableModule(module, activate) {
         if (activate == false && module.isActivated == true) {
+            module.disableGraphics.clear();
             module.disableGraphics.fillStyle(0x886666, 1);
             module.disableGraphics.fillRoundedRect(module.x-250, module.y-150, 450 * module.size, 400, 32);
             module.state = 0;
@@ -301,7 +300,7 @@ class Meca {
                 module.slider.value = 1; // Valeur inversée...
                 module.slider.setEnable(false);
                 module.isChanged = true;
-                meca.sendSettings(); 
+                this.sendSettings(); 
             }
         }
         else if (activate == true && module.isActivated == false) {
@@ -315,11 +314,13 @@ class Meca {
     }
 
     damageModule(module, damage) {
-
+        
         // On met des dégats au module
         module.state -= damage;
         module.state = Math.max(module.state, 0);
-        
+
+
+
         // Vérifier si le module est HS
         if (module.state < 1) {
             this.enableModule(module, false);
@@ -328,8 +329,14 @@ class Meca {
                 socket.emit("gameOver");
                 this.gameOver = true;                
                 // Passage à l'état game over 
-                this.phaser.scene.start('GameOver');
+                this.scene.start('GameOver');
             }                        
+        }
+        else if (module.isActivated == true) {
+        // Supprimer l'encien rectangle de couleur
+            module.disableGraphics.clear();
+            module.disableGraphics.fillStyle(0x440000, 1 - module.state / 100);
+            module.disableGraphics.fillRoundedRect(module.x-250, module.y-150, 450 * module.size, 400, 32);    
         }
     }
 
@@ -357,16 +364,4 @@ class Meca {
         this.damageModule(module, damage);        
     }
 
-}
-
-meca_preload = function() {
-    meca.preload(this);
-}
-
-meca_create = function() {
-    meca.create(this);
-}
-
-meca_update = function(time, delta) {
-    meca.update(time, delta, this);
 }

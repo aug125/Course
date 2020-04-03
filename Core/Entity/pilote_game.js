@@ -1,7 +1,8 @@
 
-class Pilote { 
+class Pilote extends Phaser.Scene{ 
 
     constructor(){
+        super('Pilote');
         this.lastFired = 0;
         this.lastEnnemiApparu = 0;
         this.score = 0;
@@ -30,7 +31,7 @@ class Pilote {
         this.player.shield.setAlpha(0);
 
         this.gameOver = true;
-        this.phaser.scene.start('GameOver', { score: this.score});
+        this.this.scene.start('GameOver', { score: this.score});
     };
 
     joueurTouche = function(player, tir) {
@@ -80,7 +81,7 @@ class Pilote {
 
 
 
-    preload(phaser)
+    preload()
     {
 
         // Parait que c'est mieux avec ça...
@@ -89,29 +90,29 @@ class Pilote {
 
 
         // Charger les images
-        phaser.load.image('vaisseau', 'vaisseau.png');
-        phaser.load.image('star', 'star.png');
-        phaser.load.image('tir', 'tir.png');
-        phaser.load.image('bouclier', 'bouclier.png');
+        this.load.image('vaisseau', 'vaisseau.png');
+        this.load.image('star', 'star.png');
+        this.load.image('tir', 'tir.png');
+        this.load.image('bouclier', 'bouclier.png');
 
-        this.phaser = phaser;
+        this.this = this;
     };
 
-    create(phaser)
+    create()
     {
         
         // Création du joueur !
-        this.player = phaser.physics.add.image(0, 0, 'vaisseau');
+        this.player = this.physics.add.image(0, 0, 'vaisseau');
 
         // Statistiques du vaisseau
         this.baseShipStats = new Stats("player"); 
 
         // Créations du bouclier
-        this.player.shield = phaser.physics.add.image(0, 0, 'bouclier').setAlpha(this.realShield).setScale(0.6);
+        this.player.shield = this.physics.add.image(0, 0, 'bouclier').setAlpha(this.realShield).setScale(0.6);
         // Mettre le bouclier au premier plan
         this.player.shield.setDepth(1);
         // Création des "tirs"			
-        this.tirs = phaser.physics.add.group({
+        this.tirs = this.physics.add.group({
             classType: Tir,
             maxSize: 500,
             runChildUpdate: true
@@ -119,28 +120,28 @@ class Pilote {
 
 
         // Création des ennemis			
-        this.ennemis = phaser.physics.add.group({
+        this.ennemis = this.physics.add.group({
             classType: Ennemi,
             maxSize: 500,
             runChildUpdate: true
         });
 
-        this.scoreText = phaser.add.text(0, 0, 'Score: 0', { fontSize: '64px', fill: '#FFF' });
+        this.scoreText = this.add.text(0, 0, 'Score: 0', { fontSize: '64px', fill: '#FFF' });
         this.scoreText.setScrollFactor(0,0);
 
         // Créer les callbacks en cas de tir 
-        phaser.physics.add.overlap(this.player, this.tirs, this.joueurTouche, null, this);
-        phaser.physics.add.overlap(this.ennemis, this.tirs, this.ennemiTouche, null, this);
+        this.physics.add.overlap(this.player, this.tirs, this.joueurTouche, null, this);
+        this.physics.add.overlap(this.ennemis, this.tirs, this.ennemiTouche, null, this);
 
                     
         // Resize selon l'écran
         // Création de la caméra
-        this.camera = phaser.cameras.main;
+        this.camera = this.cameras.main;
         this.camera.setSize(game.config.width, game.config.height);
 
         // Ajout des étoiles en arrière plan
-        this.bg = phaser.add.group({ key: 'star', frameQuantity: 50 });				
-        let rect = new Phaser.Geom.Rectangle(phaser.cameras.main.width, phaser.cameras.main.height, phaser.cameras.main.width, phaser.cameras.main.height);
+        this.bg = this.add.group({ key: 'star', frameQuantity: 50 });				
+        let rect = new Phaser.Geom.Rectangle(this.cameras.main.width, this.cameras.main.height, this.cameras.main.width, this.cameras.main.height);
         Phaser.Actions.RandomRectangle(this.bg.getChildren(), rect);	
         // Colorer les étoiles pour que ça fasse un peu plus gai
         
@@ -155,7 +156,7 @@ class Pilote {
 
 
         // Définir couleur arrière plan
-        phaser.cameras.main.setBackgroundColor('rgba(0, 0, 0, 2)');
+        this.cameras.main.setBackgroundColor('rgba(0, 0, 0, 2)');
 
         // Définir Taille vaisseau
         this.player.setScale(0.6);
@@ -166,7 +167,7 @@ class Pilote {
 
 
         // Caméra suit le joueur
-        phaser.cameras.main.startFollow(this.player.body.position, false);
+        this.cameras.main.startFollow(this.player.body.position, false);
 
 
         // Sockets
@@ -188,7 +189,7 @@ class Pilote {
 
     };
 
-    update(time, delta, phaser)
+    update(time, delta)
     {
 
         if (this.gameOver == true){
@@ -198,15 +199,15 @@ class Pilote {
         let stars = this.bg.getChildren();
         for (let i = 0; i < stars.length; i++) 
         {
-            if (stars[i].x <  phaser.cameras.main.worldView.x)
-                stars[i].x +=  phaser.cameras.main.width;
-            if (stars[i].x >  phaser.cameras.main.worldView.x  +  phaser.cameras.main.width)
-                stars[i].x -=  phaser.cameras.main.width;
+            if (stars[i].x <  this.cameras.main.worldView.x)
+                stars[i].x +=  this.cameras.main.width;
+            if (stars[i].x >  this.cameras.main.worldView.x  +  this.cameras.main.width)
+                stars[i].x -=  this.cameras.main.width;
 
-            if (stars[i].y <  phaser.cameras.main.worldView.y)
-                stars[i].y +=  phaser.cameras.main.height;
-            if (stars[i].y >  phaser.cameras.main.worldView.y +  phaser.cameras.main.height)
-                stars[i].y -=  phaser.cameras.main.height;
+            if (stars[i].y <  this.cameras.main.worldView.y)
+                stars[i].y +=  this.cameras.main.height;
+            if (stars[i].y >  this.cameras.main.worldView.y +  this.cameras.main.height)
+                stars[i].y -=  this.cameras.main.height;
         }
 
         // Mettre à jour le bouclier
@@ -242,7 +243,7 @@ class Pilote {
         
 
         // Gestion des inputs du joueur
-        let cursors = phaser.input.keyboard.createCursorKeys();
+        let cursors = this.input.keyboard.createCursorKeys();
         if (cursors.left.isDown)
         {
 
@@ -259,13 +260,13 @@ class Pilote {
         }
         if (cursors.up.isDown)
         {
-            const velocity = phaser.physics.velocityFromRotation(this.player.rotation, this.baseShipStats.acceleration * this.meca_power);
+            const velocity = this.physics.velocityFromRotation(this.player.rotation, this.baseShipStats.acceleration * this.meca_power);
             this.player.setAccelerationX(velocity.x);
             this.player.setAccelerationY(velocity.y);				
         }
         else if (cursors.down.isDown)
         {
-            const velocity = phaser.physics.velocityFromRotation(this.player.rotation + Math.PI, this.baseShipStats.acceleration);
+            const velocity = this.physics.velocityFromRotation(this.player.rotation + Math.PI, this.baseShipStats.acceleration);
             this.player.setAccelerationX(velocity.x);
             this.player.setAccelerationY(velocity.y);					
         }
@@ -295,16 +296,4 @@ class Pilote {
             }
         }
     };
-}
-
-pilote_preload = function() {
-    pilote.preload(this);
-}
-
-pilote_create = function() {
-    pilote.create(this);
-}
-
-pilote_update = function(time, delta) {
-    pilote.update(time, delta, this);
 }

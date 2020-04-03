@@ -9,35 +9,16 @@
 
 		<script type="text/javascript" src="tir.js"></script>
 		<script type="text/javascript" src="failure.js"></script>
+		<script type="text/javascript" src="menuSelectRole_game.js"></script>
 		<script type="text/javascript" src="meca_game.js"></script>
 		<script type="text/javascript" src="pilote_game.js"></script>
 		<script type="text/javascript" src="gameOver_game.js"></script>
 		<script type="text/javascript" src="ennemi.js"></script>
 		<script type="text/javascript" src="stats.js"></script>
 
-		<div class="buttons" id="buttons">
-			<button onclick="button_pilote()">Pilote</button>
-			<button onclick="button_meca()">Mécanicien</button>
-		</div>
-
 		<script>
-			let isPilote = true;
-			function button_pilote(){
-				pilote = new Pilote();
-				game = new Phaser.Game(config_pilote);
-				document.getElementById("buttons").style.display = "none";
-				socket.emit('role', 'pilote');
-			}
 
-			function button_meca(){
-				meca = new Meca();
-				game = new Phaser.Game(config_meca);
-				document.getElementById("buttons").style.display = "none";
-				socket.emit('role', 'meca');
-				isPilote = false;
-			}
-
-			const config_pilote = {
+			const config = {
 				type: Phaser.AUTO,
 				width: 1600,
 				height:900,
@@ -48,37 +29,13 @@
 				physics: {
         			default: 'arcade'
 		    	},
-				scene: [{
-					preload: pilote_preload,
-					create: pilote_create,
-					update: pilote_update
-				},
-				GameOver]
+				scene: [MenuSelectRole
+				, Pilote
+				, Meca
+				, GameOver]
 			};
-
-			const config_meca = {
-				type: Phaser.AUTO,
-				width: 1600,
-				height:900,
-
-				scale: {
-					mode: Phaser.Scale.FIT,
-					autoCenter: Phaser.Scale.CENTER_BOTH   			
-				},
-				physics: {
-					default: 'arcade'
-				},
-				scene: [{
-					preload: meca_preload,
-					create: meca_create,
-					update: meca_update
-				},
-				GameOver]
-			};
-			
-
+					
 			let game;
-			let firstPlayer = false;
 			document.oncontextmenu = new Function("return false");
 
 			/*pilote = new Pilote();
@@ -92,48 +49,17 @@
 			document.oncontextmenu = new Function("return false");			
 		
 			socket.emit('newPlayer');
-						
+
 				
-			// Sockets						
+			// Sockets
 			
 			socket.on('message', function(msg) {
 				 $('#chat').append("<p>" + msg + "</p>");			
 			});
 									
 			socket.on('jeu', function () {
+				game = new Phaser.Game(config);
 				socket.emit('askId');
-			});
-
-			socket.on('sendId', function(id) {
-				console.log("id joueur : " + id);
-				if (id % 2 == 1) // Il s'agit du premier joueur. Celui-ci va choisir le rôle
-				{
-					firstPlayer = true;
-					document.getElementById("buttons").style.display = "inline";
-				}
-				else
-				{
-					// Celui-ci va attendre le choix de l'autre.
-				}
-			});
-
-			socket.on('role', function(role) {
-				console.log("role envoyé par le premier joueur : " + role);
-				console.log("Premier joueur : " + firstPlayer);
-				if (firstPlayer == true) {
-					// Rôle déjà choisi.
-					return;
-				}
-				if (role == "pilote"){
-					meca = new Meca();
-					game = new Phaser.Game(config_meca);
-					isPilote = false;
-				}
-				else {
-					pilote = new Pilote();
-					game = new Phaser.Game(config_pilote);
-				}
-
 			});
 
         </script>
