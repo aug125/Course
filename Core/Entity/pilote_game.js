@@ -67,19 +67,59 @@ class Pilote extends Phaser.Scene{
     onPowerChanged (newPowerValue){
         // Changement de puissance
         this.meca_power = newPowerValue;
+        this.setWarningTint(this.powerWarning, newPowerValue);        
     };
 
     onWeaponChanged = function(newWeaponValue){
-        // Changement de puissance
+        // Changement d'armement
         this.meca_weapon = newWeaponValue;
+        this.setWarningTint(this.weaponWarning, newWeaponValue);        
     };
 
     onShieldChanged = function(newShieldValue){
-        // Changement de puissance
+        // Changement de bouclier
         this.meca_shield = newShieldValue;
+        this.setWarningTint(this.shieldWarning, newShieldValue);        
     };
 
+    setWarningTint(image, value) {
+        let red = 0, green = 0, blue = 0;
+        let state = "";
+        if (value < 0.1) {
+            red = 255;
+            green = 0;
+            blue = 0;
+            state = "NONE";          
+        }
+        else if (value < 0.5) {
+            red = 255;
+            green = 200;
+            blue = 0;
+            state = "LOW";         
+        }
+        else {
+            red = 0;
+            green = 200;
+            blue = 150;                            
+            state = "HIGH";         
+        }
+        image.setTint(red*256*256 + green*256 + blue);
 
+        // Prévenir si l'état a changé
+        if (state != image.state) {
+            image.timeChanged = new Date().getTime();
+            image.state = state;
+        }
+    }
+
+    createWarningImage(image) {
+        image.initialPositionX = image.x;
+        image.initialPositionY = image.y;
+        image.timeChanged = 0;
+        image.setScale(0.3);
+        image.state = "NONE";
+        this.setWarningTint(image, 0);
+    }
 
     preload()
     {
@@ -94,6 +134,9 @@ class Pilote extends Phaser.Scene{
         this.load.image('star', 'star.png');
         this.load.image('tir', 'tir.png');
         this.load.image('bouclier', 'bouclier.png');
+        this.load.image('powerImg', 'power.png');
+        this.load.image('weaponImg', 'weapon.png');
+        this.load.image('shieldImg', 'shield.png');
 
         this.this = this;
     };
@@ -103,6 +146,24 @@ class Pilote extends Phaser.Scene{
         
         // Création du joueur !
         this.player = this.physics.add.image(0, 0, 'vaisseau');
+
+        // Création des images de warning
+        this.powerWarning = this.add.image(game.config.width - 100, 350, 'powerImg');
+        this.weaponWarning = this.add.image(game.config.width - 100, 475, 'weaponImg');
+        this.shieldWarning = this.add.image(game.config.width - 100, 600, 'shieldImg');
+ 
+        this.createWarningImage(this.powerWarning);        
+        this.createWarningImage(this.weaponWarning);        
+        this.createWarningImage(this.shieldWarning);        
+ 
+        this.setWarningTint(this.powerWarning,0);
+        this.setWarningTint(this.weaponWarning,0);
+        this.setWarningTint(this.shieldWarning,0);
+
+        this.powerWarning.setScrollFactor(0);
+        this.weaponWarning.setScrollFactor(0);
+        this.shieldWarning.setScrollFactor(0);
+
 
         // Statistiques du vaisseau
         this.baseShipStats = new Stats("player"); 
@@ -127,7 +188,7 @@ class Pilote extends Phaser.Scene{
         });
 
         this.scoreText = this.add.text(0, 0, 'Score: 0', { fontSize: '64px', fill: '#FFF' });
-        this.scoreText.setScrollFactor(0,0);
+        this.scoreText.setScrollFactor(0);
 
         // Créer les callbacks en cas de tir 
         this.physics.add.overlap(this.player, this.tirs, this.joueurTouche, null, this);
@@ -295,5 +356,45 @@ class Pilote extends Phaser.Scene{
                 }
             }
         }
+
+        // Affichage des warnings
+        let listWarnings = [this.powerWarning, this.weaponWarning, this.shieldWarning];
+
+        let max = 0;
+        // Un seul warning doit prendre la place du milieu, alors on prend le plus récent.
+        listWarnings.forEach(imageWarning => {
+
+            if (imageWarning.timeChanged > max) {
+                max = imageWarning.timeChanged;
+            }
+        });
+
+        listWarnings.forEach(imageWarning => {
+            const timeStartMove = 1750;
+            const timeEndMove = 2000;
+
+            const posX = game.config.width / 2;
+            const posY = 300;
+
+            const diffTime = new Date().getTime() - imageWarning.timeChanged;
+            if (diffTime < timeStartMove && imageWarning.timeChanged == max) {
+                imageWarning.x = posX;
+                imageWarning.y = posY;
+                imageWarning.setScale(1);
+                console.log(posX);
+
+            }
+            else if (diffTime < timeEndMove) {
+                imageWarning.x = posX + (imageWarning.initialPositionX - posX) * ((diffTime - timeStartMove) / (timeEndMove - timeStartMove));
+                imageWarning.y = posY + (imageWarning.initialPositionY - posY) * ((diffTime - timeStartMove) / (timeEndMove - timeStartMove));
+                imageWarning.setScale(1 - 0.3 * ((diffTime - timeStartMove) / (timeEndMove - timeStartMove)));
+            }
+            else {
+                imageWarning.x = imageWarning.initialPositionX;
+                imageWarning.y = imageWarning.initialPositionY;
+                imageWarning.setScale(0.3);
+            }
+        });
+
     };
 }

@@ -64,15 +64,17 @@ class Meca extends Phaser.Scene {
         }, this);    
 
 
-        this.textEnergie = this.add.text(game.config.width /2 - 30  ,game.config.height /2 - 20, "CONSOMMATION TOTALE").setStyle({
+        this.textEnergie = this.add.text(game.config.width /2 - 30  , 100, "CONSOMMATION TOTALE").setStyle({
             fontSize: '18px',
             fontFamily: 'Arial',
             color: "#ffffff",
             align: 'center'
         });
 
+        // Ces ajouts sont mis manuellement dans la partie "système principal"
+
         // Ajout du texte de puissance restante
-        this.textEnergieValue = this.add.text(game.config.width /2 + 100,game.config.height /2, this.sumEnergyUsed + " GW" ).setStyle({
+        this.textEnergieValue = this.add.text(game.config.width /2 + 100, 200, this.sumEnergyUsed + " GW" ).setStyle({
             fontSize: '24px',
             fontFamily: 'Arial',
             color: "#00c815",
@@ -80,7 +82,7 @@ class Meca extends Phaser.Scene {
         });
 
         // Ajout du texte de la température
-        this.textTemperature = this.add.text(game.config.width /2 - 50  ,game.config.height /2 + 200, this.temperature + "°C" ).setStyle({
+        this.textTemperature = this.add.text(game.config.width /2 - 50, 300, this.temperature + "°C" ).setStyle({
             fontSize: '46px',
             fontFamily: 'Arial',
             color: "#0046cc",
@@ -91,10 +93,11 @@ class Meca extends Phaser.Scene {
 
         // Ajout des sliders
         this.listModules.set("power", this.createModule(this, "power",  "PUISSANCE", game.config.width * 1 / 5, game.config.height * 1 /5, 1, '0xff5500'));
-        this.listModules.set("weapon", this.createModule(this, "weapon", "ARMEMENT", game.config.width* 4 / 5, game.config.height * 1 / 5, 1, '0x55ff00'));
+        this.listModules.set("weapon", this.createModule(this, "weapon", "ARMEMENT", game.config.width* 4 / 5, game.config.height * 1 / 5, 1, '0xffdd00'));
         this.listModules.set("shield", this.createModule(this, "shield", "BOUCLIER", game.config.width * 1 / 5, 600, 1, '0x0055ff'));
+        this.listModules.set("radar", this.createModule(this, "shield", "RADAR", game.config.width / 2, 600, 1, '0x00ff22', true, false));
         this.listModules.set("repare", this.createModule(this, "repare", "REPARATIONS", game.config.width * 4 / 5, 600, 1, '0xee21dd', false));
-        this.listModules.set("principal", this.createModule(this, "principal", "SYSTÈME PRINCIPAL", game.config.width  / 2 , game.config.height  / 2, 1, '0xffffff', true, false));
+        this.listModules.set("principal", this.createModule(this, "principal", "SYSTÈME PRINCIPAL", game.config.width  / 2 , game.config.height  * 1 /5, 1, '0xffffff', true, false));
     
         //Sockets
         socket.on("damage",  function(damage) {
@@ -217,7 +220,7 @@ class Meca extends Phaser.Scene {
 
         // Création de l'arrière plan
         graphics.lineStyle(2, color, 1);
-        graphics.strokeRoundedRect(posX-250, posY-150, 450 * size, 400, 32);
+        graphics.strokeRoundedRect(posX-225, posY-150, 450 * size, 400, 32);
 
         module.disableGraphics = phaser.add.graphics();
 
@@ -230,12 +233,12 @@ class Meca extends Phaser.Scene {
             module.manette.originY = 1;        
             module.slider = phaser.plugins.get('rexsliderplugin').add(module.manette, {
             endPoints: [{
-                    x: module.manette.x + 80,
-                    y: module.manette.y - 100 
+                    x: module.manette.x,
+                    y: module.manette.y - 75 
                 },
                 {
-                    x: module.manette.x + 80,
-                    y: module.manette.y + 100
+                    x: module.manette.x,
+                    y: module.manette.y + 130
                 }
             ],
             value: 1
@@ -268,13 +271,14 @@ class Meca extends Phaser.Scene {
             });            
         }
 
-        module.textName = phaser.add.text(posX-200, posY-120, text)
+        // Affichage du nom du module
+        module.textName = phaser.add.text(posX, posY - 100, text)
         .setStyle({
             fontSize: '38px',
             fontFamily: 'Arial',
-            color: colorSharp,
-            align: 'center'
+            color: colorSharp
         });
+        module.textName.setOrigin(0.5);
 
         if(state) {
             module.textState = phaser.add.text(posX-200, posY+60, "ÉTAT : " + module.state + "%")
@@ -333,10 +337,10 @@ class Meca extends Phaser.Scene {
             }                        
         }
         else if (module.isActivated == true) {
-        // Supprimer l'encien rectangle de couleur
+        // Supprimer l'ancien rectangle de couleur
             module.disableGraphics.clear();
             module.disableGraphics.fillStyle(0x440000, 1 - module.state / 100);
-            module.disableGraphics.fillRoundedRect(module.x-250, module.y-150, 450 * module.size, 400, 32);    
+            module.disableGraphics.fillRoundedRect(module.x-225, module.y-150, 450 * module.size, 400, 32);    
         }
     }
 

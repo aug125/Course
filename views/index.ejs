@@ -36,20 +36,14 @@
 			};
 					
 			let game;
+			game = new Phaser.Game(config);
 			document.oncontextmenu = new Function("return false");
 
-			/*pilote = new Pilote();
-			game = new Phaser.Game(config_pilote);
-			*/
 			// Connexion socket.io
 			var socket = io.connect('http://127.0.0.1:8080');
 //			let socket = io.connect('http://192.168.1.110:8080');
 						
-					
-			document.oncontextmenu = new Function("return false");			
-		
 			socket.emit('newPlayer');
-
 				
 			// Sockets
 			

@@ -3,7 +3,7 @@ class Stats{
 		if (owner == "player") {
 			this.maxVelocity = 300; // Vitesse max
 			this.acceleration = 300; // Accélération du vaisseau
-			this.vitesseRotation = 250; // Vitesse de rotation du vaisseau
+			this.vitesseRotation = 180; // Vitesse de rotation du vaisseau
 			this.vitesseTir = 500; // Vitesse du projectile
 			this.rechargementTir = 300; // Temps avant le prochain tir
 			this.precisionTir = 0.1; // Précision du tir. 0 = tire en face

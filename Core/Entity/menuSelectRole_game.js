@@ -18,9 +18,9 @@ class MenuSelectRole extends Phaser.Scene {
         let self = this;
              
         socket.on('sendId', function(id) {
-            console.log("id joueur : " + id);
-            if (id % 2 == 1) // Il s'agit du premier joueur. Celui-ci va choisir le rôle
+            if (id % 2 == 0)
             {
+                // Affichage chez le premier joueur
 
                 self.piloteButton = self.add.text(100, 100, 'Pilote', { fill: '#0f0' })
                 .setInteractive()
@@ -34,7 +34,14 @@ class MenuSelectRole extends Phaser.Scene {
             }
             else
             {
-                self.add.text(100, 200, "En attente de la sélection de l'autre joueur", { fill: '#0f0' });
+
+                // Affichage chez le deuxième joueur
+                self.add.text(800, 600, "En attente de la sélection de l'autre joueur").setStyle({
+                    fontSize: '32px',
+                    fontFamily: 'Arial',
+                    color: "#33ff33",
+                    align: 'center'
+                });
             }
         });
 
