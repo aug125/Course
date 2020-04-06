@@ -4,7 +4,7 @@ class Pilote extends Phaser.Scene{
     constructor(){
         super('Pilote');
         this.lastFired = 0;
-        this.lastEnnemiApparu = 0;
+        this.timeLastEnnemyPop = 0;
         this.score = 0;
         this.scoreText;
         this.gameOver = false;
@@ -169,7 +169,7 @@ class Pilote extends Phaser.Scene{
         this.baseShipStats = new Stats("player"); 
 
         // Créations du bouclier
-        this.player.shield = this.physics.add.image(0, 0, 'bouclier').setAlpha(this.realShield).setScale(0.6);
+        this.player.shield = this.add.image(0, 0, 'bouclier').setAlpha(this.realShield).setScale(0.6);
         // Mettre le bouclier au premier plan
         this.player.shield.setDepth(1);
         // Création des "tirs"			
@@ -183,7 +183,7 @@ class Pilote extends Phaser.Scene{
         // Création des ennemis			
         this.ennemis = this.physics.add.group({
             classType: Ennemi,
-            maxSize: 500,
+            maxSize: 50,
             runChildUpdate: true
         });
 
@@ -243,10 +243,16 @@ class Pilote extends Phaser.Scene{
         
         socket.on("shield",  function(shieldValue) {
             self.onShieldChanged(shieldValue);
-        });			
+        });	
+
         socket.on("gameOver",  function() {
             self.onGameOverReceived();
         });	
+
+        socket.on("askRadarScan",  function() {
+            console.log("ask");
+            socket.emit("sendRadarScan",  self.player.x, self.player.y, self.ennemis.getChildren());
+        });
 
     };
 
@@ -294,17 +300,17 @@ class Pilote extends Phaser.Scene{
         // Création des ennemis	
         
         // Initialisation de l'apparition des ennemis la première fois.
-        if (this.lastEnnemiApparu == 0) {
-            this.lastEnnemiApparu = time;
+        if (this.timeLastEnnemyPop == 0) {
+            this.timeLastEnnemyPop = time;
         }
         
-        if (time > this.lastEnnemiApparu + 15000)
+        if (time > this.timeLastEnnemyPop + 15000)
         {
             let ennemi = this.ennemis.get();
             if (ennemi)
             {
                 ennemi.display();
-                this.lastEnnemiApparu = time;
+                this.timeLastEnnemyPop = time;
             }
         }
         

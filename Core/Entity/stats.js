@@ -13,11 +13,13 @@ class Stats{
 
 		}
 		if (owner == "ennemi") {
-			this.maxVelocity = 300; // Vitesse max
+//			this.maxVelocity = 300; // Vitesse max
+			this.maxVelocity = 0; // Vitesse max
 			this.acceleration = 200; // Accélération du vaisseau
 			this.vitesseRotation = 150; // Vitesse de rotation du vaisseau
 			this.vitesseTir = 500; // Vitesse du projectile
-			this.rechargementTir = 900; // Temps avant le prochain tir
+			//this.rechargementTir = 900; // Temps avant le prochain tir
+			this.rechargementTir = 9000000; // Temps avant le prochain tir
 			this.precisionTir = 0.0; // Précision du tir. 0 = tire en face
 			this.degats = 25; // dégats au bouclier/coque
 		}
@@ -32,6 +34,7 @@ class Stats{
 			this.dureeMaximaleEntrePannes = 10; // Durée maximale entre l'ajout des pannes en seconde
 			this.degatsMaxSurchauffe = 30; // Dégat maximal que peut provoquer une surchauffe.
 			this.vitesseReparation = 5; // Vitesse de réparation par seconde
+			this.tempsRadarEntreScans = 2000; // Temps entre 2 scans.
 		}
 	}
 }

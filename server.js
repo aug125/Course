@@ -78,9 +78,18 @@ io.sockets.on('connection', function (socket) {
 	socket.on('shield', function(shieldValue) {		
 		io.to(socket.game).emit('shield', shieldValue);
 	});
-	
+
+	socket.on('askRadarScan', function() {		
+		io.to(socket.game).emit('askRadarScan');
+	});
+
+	socket.on('sendRadarScan', function(posJoueurX, posJoueurY, listEnnemis) {
+		io.to(socket.game).emit('sendRadarScan', posJoueurX, posJoueurY, listEnnemis);
+	});
+
+
 	// PILOTE => MECA
-	socket.on('damage', function(damage) {		
+	socket.on('damage', function(damage) {
 		io.to(socket.game).emit('damage', damage);
 	});
 
@@ -90,7 +99,6 @@ io.sockets.on('connection', function (socket) {
 
 	// PILOTE => TOUS
 	socket.on('score', function(score) {		
-		console.log("score");
 		io.to(socket.game).emit('score', score);
 	});
 

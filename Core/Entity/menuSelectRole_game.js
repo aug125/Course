@@ -110,7 +110,6 @@ class MenuSelectRole extends Phaser.Scene {
         
         // Changer taille bouton pilote
         const sizePilote = this.piloteButton.scaleX;
-        console.log(sizePilote);
         let newScale = 1;
         if (sizePilote < this.targetSizePilote) {
             newScale = sizePilote + changeSizeSpeed * delta / 1000;

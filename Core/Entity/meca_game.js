@@ -12,7 +12,7 @@ class Meca extends Phaser.Scene {
         this.failuresExisting = [];
         this.listModules = new Map();
         this.gameOver = false;
-
+        this.timeLastScan = 0;
 
         this.initializeFailures();
     }
@@ -40,6 +40,30 @@ class Meca extends Phaser.Scene {
         }    
     };
 
+    onDataScanRadarReceived(scene, posJoueurX, posJoueurY, listEnnemis) {
+        scene.radarDots.getChildren().forEach(dot => {
+            dot.setVisible(false);
+            dot.setActive(false);
+        });
+        scene.radarDots.clear();
+        
+        const PosRadarX = game.config.width / 2;
+        const PosRadarY = 680;
+
+        // Afficher un point pour chaque ennemi
+        listEnnemis.forEach(ennemi => {
+            let offsetX = (ennemi.x - posJoueurX) / 20;
+            let offsetY = (ennemi.y - posJoueurY) / 20;
+
+            // On affiche pas le point s'il est trop éloigné du radar
+            if (Math.sqrt((offsetX + offsetY)*(offsetX + offsetY)) > 145){
+                return;
+            }
+
+            scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(255*255*255));
+        });
+    }
+
 
     preload () {
 
@@ -47,16 +71,32 @@ class Meca extends Phaser.Scene {
         this.load.plugin('rexsliderplugin', url, true);    
         this.load.image('manette', 'manette.png');
         this.load.image('radar', 'radar.png');
+        this.load.image('dot', 'point.png');
         
         // Nécessaire pour corriger le bug du slider
         this.scale.setGameSize(game.config.width, game.config.height);
-
 
     }
 
     create () {
         // Enregistrement de la caméra...
         this.camera = this.cameras.main;
+
+        // var group = scene.add.group(gameObjects, config);  // Add game objects into group
+        const config = {
+            classType: Phaser.GameObjects.Sprite,
+            defaultKey: null,
+            defaultFrame: null,
+            active: true,
+            maxSize: -1,
+            runChildUpdate: false,
+            createCallback: null,
+            removeCallback: null,
+            createMultipleCallback: null
+        }
+
+        // Liste des points affichés sur le radar.
+        this.radarDots = this.add.group(config);
 
         // Gestion du relachement du clic gauche
         let self = this;
@@ -105,6 +145,12 @@ class Meca extends Phaser.Scene {
         socket.on("damage",  function(damage) {
             self.onDamageReceived(damage);
         });	
+
+        //Sockets
+        socket.on("sendRadarScan",  function(posJoueurX, posJoueurY, listEnnemis) {
+            self.onDataScanRadarReceived(self, posJoueurX, posJoueurY, listEnnemis);
+        });	
+
 
     }
 
@@ -201,10 +247,16 @@ class Meca extends Phaser.Scene {
                 }
                 module.textState.setText("État : " + Math.round(module.state) + "%"); 
             });
-            
+
+            // Lancer une demande de scan radar
+            if (time > this.timeLastScan + this.shipStats.tempsRadarEntreScans) {
+                socket.emit("askRadarScan");
+                this.timeLastScan = time;
+            }
+
         }	
 
-   createModule(phaser, name, text, posX, posY, size, color, state = true, slider = true) {
+   createModule(scene, name, text, posX, posY, size, color, state = true, slider = true) {
 
         const colorSharp = color.replace("0x", "#");
 
@@ -218,22 +270,22 @@ class Meca extends Phaser.Scene {
         module.y = posY;
         module.size = size;
 
-        let graphics = phaser.add.graphics();        
+        let graphics = scene.add.graphics();        
 
         // Création de l'arrière plan
         graphics.lineStyle(2, color, 1);
         graphics.strokeRoundedRect(posX-225, posY-150, 450 * size, 400, 32);
 
-        module.disableGraphics = phaser.add.graphics();
+        module.disableGraphics = scene.add.graphics();
 
         module.value = 0;
 
         if (slider == true) {
 
             // Création du slider de puissance
-            module.manette = phaser.add.image(posX, posY, 'manette');
+            module.manette = scene.add.image(posX, posY, 'manette');
             module.manette.originY = 1;        
-            module.slider = phaser.plugins.get('rexsliderplugin').add(module.manette, {
+            module.slider = scene.plugins.get('rexsliderplugin').add(module.manette, {
             endPoints: [{
                     x: module.manette.x,
                     y: module.manette.y - 75 
@@ -249,7 +301,7 @@ class Meca extends Phaser.Scene {
             module.isChanged = false;
 
             // Trait
-            phaser.add.graphics()
+            scene.add.graphics()
             .lineStyle(3, 0x888888, 1)
             .strokePoints(module.slider.endPoints);
 
@@ -257,7 +309,7 @@ class Meca extends Phaser.Scene {
             module.manette.setDepth(1);
 
             // Consommation du module
-            module.textValue = phaser.add.text(posX-200, posY-50, module.value +" GW")
+            module.textValue = scene.add.text(posX-200, posY-50, module.value +" GW")
             .setStyle({
                 fontSize: '32px',
                 fontFamily: 'Arial',
@@ -274,7 +326,7 @@ class Meca extends Phaser.Scene {
         }
 
         // Affichage du nom du module
-        module.textName = phaser.add.text(posX, posY - 100, text)
+        module.textName = scene.add.text(posX, posY - 100, text)
         .setStyle({
             fontSize: '38px',
             fontFamily: 'Arial',
@@ -284,7 +336,7 @@ class Meca extends Phaser.Scene {
 
         // Affichage de l'état du module
         if(state) {
-            module.textState = phaser.add.text(posX-200, posY+200, "ÉTAT : " + module.state + "%")
+            module.textState = scene.add.text(posX-200, posY+200, "ÉTAT : " + module.state + "%")
             .setStyle({
                 fontSize: '24px',
                 fontFamily: 'Arial',
