@@ -291,7 +291,13 @@ class Pilote extends Phaser.Scene{
         this.player.shield.setPosition (this.player.x, this.player.y);
         this.player.shield.setAlpha(this.realShield / this.baseShipStats.maxBouclier);
 
-        // Création des ennemis				
+        // Création des ennemis	
+        
+        // Initialisation de l'apparition des ennemis la première fois.
+        if (this.lastEnnemiApparu == 0) {
+            this.lastEnnemiApparu = time;
+        }
+        
         if (time > this.lastEnnemiApparu + 15000)
         {
             let ennemi = this.ennemis.get();

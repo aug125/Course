@@ -36,7 +36,6 @@
 			};
 					
 			let game;
-			game = new Phaser.Game(config);
 			document.oncontextmenu = new Function("return false");
 
 			// Connexion socket.io
@@ -53,8 +52,13 @@
 									
 			socket.on('jeu', function () {
 				game = new Phaser.Game(config);
-				socket.emit('askId');
+				setTimeout(askId, 1000);				
 			});
+
+			function askId()
+			{
+				socket.emit('askId');
+			}
 
         </script>
     </body>

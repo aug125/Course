@@ -46,6 +46,7 @@ class Meca extends Phaser.Scene {
         let url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexsliderplugin.min.js';
         this.load.plugin('rexsliderplugin', url, true);    
         this.load.image('manette', 'manette.png');
+        this.load.image('radar', 'radar.png');
         
         // Nécessaire pour corriger le bug du slider
         this.scale.setGameSize(game.config.width, game.config.height);
@@ -89,7 +90,8 @@ class Meca extends Phaser.Scene {
             align: 'center'
         });
 
-
+        // Ajout manuel du radar
+        this.radar = this.add.image(game.config.width / 2, 680, 'radar');
 
         // Ajout des sliders
         this.listModules.set("power", this.createModule(this, "power",  "PUISSANCE", game.config.width * 1 / 5, game.config.height * 1 /5, 1, '0xff5500'));
@@ -254,7 +256,7 @@ class Meca extends Phaser.Scene {
             // Mettre la manette au premier plan
             module.manette.setDepth(1);
 
-
+            // Consommation du module
             module.textValue = phaser.add.text(posX-200, posY-50, module.value +" GW")
             .setStyle({
                 fontSize: '32px',
@@ -280,8 +282,9 @@ class Meca extends Phaser.Scene {
         });
         module.textName.setOrigin(0.5);
 
+        // Affichage de l'état du module
         if(state) {
-            module.textState = phaser.add.text(posX-200, posY+60, "ÉTAT : " + module.state + "%")
+            module.textState = phaser.add.text(posX-200, posY+200, "ÉTAT : " + module.state + "%")
             .setStyle({
                 fontSize: '24px',
                 fontFamily: 'Arial',
