@@ -26,10 +26,23 @@ let Ennemi = new Phaser.Class({
         this.setPosition(this.scene.player.x + Math.cos(angleApparition) * distanceApparition, this.scene.player.y + Math.sin(angleApparition) * distanceApparition);
         this.setRotation(angleApparition + Math.PI); // L'ennemi fait face au joueur
         this.body.maxVelocity.set(this.stats.maxVelocity);
+
+        // Création des particules
+        this.ennemiEmitter = this.scene.playerParticles.createEmitter({
+            lifespan: 1200,
+            speed: { min: 400, max: 600 },
+            scale: { start: 0.2, end: 0 },
+            tint: 0xee1144,
+            blendMode: 'ADD',
+        });
+
+        this.ennemiEmitter.startFollow(this);
+
 	},
 
     update: function (time, delta)
     {
+        
         if ( this.scene.gameOver == false) {
             let angle = Phaser.Math.Angle.Between(this.x, this.y, this.scene.player.x, this.scene.player.y);
             let ecartAngle = angle - this.rotation;
@@ -63,10 +76,19 @@ let Ennemi = new Phaser.Class({
                 this.lastFired = time;
             }
         }
+
+        // Mise à jour de la direction des particules
+
+        const randomParticleAngle = 15;
+
+        // Positionner les particules du joueur
+        this.ennemiEmitter.setAngle( {min : this.angle + 180 - randomParticleAngle, max: this.angle + 180 + randomParticleAngle });
+
     },
     remove : function() 
     {    
         this.setVisible(false);
         this.setActive(false);
+        this.ennemiEmitter.on = false;
     }
 });

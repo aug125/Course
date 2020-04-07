@@ -1,8 +1,8 @@
 class Stats{
 	constructor(owner){
 		if (owner == "player") {
-			this.maxVelocity = 300; // Vitesse max
-			this.acceleration = 300; // Accélération du vaisseau
+			this.maxVelocity = 400; // Vitesse max
+			this.acceleration = 400; // Accélération du vaisseau
 			this.vitesseRotation = 180; // Vitesse de rotation du vaisseau
 			this.vitesseTir = 500; // Vitesse du projectile
 			this.rechargementTir = 300; // Temps avant le prochain tir
@@ -13,8 +13,7 @@ class Stats{
 
 		}
 		if (owner == "ennemi") {
-//			this.maxVelocity = 300; // Vitesse max
-			this.maxVelocity = 0; // Vitesse max
+			this.maxVelocity = 300; // Vitesse max
 			this.acceleration = 200; // Accélération du vaisseau
 			this.vitesseRotation = 150; // Vitesse de rotation du vaisseau
 			this.vitesseTir = 500; // Vitesse du projectile

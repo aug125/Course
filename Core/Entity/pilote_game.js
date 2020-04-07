@@ -68,6 +68,13 @@ class Pilote extends Phaser.Scene{
     onPowerChanged (newPowerValue){
         // Changement de puissance
         this.meca_power = newPowerValue;
+        
+        if (newPowerValue < 0.1) {
+            this.playerEmitter.setFrequency(500, 2);
+        }
+        else {
+            this.playerEmitter.setFrequency(50 / newPowerValue , 2);
+        }
         this.setWarningTint(this.powerWarning, newPowerValue);        
     };
 
@@ -174,6 +181,8 @@ class Pilote extends Phaser.Scene{
         this.player.shield = this.add.image(0, 0, 'bouclier').setAlpha(this.realShield).setScale(0.6);
         // Mettre le bouclier au premier plan
         this.player.shield.setDepth(1);
+
+        
         // Création des "tirs"			
         this.tirs = this.physics.add.group({
             classType: Tir,
@@ -192,17 +201,17 @@ class Pilote extends Phaser.Scene{
         // Création des particules
         this.playerParticles = this.add.particles('flares');
 
-        this.emitter = this.playerParticles.createEmitter({
+        this.playerEmitter = this.playerParticles.createEmitter({
             lifespan: 1200,
             speed: { min: 400, max: 600 },
-            scale: { start: 0.3, end: 0 },
-            quantity: 2,
-            tint: 0x0000aaff,
+            scale: { start: 0.2, end: 0 },
+            tint: 0x00aaff,
             blendMode: 'ADD',
             on:false
         });
 
-        this.emitter.startFollow(this.player);
+        this.playerEmitter.setFrequency(500, 1);
+        this.playerEmitter.startFollow(this.player);
 
         this.scoreText = this.add.text(0, 0, 'Score: 0', { fontSize: '64px', fill: '#FFF' });
         this.scoreText.setScrollFactor(0);
@@ -321,7 +330,7 @@ class Pilote extends Phaser.Scene{
             this.timeLastEnnemyPop = time;
         }
         
-        if (time > this.timeLastEnnemyPop + 15000)
+        if (time > this.timeLastEnnemyPop + 5000)
         {
             let ennemi = this.ennemis.get();
             if (ennemi)
@@ -355,10 +364,10 @@ class Pilote extends Phaser.Scene{
         {
             // Accélération
             // Ajout des particules
-            this.emitter.on = true;
+            this.playerEmitter.on = true;
 
             // Positionner les particules du joueur
-            this.emitter.setAngle( {min : this.player.body.rotation + 180 - randomParticleAngle, max: this.player.body.rotation + 180 + randomParticleAngle });
+            this.playerEmitter.setAngle( {min : this.player.body.rotation + 180 - randomParticleAngle, max: this.player.body.rotation + 180 + randomParticleAngle });
             
 
             const velocity = this.physics.velocityFromRotation(this.player.rotation, this.baseShipStats.acceleration * this.meca_power);
@@ -368,10 +377,10 @@ class Pilote extends Phaser.Scene{
         else if (cursors.down.isDown)
         {
             // Ajout des particules
-            this.emitter.on = true;
+            this.playerEmitter.on = true;
 
             // Positionner les particules du joueur
-            this.emitter.setAngle( {min : this.player.body.rotation - 5, max: this.player.body.rotation + 5 });   
+            this.playerEmitter.setAngle( {min : this.player.body.rotation - 5, max: this.player.body.rotation + 5 });   
             
             const velocity = this.physics.velocityFromRotation(this.player.rotation + Math.PI, this.baseShipStats.acceleration * this.meca_power);
             this.player.setAccelerationX(velocity.x);
@@ -380,7 +389,7 @@ class Pilote extends Phaser.Scene{
 
         else
         {
-            this.emitter.on = false;
+            this.playerEmitter.on = false;
             this.player.setAccelerationX (0);
             this.player.setAccelerationY (0);
         }
