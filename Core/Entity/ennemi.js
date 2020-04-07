@@ -16,8 +16,6 @@ let Ennemi = new Phaser.Class({
 
     display: function ()
     {
-        console.log(this.scene);
-
         this.setActive(true);
 		this.setVisible(true);  
 

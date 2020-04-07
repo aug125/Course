@@ -12,7 +12,9 @@ class Meca extends Phaser.Scene {
         this.failuresExisting = [];
         this.listModules = new Map();
         this.gameOver = false;
-        this.timeLastScan = 0;
+        this.timeLastAskScan = 0;
+        this.isRadarReceived = false;
+        this.timeLastReceiveScan = 0;
 
         this.initializeFailures();
     }
@@ -52,17 +54,203 @@ class Meca extends Phaser.Scene {
 
         // Afficher un point pour chaque ennemi
         listEnnemis.forEach(ennemi => {
+
+            if (!ennemi.visible) {
+                return;
+            }
+
             let offsetX = (ennemi.x - posJoueurX) / 20;
             let offsetY = (ennemi.y - posJoueurY) / 20;
 
             // On affiche pas le point s'il est trop éloigné du radar
-            if (Math.sqrt((offsetX + offsetY)*(offsetX + offsetY)) > 145){
+            if (Math.sqrt((offsetX * offsetX)+(offsetY * offsetY)) > 145){
                 return;
             }
-
-            scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(255*255*255));
+            scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(0xff0000));
         });
+        this.isRadarReceived = true;
     }
+
+
+    createModule(scene, name, text, posX, posY, size, color, state = true, slider = true) {
+
+        const colorSharp = color.replace("0x", "#");
+
+        let module = {};
+        module.name = name;
+        module.isActivated = true;
+        module.hasSlider = slider;
+        module.hasState = state;
+        module.state = 100;
+        module.x = posX;
+        module.y = posY;
+        module.size = size;
+
+        let graphics = scene.add.graphics();        
+
+        // Création de l'arrière plan
+        graphics.lineStyle(2, color, 1);
+        graphics.strokeRoundedRect(posX-225, posY-150, 450 * size, 400, 32);
+
+        module.disableGraphics = scene.add.graphics();
+        module.disableGraphics.setDepth(-1);
+        module.value = 0;
+
+        if (slider == true) {
+
+            // Création du slider de puissance
+            module.manette = scene.add.image(posX, posY, 'manette');
+            module.manette.originY = 1;        
+            module.slider = scene.plugins.get('rexsliderplugin').add(module.manette, {
+            endPoints: [{
+                    x: module.manette.x,
+                    y: module.manette.y - 75 
+                },
+                {
+                    x: module.manette.x,
+                    y: module.manette.y + 130
+                }
+            ],
+            value: 1
+            });
+
+            module.isChanged = false;
+
+            // Trait
+            scene.add.graphics()
+            .lineStyle(3, 0x888888, 1)
+            .strokePoints(module.slider.endPoints);
+
+            // Mettre la manette au premier plan
+            module.manette.setDepth(1);
+
+            // Consommation du module
+            module.textValue = scene.add.text(posX-200, posY-50, module.value +" GW")
+            .setStyle({
+                fontSize: '32px',
+                fontFamily: 'Arial',
+                color: colorSharp,
+                align: 'center'
+            });
+            let self = this;
+            module.slider.on('valuechange', function(newValue, prevValue){  
+                module.isChanged = true; 
+                module.value = (1-newValue); 
+                module.textValue.setText(Math.round(module.value * 100) + " GW");
+                self.onValueChanged();
+            });            
+        }
+
+        // Affichage du nom du module
+        module.textName = scene.add.text(posX, posY - 100, text)
+        .setStyle({
+            fontSize: '38px',
+            fontFamily: 'Arial',
+            color: colorSharp
+        });
+        module.textName.setOrigin(0.5);
+
+        // Affichage de l'état du module
+        if(state) {
+            module.textState = scene.add.text(posX-200, posY+200, "ÉTAT : " + module.state + "%")
+            .setStyle({
+                fontSize: '24px',
+                fontFamily: 'Arial',
+                color: colorSharp,
+                align: 'center'
+            });
+        }
+
+        return module;
+
+    }
+
+    enableModule(module, activate) {
+        if (activate == false && module.isActivated == true) {
+            // Désactivation du module
+            module.disableGraphics.clear();
+            module.disableGraphics.fillStyle(0x886666, 1);
+            module.disableGraphics.fillRoundedRect(module.x-225, module.y-150, 450 * module.size, 400, 32);
+            module.state = 0;
+            if (module.hasSlider == true) {
+                module.slider.value = 1; // Valeur inversée...
+                module.slider.setEnable(false);
+                module.isChanged = true;
+                this.sendSettings(); 
+            }
+
+            // Dans le cas du radar, supprimer les points affichés
+            if (module.name == "radar") {
+                this.radarDots.getChildren().forEach(dot => {
+                    dot.setVisible(false);
+                    dot.setActive(false);
+                });
+                this.radarDots.clear();
+            }
+
+        }
+        else if (activate == true && module.isActivated == false) {
+            // Réactivation du module
+            module.disableGraphics.clear();
+            if (module.hasSlider == true) {
+                module.slider.setEnable(true);
+            }
+        }
+        
+        module.isActivated = activate;
+    }
+
+    damageModule(module, damage) {
+        
+        // On met des dégats au module
+        module.state -= damage;
+        module.state = Math.max(module.state, 0);
+
+
+
+        // Vérifier si le module est HS
+        if (module.state < 1) {
+            this.enableModule(module, false);
+            if (module.name == "principal" && this.gameOver == false) {
+                // Game over. On supprime tout, on affiche le game over, on envoie l'info au pilote
+                socket.emit("gameOver");
+                this.gameOver = true;                
+                // Passage à l'état game over 
+                this.scene.start('GameOver');
+            }                        
+        }
+        else if (module.isActivated == true) {
+        // Supprimer l'ancien rectangle de couleur
+            module.disableGraphics.clear();
+            module.disableGraphics.fillStyle(0x440000, 1 - module.state / 100);
+            module.disableGraphics.fillRoundedRect(module.x-225, module.y-150, 450 * module.size, 400, 32);    
+        }
+    }
+
+    onValueChanged(newValue) {
+
+        this.sumEnergyUsed = 0;
+        this.listModules.forEach(module => {
+            this.sumEnergyUsed += module.value;
+        });
+        this.sumEnergyUsed *= 100;
+        this.textEnergieValue.setText(Math.round(this.sumEnergyUsed ) + " GW");
+        const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,200,20,200,0,0, this.shipStats.consommationMaxTemperature, Math.round(Math.min(this.sumEnergyUsed, this.shipStats.consommationMaxTemperature)));
+        this.textEnergieValue.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
+    }
+
+    // Received from pilote
+    onDamageReceived(damage) {
+        this.camera.shake(200,0.02);
+        let module;
+        const modules = Array.from(this.listModules.values());
+        // Prendre un module au hasard       
+        do {
+            module = modules[Math.floor(Math.random()*modules.length)];
+        } while (module.hasState == false);
+        this.damageModule(module, damage);        
+    }
+
 
 
     preload () {
@@ -137,7 +325,7 @@ class Meca extends Phaser.Scene {
         this.listModules.set("power", this.createModule(this, "power",  "PUISSANCE", game.config.width * 1 / 5, game.config.height * 1 /5, 1, '0xff5500'));
         this.listModules.set("weapon", this.createModule(this, "weapon", "ARMEMENT", game.config.width* 4 / 5, game.config.height * 1 / 5, 1, '0xffdd00'));
         this.listModules.set("shield", this.createModule(this, "shield", "BOUCLIER", game.config.width * 1 / 5, 600, 1, '0x0055ff'));
-        this.listModules.set("radar", this.createModule(this, "shield", "RADAR", game.config.width / 2, 600, 1, '0x00ff22', true, false));
+        this.listModules.set("radar", this.createModule(this, "radar", "RADAR", game.config.width / 2, 600, 1, '0x00ff22', true, false));
         this.listModules.set("repare", this.createModule(this, "repare", "REPARATIONS", game.config.width * 4 / 5, 600, 1, '0xee21dd', false));
         this.listModules.set("principal", this.createModule(this, "principal", "SYSTÈME PRINCIPAL", game.config.width  / 2 , game.config.height  * 1 /5, 1, '0xffffff', true, false));
     
@@ -248,179 +436,23 @@ class Meca extends Phaser.Scene {
                 module.textState.setText("État : " + Math.round(module.state) + "%"); 
             });
 
+
+ 
             // Lancer une demande de scan radar
-            if (time > this.timeLastScan + this.shipStats.tempsRadarEntreScans) {
+            if (time > this.timeLastAskScan + this.shipStats.tempsRadarEntreScans && this.listModules.get("radar").isActivated == true) {
                 socket.emit("askRadarScan");
-                this.timeLastScan = time;
+                this.timeLastAskScan = time;
             }
 
+
+            // Mettre à jour le timer de quand on a reçu les infos du radar
+            if (this.isRadarReceived == true) {
+                this.isRadarReceived = false;
+                this.timeLastReceiveScan = time;
+            }
+
+            // Mettre à jour la luminosité des points sur le radar
+            this.radarDots.setAlpha(1 - (time - this.timeLastReceiveScan) /  this.shipStats.tempsRadarEntreScans);
         }	
-
-   createModule(scene, name, text, posX, posY, size, color, state = true, slider = true) {
-
-        const colorSharp = color.replace("0x", "#");
-
-        let module = {};
-        module.name = name;
-        module.isActivated = true;
-        module.hasSlider = slider;
-        module.hasState = state;
-        module.state = 100;
-        module.x = posX;
-        module.y = posY;
-        module.size = size;
-
-        let graphics = scene.add.graphics();        
-
-        // Création de l'arrière plan
-        graphics.lineStyle(2, color, 1);
-        graphics.strokeRoundedRect(posX-225, posY-150, 450 * size, 400, 32);
-
-        module.disableGraphics = scene.add.graphics();
-
-        module.value = 0;
-
-        if (slider == true) {
-
-            // Création du slider de puissance
-            module.manette = scene.add.image(posX, posY, 'manette');
-            module.manette.originY = 1;        
-            module.slider = scene.plugins.get('rexsliderplugin').add(module.manette, {
-            endPoints: [{
-                    x: module.manette.x,
-                    y: module.manette.y - 75 
-                },
-                {
-                    x: module.manette.x,
-                    y: module.manette.y + 130
-                }
-            ],
-            value: 1
-            });
-
-            module.isChanged = false;
-
-            // Trait
-            scene.add.graphics()
-            .lineStyle(3, 0x888888, 1)
-            .strokePoints(module.slider.endPoints);
-
-            // Mettre la manette au premier plan
-            module.manette.setDepth(1);
-
-            // Consommation du module
-            module.textValue = scene.add.text(posX-200, posY-50, module.value +" GW")
-            .setStyle({
-                fontSize: '32px',
-                fontFamily: 'Arial',
-                color: colorSharp,
-                align: 'center'
-            });
-            let self = this;
-            module.slider.on('valuechange', function(newValue, prevValue){  
-                module.isChanged = true; 
-                module.value = (1-newValue); 
-                module.textValue.setText(Math.round(module.value * 100) + " GW");
-                self.onValueChanged();
-            });            
-        }
-
-        // Affichage du nom du module
-        module.textName = scene.add.text(posX, posY - 100, text)
-        .setStyle({
-            fontSize: '38px',
-            fontFamily: 'Arial',
-            color: colorSharp
-        });
-        module.textName.setOrigin(0.5);
-
-        // Affichage de l'état du module
-        if(state) {
-            module.textState = scene.add.text(posX-200, posY+200, "ÉTAT : " + module.state + "%")
-            .setStyle({
-                fontSize: '24px',
-                fontFamily: 'Arial',
-                color: colorSharp,
-                align: 'center'
-            });
-        }
-
-        return module;
-
-    }
-
-    enableModule(module, activate) {
-        if (activate == false && module.isActivated == true) {
-            module.disableGraphics.clear();
-            module.disableGraphics.fillStyle(0x886666, 1);
-            module.disableGraphics.fillRoundedRect(module.x-250, module.y-150, 450 * module.size, 400, 32);
-            module.state = 0;
-            if (module.hasSlider == true) {
-                module.slider.value = 1; // Valeur inversée...
-                module.slider.setEnable(false);
-                module.isChanged = true;
-                this.sendSettings(); 
-            }
-        }
-        else if (activate == true && module.isActivated == false) {
-            module.disableGraphics.clear();
-            if (module.hasSlider == true) {
-                module.slider.setEnable(true);
-            }
-        }
-        
-        module.isActivated = activate;
-    }
-
-    damageModule(module, damage) {
-        
-        // On met des dégats au module
-        module.state -= damage;
-        module.state = Math.max(module.state, 0);
-
-
-
-        // Vérifier si le module est HS
-        if (module.state < 1) {
-            this.enableModule(module, false);
-            if (module.name == "principal" && this.gameOver == false) {
-                // Game over. On supprime tout, on affiche le game over, on envoie l'info au pilote
-                socket.emit("gameOver");
-                this.gameOver = true;                
-                // Passage à l'état game over 
-                this.scene.start('GameOver');
-            }                        
-        }
-        else if (module.isActivated == true) {
-        // Supprimer l'ancien rectangle de couleur
-            module.disableGraphics.clear();
-            module.disableGraphics.fillStyle(0x440000, 1 - module.state / 100);
-            module.disableGraphics.fillRoundedRect(module.x-225, module.y-150, 450 * module.size, 400, 32);    
-        }
-    }
-
-    onValueChanged(newValue) {
-
-        this.sumEnergyUsed = 0;
-        this.listModules.forEach(module => {
-            this.sumEnergyUsed += module.value;
-        });
-        this.sumEnergyUsed *= 100;
-        this.textEnergieValue.setText(Math.round(this.sumEnergyUsed ) + " GW");
-        const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,200,20,200,0,0, this.shipStats.consommationMaxTemperature, Math.round(Math.min(this.sumEnergyUsed, this.shipStats.consommationMaxTemperature)));
-        this.textEnergieValue.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
-    }
-
-    // Received from pilote
-    onDamageReceived(damage) {
-        this.camera.shake(200,0.02);
-        let module;
-        const modules = Array.from(this.listModules.values());
-        // Prendre un module au hasard       
-        do {
-            module = modules[Math.floor(Math.random()*modules.length)];
-        } while (module.hasState == false);
-        this.damageModule(module, damage);        
-    }
 
 }

@@ -6,9 +6,7 @@ class Pilote extends Phaser.Scene{
         this.lastFired = 0;
         this.timeLastEnnemyPop = 0;
         this.score = 0;
-        this.scoreText;
         this.gameOver = false;
-        this.player;
 
         // Statistiques données par l'autre joueur. Compris entre 0 et 1
         this.meca_power = 0;
@@ -16,6 +14,9 @@ class Pilote extends Phaser.Scene{
         this.meca_shield = 0;
     
         this.realShield = 0;
+
+        // Qualité. à 0, pas de particules...
+        this.quality = 1;
         
     }
 
@@ -137,6 +138,7 @@ class Pilote extends Phaser.Scene{
         this.load.image('powerImg', 'power.png');
         this.load.image('weaponImg', 'weapon.png');
         this.load.image('shieldImg', 'shield.png');
+        this.load.image('flares', 'flares.png');
 
         this.this = this;
     };
@@ -175,7 +177,7 @@ class Pilote extends Phaser.Scene{
         // Création des "tirs"			
         this.tirs = this.physics.add.group({
             classType: Tir,
-            maxSize: 500,
+            maxSize: 200,
             runChildUpdate: true
         });
 
@@ -183,9 +185,24 @@ class Pilote extends Phaser.Scene{
         // Création des ennemis			
         this.ennemis = this.physics.add.group({
             classType: Ennemi,
-            maxSize: 50,
+            maxSize: 30,
             runChildUpdate: true
         });
+
+        // Création des particules
+        this.playerParticles = this.add.particles('flares');
+
+        this.emitter = this.playerParticles.createEmitter({
+            lifespan: 1200,
+            speed: { min: 400, max: 600 },
+            scale: { start: 0.3, end: 0 },
+            quantity: 2,
+            tint: 0x0000aaff,
+            blendMode: 'ADD',
+            on:false
+        });
+
+        this.emitter.startFollow(this.player);
 
         this.scoreText = this.add.text(0, 0, 'Score: 0', { fontSize: '64px', fill: '#FFF' });
         this.scoreText.setScrollFactor(0);
@@ -201,7 +218,8 @@ class Pilote extends Phaser.Scene{
         this.camera.setSize(game.config.width, game.config.height);
 
         // Ajout des étoiles en arrière plan
-        this.bg = this.add.group({ key: 'star', frameQuantity: 50 });				
+        this.bg = this.add.group({ key: 'star', frameQuantity: 50 });
+        this.bg.setDepth(-1);		
         let rect = new Phaser.Geom.Rectangle(this.cameras.main.width, this.cameras.main.height, this.cameras.main.width, this.cameras.main.height);
         Phaser.Actions.RandomRectangle(this.bg.getChildren(), rect);	
         // Colorer les étoiles pour que ça fasse un peu plus gai
@@ -250,7 +268,6 @@ class Pilote extends Phaser.Scene{
         });	
 
         socket.on("askRadarScan",  function() {
-            console.log("ask");
             socket.emit("sendRadarScan",  self.player.x, self.player.y, self.ennemis.getChildren());
         });
 
@@ -319,33 +336,51 @@ class Pilote extends Phaser.Scene{
         let cursors = this.input.keyboard.createCursorKeys();
         if (cursors.left.isDown)
         {
-
+            // Gauche
             this.player.setAngularVelocity(-this.baseShipStats.vitesseRotation * this.meca_power);
 
         }
         else if (cursors.right.isDown)
         {
+            // Droite
             this.player.setAngularVelocity(this.baseShipStats.vitesseRotation * this.meca_power);
         }
         else
         {
             this.player.setAngularVelocity(0);
         }
+
+        const randomParticleAngle = 15;
         if (cursors.up.isDown)
         {
+            // Accélération
+            // Ajout des particules
+            this.emitter.on = true;
+
+            // Positionner les particules du joueur
+            this.emitter.setAngle( {min : this.player.body.rotation + 180 - randomParticleAngle, max: this.player.body.rotation + 180 + randomParticleAngle });
+            
+
             const velocity = this.physics.velocityFromRotation(this.player.rotation, this.baseShipStats.acceleration * this.meca_power);
             this.player.setAccelerationX(velocity.x);
             this.player.setAccelerationY(velocity.y);				
         }
         else if (cursors.down.isDown)
         {
-            const velocity = this.physics.velocityFromRotation(this.player.rotation + Math.PI, this.baseShipStats.acceleration);
+            // Ajout des particules
+            this.emitter.on = true;
+
+            // Positionner les particules du joueur
+            this.emitter.setAngle( {min : this.player.body.rotation - 5, max: this.player.body.rotation + 5 });   
+            
+            const velocity = this.physics.velocityFromRotation(this.player.rotation + Math.PI, this.baseShipStats.acceleration * this.meca_power);
             this.player.setAccelerationX(velocity.x);
             this.player.setAccelerationY(velocity.y);					
         }
 
         else
         {
+            this.emitter.on = false;
             this.player.setAccelerationX (0);
             this.player.setAccelerationY (0);
         }
@@ -393,8 +428,6 @@ class Pilote extends Phaser.Scene{
                 imageWarning.x = posX;
                 imageWarning.y = posY;
                 imageWarning.setScale(1);
-                console.log(posX);
-
             }
             else if (diffTime < timeEndMove) {
                 imageWarning.x = posX + (imageWarning.initialPositionX - posX) * ((diffTime - timeStartMove) / (timeEndMove - timeStartMove));
