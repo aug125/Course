@@ -29,10 +29,10 @@ let Ennemi = new Phaser.Class({
 
         // Création des particules
         this.ennemiEmitter = this.scene.playerParticles.createEmitter({
-            lifespan: 1200,
+            lifespan: 600,
             speed: { min: 400, max: 600 },
             scale: { start: 0.2, end: 0 },
-            tint: 0xee1144,
+            tint: 0x990099,
             blendMode: 'ADD',
         });
 
@@ -42,7 +42,7 @@ let Ennemi = new Phaser.Class({
 
     update: function (time, delta)
     {
-        
+        // Faire tourner l'ennemi vers le joeuur
         if ( this.scene.gameOver == false) {
             let angle = Phaser.Math.Angle.Between(this.x, this.y, this.scene.player.x, this.scene.player.y);
             let ecartAngle = angle - this.rotation;
@@ -63,6 +63,8 @@ let Ennemi = new Phaser.Class({
         else {
             this.body.setAngularVelocity(0);
         }
+
+        // Avancer le vaisseau        
         let velocity = this.scene.physics.velocityFromRotation(this.rotation, this.stats.acceleration);
         this.body.setAccelerationX(velocity.x);
         this.body.setAccelerationY(velocity.y);
@@ -83,6 +85,8 @@ let Ennemi = new Phaser.Class({
 
         // Positionner les particules du joueur
         this.ennemiEmitter.setAngle( {min : this.angle + 180 - randomParticleAngle, max: this.angle + 180 + randomParticleAngle });
+        this.ennemiEmitter.setPosition (-Math.cos(this.rotation) * 20, -Math.sin(this.rotation) * 20);
+
 
     },
     remove : function() 

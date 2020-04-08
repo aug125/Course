@@ -35,7 +35,7 @@ class Pilote extends Phaser.Scene{
         this.this.scene.start('GameOver', { score: this.score});
     };
 
-    joueurTouche = function(player, tir) {
+    joueurTouche (player, tir) {
         if (tir.isPlayer == false)
         {
 
@@ -52,42 +52,13 @@ class Pilote extends Phaser.Scene{
         }
     };
 
-    ennemiTouche = function(ennemi, tir){
+    ennemiTouche (ennemi, tir){
         if (tir.isPlayer == true && ennemi.active == true)
         {
             ennemi.remove();
             this.score++;
             this.scoreText.setText('Score: ' + this.score);
         }
-    };
-
-    onGameOverReceived() {
-        this.setGameOver();
-    };
-
-    onPowerChanged (newPowerValue){
-        // Changement de puissance
-        this.meca_power = newPowerValue;
-        
-        if (newPowerValue < 0.1) {
-            this.playerEmitter.setFrequency(500, 2);
-        }
-        else {
-            this.playerEmitter.setFrequency(50 / newPowerValue , 2);
-        }
-        this.setWarningTint(this.powerWarning, newPowerValue);        
-    };
-
-    onWeaponChanged = function(newWeaponValue){
-        // Changement d'armement
-        this.meca_weapon = newWeaponValue;
-        this.setWarningTint(this.weaponWarning, newWeaponValue);        
-    };
-
-    onShieldChanged = function(newShieldValue){
-        // Changement de bouclier
-        this.meca_shield = newShieldValue;
-        this.setWarningTint(this.shieldWarning, newShieldValue);        
     };
 
     setWarningTint(image, value) {
@@ -128,6 +99,44 @@ class Pilote extends Phaser.Scene{
         image.state = "NONE";
         this.setWarningTint(image, 0);
     }
+
+    // Méthodes de socket
+
+    onGameOverReceived() {
+        this.setGameOver();
+    };
+
+    onPowerChanged (newPowerValue){
+        // Changement de puissance
+        this.meca_power = newPowerValue;
+        
+        if (newPowerValue < 0.1) {
+            this.playerEmitter.setFrequency(500, 2);
+        }
+        else {
+            this.playerEmitter.setFrequency(50 / newPowerValue , 2);
+        }
+        this.setWarningTint(this.powerWarning, newPowerValue);        
+    };
+
+    onWeaponChanged (newWeaponValue){
+        // Changement d'armement
+        this.meca_weapon = newWeaponValue;
+        this.setWarningTint(this.weaponWarning, newWeaponValue);        
+    };
+
+    onShieldChanged (newShieldValue){
+        // Changement de bouclier
+        this.meca_shield = newShieldValue;
+        this.setWarningTint(this.shieldWarning, newShieldValue);        
+    };
+
+    onAskRadarScanReceived() {
+        socket.emit("sendRadarScan",  this.player.x, this.player.y, this.ennemis.getChildren());
+    }
+
+
+    // Fonctions phaser
 
     preload()
     {
@@ -202,7 +211,7 @@ class Pilote extends Phaser.Scene{
         this.playerParticles = this.add.particles('flares');
 
         this.playerEmitter = this.playerParticles.createEmitter({
-            lifespan: 1200,
+            lifespan: 600,
             speed: { min: 400, max: 600 },
             scale: { start: 0.2, end: 0 },
             tint: 0x00aaff,
@@ -277,7 +286,7 @@ class Pilote extends Phaser.Scene{
         });	
 
         socket.on("askRadarScan",  function() {
-            socket.emit("sendRadarScan",  self.player.x, self.player.y, self.ennemis.getChildren());
+            self.onAskRadarScanReceived();
         });
 
     };
@@ -367,8 +376,13 @@ class Pilote extends Phaser.Scene{
             this.playerEmitter.on = true;
 
             // Positionner les particules du joueur
+
             this.playerEmitter.setAngle( {min : this.player.body.rotation + 180 - randomParticleAngle, max: this.player.body.rotation + 180 + randomParticleAngle });
-            
+
+            // Mettre les particules à l'arrière du vaisseau
+            this.playerEmitter.setPosition (-Math.cos(this.player.rotation) * 20, -Math.sin(this.player.rotation) * 20);
+
+
 
             const velocity = this.physics.velocityFromRotation(this.player.rotation, this.baseShipStats.acceleration * this.meca_power);
             this.player.setAccelerationX(velocity.x);
@@ -381,7 +395,10 @@ class Pilote extends Phaser.Scene{
 
             // Positionner les particules du joueur
             this.playerEmitter.setAngle( {min : this.player.body.rotation - 5, max: this.player.body.rotation + 5 });   
-            
+
+            // Mettre les particules à l'arrière du vaisseau
+            this.playerEmitter.setPosition (-Math.cos(this.player.rotation) * 20, -Math.sin(this.player.rotation) * 20);
+        
             const velocity = this.physics.velocityFromRotation(this.player.rotation + Math.PI, this.baseShipStats.acceleration * this.meca_power);
             this.player.setAccelerationX(velocity.x);
             this.player.setAccelerationY(velocity.y);					
@@ -438,7 +455,7 @@ class Pilote extends Phaser.Scene{
                 imageWarning.y = posY;
                 imageWarning.setScale(1);
             }
-            else if (diffTime < timeEndMove) {
+            else if (diffTime < timeEndMove  && imageWarning.timeChanged == max) {
                 imageWarning.x = posX + (imageWarning.initialPositionX - posX) * ((diffTime - timeStartMove) / (timeEndMove - timeStartMove));
                 imageWarning.y = posY + (imageWarning.initialPositionY - posY) * ((diffTime - timeStartMove) / (timeEndMove - timeStartMove));
                 imageWarning.setScale(1 - 0.3 * ((diffTime - timeStartMove) / (timeEndMove - timeStartMove)));

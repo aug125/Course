@@ -42,36 +42,6 @@ class Meca extends Phaser.Scene {
         }    
     };
 
-    onDataScanRadarReceived(scene, posJoueurX, posJoueurY, listEnnemis) {
-        scene.radarDots.getChildren().forEach(dot => {
-            dot.setVisible(false);
-            dot.setActive(false);
-        });
-        scene.radarDots.clear();
-        
-        const PosRadarX = game.config.width / 2;
-        const PosRadarY = 680;
-
-        // Afficher un point pour chaque ennemi
-        listEnnemis.forEach(ennemi => {
-
-            if (!ennemi.visible) {
-                return;
-            }
-
-            let offsetX = (ennemi.x - posJoueurX) / 20;
-            let offsetY = (ennemi.y - posJoueurY) / 20;
-
-            // On affiche pas le point s'il est trop éloigné du radar
-            if (Math.sqrt((offsetX * offsetX)+(offsetY * offsetY)) > 145){
-                return;
-            }
-            scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(0xff0000));
-        });
-        this.isRadarReceived = true;
-    }
-
-
     createModule(scene, name, text, posX, posY, size, color, state = true, slider = true) {
 
         const colorSharp = color.replace("0x", "#");
@@ -227,6 +197,8 @@ class Meca extends Phaser.Scene {
         }
     }
 
+    // Fonctions socket
+
     onValueChanged(newValue) {
 
         this.sumEnergyUsed = 0;
@@ -251,7 +223,36 @@ class Meca extends Phaser.Scene {
         this.damageModule(module, damage);        
     }
 
+    onDataScanRadarReceived(scene, posJoueurX, posJoueurY, listEnnemis) {
+        scene.radarDots.getChildren().forEach(dot => {
+            dot.setVisible(false);
+            dot.setActive(false);
+        });
+        scene.radarDots.clear();
+        
+        const PosRadarX = game.config.width / 2;
+        const PosRadarY = 680;
 
+        // Afficher un point pour chaque ennemi
+        listEnnemis.forEach(ennemi => {
+
+            if (!ennemi.visible) {
+                return;
+            }
+
+            let offsetX = (ennemi.x - posJoueurX) / 20;
+            let offsetY = (ennemi.y - posJoueurY) / 20;
+
+            // On affiche pas le point s'il est trop éloigné du radar
+            if (Math.sqrt((offsetX * offsetX)+(offsetY * offsetY)) > 145){
+                return;
+            }
+            scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(0xff0000));
+        });
+        this.isRadarReceived = true;
+    }
+
+    // Fonctions phaser
 
     preload () {
 
@@ -343,116 +344,116 @@ class Meca extends Phaser.Scene {
     }
 
     update (time, delta) {        
-            
-            if (this.gameOver == true) {
-                return;
-            }
+        
+        if (this.gameOver == true) {
+            return;
+        }
 
-            // Définir la température à atteindre
-            let targetTemperature = this.shipStats.initialTemperature + (this.sumEnergyUsed * (this.shipStats.maxTemperature-this.shipStats.initialTemperature) / this.shipStats.consommationMaxTemperature);
-            const diffTemperature = targetTemperature - this.temperature;
-            
-            // Modifier la température
-            this.temperature += diffTemperature * this.shipStats.coefficientChaleur * delta / 1000;
+        // Définir la température à atteindre
+        let targetTemperature = this.shipStats.initialTemperature + (this.sumEnergyUsed * (this.shipStats.maxTemperature-this.shipStats.initialTemperature) / this.shipStats.consommationMaxTemperature);
+        const diffTemperature = targetTemperature - this.temperature;
+        
+        // Modifier la température
+        this.temperature += diffTemperature * this.shipStats.coefficientChaleur * delta / 1000;
 
-            this.temperature = Math.min(this.shipStats.maxTemperature, this.temperature);
-            this.temperature = Math.max(this.shipStats.initialTemperature, this.temperature);
+        this.temperature = Math.min(this.shipStats.maxTemperature, this.temperature);
+        this.temperature = Math.max(this.shipStats.initialTemperature, this.temperature);
 
-            this.textTemperature.setText(Math.round(this.temperature) + "°C");
+        this.textTemperature.setText(Math.round(this.temperature) + "°C");
 
-            // Couleur d'affichage de la température
-            const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,70,204,204,0,0, this.shipStats.maxTemperature-this.shipStats.initialTemperature, this.temperature - this.shipStats.initialTemperature );
-            this.textTemperature.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
+        // Couleur d'affichage de la température
+        const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,70,204,204,0,0, this.shipStats.maxTemperature-this.shipStats.initialTemperature, this.temperature - this.shipStats.initialTemperature );
+        this.textTemperature.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
 
-            // Gestion de la surchauffe
+        // Gestion de la surchauffe
 
-            // Vérifier s'il s'est  écoulé suffisemment de temps avant un accident de surchauffe
-            if (Date.now() >= this.nextFailureVerification){
- 
-                // Définir la prochaine vérification
-                const min = this.shipStats.dureeMinimaleEntrePannes;
-                const max = this.shipStats.dureeMaximaleEntrePannes;
-                const nextFailureVerificationInterval = Math.random() * (max - min) + min
-                this.nextFailureVerification = Date.now() + nextFailureVerificationInterval * 1000;
+        // Vérifier s'il s'est  écoulé suffisemment de temps avant un accident de surchauffe
+        if (Date.now() >= this.nextFailureVerification){
 
-                // Une température trop élevée inflige des dégâts à un (ou plusieurs) module(s) au hasard
-                const probaFailure = (this.temperature - this.shipStats.dangerTemperature) / (this.shipStats.maxTemperature - this.shipStats.dangerTemperature); 
+            // Définir la prochaine vérification
+            const min = this.shipStats.dureeMinimaleEntrePannes;
+            const max = this.shipStats.dureeMaximaleEntrePannes;
+            const nextFailureVerificationInterval = Math.random() * (max - min) + min
+            this.nextFailureVerification = Date.now() + nextFailureVerificationInterval * 1000;
 
-                this.listModules.forEach(module => {
-                    if (module.hasState == false) {
-                        // le module ne peut pas casser
-                        return;
-                    }
-                    const rand = Math.random();
-                    if (rand < probaFailure) {
-                        const randDamage = Math.random() * this.shipStats.degatsMaxSurchauffe;
-                        this.damageModule(module, randDamage);
-                    }
+            // Une température trop élevée inflige des dégâts à un (ou plusieurs) module(s) au hasard
+            const probaFailure = (this.temperature - this.shipStats.dangerTemperature) / (this.shipStats.maxTemperature - this.shipStats.dangerTemperature); 
 
-                });
-            }
+            this.listModules.forEach(module => {
+                if (module.hasState == false) {
+                    // le module ne peut pas casser
+                    return;
+                }
+                const rand = Math.random();
+                if (rand < probaFailure) {
+                    const randDamage = Math.random() * this.shipStats.degatsMaxSurchauffe;
+                    this.damageModule(module, randDamage);
+                    this.camera.shake(200,0.02);
+                }
 
-            // Réparations
-            // Priorité de réparation au système
-            let modulePrincipal = this.listModules.get("principal");
-            if (modulePrincipal.state < 100) {
-                modulePrincipal.state += this.listModules.get("repare").value * this.shipStats.vitesseReparation * delta / 1000;
-                modulePrincipal.state = Math.min(modulePrincipal.state, 100);
+            });
+        }
 
-            }
-            else {
-                // Compter le nombre de modules à - de 100%
-                let nbBrokenModules = 0;
-                this.listModules.forEach(module => {
-                    if (module.hasState == false) {
-                        return;
-                    }
-                    if (module.state < 100  && module.name != "principal") {
-                        nbBrokenModules++;
-                    }
-                });
+        // Réparations
+        // Priorité de réparation au système
+        let modulePrincipal = this.listModules.get("principal");
+        if (modulePrincipal.state < 100) {
+            modulePrincipal.state += this.listModules.get("repare").value * this.shipStats.vitesseReparation * delta / 1000;
+            modulePrincipal.state = Math.min(modulePrincipal.state, 100);
 
-
-                // Réparer les modules cassés
-                this.listModules.forEach(module => {
-                    if (module.hasState == false) {
-                        return;
-                    }
-                    if (module.state < 100 && module.name != "principal") {
-                        module.state += this.listModules.get("repare").value / nbBrokenModules * this.shipStats.vitesseReparation * delta / 1000;
-                        module.state = Math.min(module.state, 100);
-                    }
-                    else {
-                        this.enableModule(module, true);
-                    }
-                });                
-            }
-
-            // Mettre à jour les états
+        }
+        else {
+            // Compter le nombre de modules à - de 100%
+            let nbBrokenModules = 0;
             this.listModules.forEach(module => {
                 if (module.hasState == false) {
                     return;
                 }
-                module.textState.setText("État : " + Math.round(module.state) + "%"); 
+                if (module.state < 100  && module.name != "principal") {
+                    nbBrokenModules++;
+                }
             });
 
 
- 
-            // Lancer une demande de scan radar
-            if (time > this.timeLastAskScan + this.shipStats.tempsRadarEntreScans && this.listModules.get("radar").isActivated == true) {
-                socket.emit("askRadarScan");
-                this.timeLastAskScan = time;
+            // Réparer les modules cassés
+            this.listModules.forEach(module => {
+                if (module.hasState == false) {
+                    return;
+                }
+                if (module.state < 100 && module.name != "principal") {
+                    module.state += this.listModules.get("repare").value / nbBrokenModules * this.shipStats.vitesseReparation * delta / 1000;
+                    module.state = Math.min(module.state, 100);
+                }
+                else {
+                    this.enableModule(module, true);
+                }
+            });                
+        }
+
+        // Mettre à jour les états
+        this.listModules.forEach(module => {
+            if (module.hasState == false) {
+                return;
             }
+            module.textState.setText("État : " + Math.round(module.state) + "%"); 
+        });
 
 
-            // Mettre à jour le timer de quand on a reçu les infos du radar
-            if (this.isRadarReceived == true) {
-                this.isRadarReceived = false;
-                this.timeLastReceiveScan = time;
-            }
 
-            // Mettre à jour la luminosité des points sur le radar
-            this.radarDots.setAlpha(1 - (time - this.timeLastReceiveScan) /  this.shipStats.tempsRadarEntreScans);
-        }	
+        // Lancer une demande de scan radar
+        if (time > this.timeLastAskScan + this.shipStats.tempsRadarEntreScans && this.listModules.get("radar").isActivated == true) {
+            socket.emit("askRadarScan");
+            this.timeLastAskScan = time;
+        }
 
+
+        // Mettre à jour le timer de quand on a reçu les infos du radar
+        if (this.isRadarReceived == true) {
+            this.isRadarReceived = false;
+            this.timeLastReceiveScan = time;
+        }
+
+        // Mettre à jour la luminosité des points sur le radar
+        this.radarDots.setAlpha(1 - (time - this.timeLastReceiveScan) /  this.shipStats.tempsRadarEntreScans);
+    }	
 }
