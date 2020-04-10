@@ -294,17 +294,20 @@ class Meca extends Phaser.Scene {
         }, this);    
 
 
-        this.textEnergie = this.add.text(game.config.width /2 - 30  , 100, "CONSOMMATION TOTALE").setStyle({
+        // Ces ajouts sont mis manuellement dans la partie "système principal"
+
+
+        this.textEnergie = this.add.text(game.config.width /2 + 30  , 150, "CONSOMMATION\nACTUELLE").setStyle({
             fontSize: '18px',
             fontFamily: 'Arial',
             color: "#ffffff",
             align: 'center'
         });
 
-        // Ces ajouts sont mis manuellement dans la partie "système principal"
+        this.textEnergie.setOrigin(1,0);
 
-        // Ajout du texte de puissance restante
-        this.textEnergieValue = this.add.text(game.config.width /2 + 100, 200, this.sumEnergyUsed + " GW" ).setStyle({
+        // Ajout du texte de puissance utilisée
+        this.textEnergieValue = this.add.text(game.config.width /2 + 60, 150, this.sumEnergyUsed + " GW" ).setStyle({
             fontSize: '24px',
             fontFamily: 'Arial',
             color: "#00c815",
@@ -312,12 +315,25 @@ class Meca extends Phaser.Scene {
         });
 
         // Ajout du texte de la température
-        this.textTemperature = this.add.text(game.config.width /2 - 50, 300, this.temperature + "°C" ).setStyle({
+        this.textTemperature = this.add.text(game.config.width /2 , 250, this.temperature + "°C" ).setStyle({
             fontSize: '46px',
             fontFamily: 'Arial',
             color: "#0046cc",
             align: 'center'
         });
+        this.textTemperature.setOrigin(0.5);
+
+
+        // Ajout du texte de la température avant dégats
+        this.textTemperatureMax = this.add.text(game.config.width /2 , 320, "Température maximale\ntolérée : " + this.shipStats.dangerTemperature + "°C" ).setStyle({
+            fontSize: '24px',
+            fontFamily: 'Arial',
+            color: "#eecccc",
+            align: 'center'
+        });
+        this.textTemperatureMax.setOrigin(0.5);
+
+
 
         // Ajout manuel du radar
         this.radar = this.add.image(game.config.width / 2, 680, 'radar');
