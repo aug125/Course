@@ -83,8 +83,8 @@ io.sockets.on('connection', function (socket) {
 		io.to(socket.game).emit('askRadarScan');
 	});
 
-	socket.on('sendRadarScan', function(posJoueurX, posJoueurY, listEnnemis) {
-		io.to(socket.game).emit('sendRadarScan', posJoueurX, posJoueurY, listEnnemis);
+	socket.on('sendRadarScan', function(posJoueurX, posJoueurY, listEnnemis, portal) {
+		io.to(socket.game).emit('sendRadarScan', posJoueurX, posJoueurY, listEnnemis, portal);
 	});
 
 

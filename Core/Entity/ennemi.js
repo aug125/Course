@@ -11,7 +11,7 @@ let Ennemi = new Phaser.Class({
         this.scene = scene;
         this.lastFired = 0;
         this.stats = new Stats("ennemi");
-
+        this.gameStats = new Stats("game");        
     },
 
     display: function ()
@@ -22,7 +22,7 @@ let Ennemi = new Phaser.Class({
         //Positionner le vaisseau autour du joueur
         // Choisir un angle
         const angleApparition = Math.random() * Math.PI*2;
-        const distanceApparition = 1000;
+        const distanceApparition = this.gameStats.distanceApparitionEnnemi;
         this.setPosition(this.scene.player.x + Math.cos(angleApparition) * distanceApparition, this.scene.player.y + Math.sin(angleApparition) * distanceApparition);
         this.setRotation(angleApparition + Math.PI); // L'ennemi fait face au joueur
         this.body.maxVelocity.set(this.stats.maxVelocity);

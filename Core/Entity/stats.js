@@ -33,6 +33,12 @@ class Stats{
 			this.degatsMaxSurchauffe = 30; // Dégat maximal que peut provoquer une surchauffe.
 			this.vitesseReparation = 5; // Vitesse de réparation par seconde
 			this.tempsRadarEntreScans = 2000; // Temps entre 2 scans.
+			this.porteeRadar = 3000;
+		}
+		if (owner == "game") {
+			this.maxDistancePortail = 1000; // Distance max du portail en x et y, ramené vers le joueur si trop éloigné
+			this.distanceApparitionEnnemi = 400;
+			this.nbEnnemis = 1;
 		}
 	}
 }

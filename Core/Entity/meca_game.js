@@ -223,7 +223,7 @@ class Meca extends Phaser.Scene {
         this.damageModule(module, damage);        
     }
 
-    onDataScanRadarReceived(scene, posJoueurX, posJoueurY, listEnnemis) {
+    onDataScanRadarReceived(scene, posJoueurX, posJoueurY, listEnnemis, portal) {
         scene.radarDots.getChildren().forEach(dot => {
             dot.setVisible(false);
             dot.setActive(false);
@@ -233,6 +233,9 @@ class Meca extends Phaser.Scene {
         const PosRadarX = game.config.width / 2;
         const PosRadarY = 680;
 
+        // La taille du cercle du radar.
+        const radarSize = 150;
+
         // Afficher un point pour chaque ennemi
         listEnnemis.forEach(ennemi => {
 
@@ -240,15 +243,27 @@ class Meca extends Phaser.Scene {
                 return;
             }
 
-            let offsetX = (ennemi.x - posJoueurX) / 20;
-            let offsetY = (ennemi.y - posJoueurY) / 20;
+            let offsetX = (ennemi.x - posJoueurX) / (this.shipStats.porteeRadar / radarSize);
+            let offsetY = (ennemi.y - posJoueurY) / (this.shipStats.porteeRadar / radarSize);
 
             // On affiche pas le point s'il est trop éloigné du radar
-            if (Math.sqrt((offsetX * offsetX)+(offsetY * offsetY)) > 145){
+            if (Math.sqrt((offsetX * offsetX)+(offsetY * offsetY)) > 150){
                 return;
             }
             scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(0xff0000));
         });
+
+        // Afficher le point pour le portail
+        if (portal.visible) {
+            let offsetX = (portal.x - posJoueurX) / (this.shipStats.porteeRadar / radarSize);
+            let offsetY = (portal.y - posJoueurY) / (this.shipStats.porteeRadar / radarSize);
+             // On affiche pas le point s'il est trop éloigné du radar
+             if (Math.sqrt((offsetX * offsetX)+(offsetY * offsetY)) > 150){
+                return;
+            }
+            scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(0x0022ee));
+        }
+
         this.isRadarReceived = true;
     }
 
@@ -271,7 +286,6 @@ class Meca extends Phaser.Scene {
         // Enregistrement de la caméra...
         this.camera = this.cameras.main;
 
-        // var group = scene.add.group(gameObjects, config);  // Add game objects into group
         const config = {
             classType: Phaser.GameObjects.Sprite,
             defaultKey: null,
@@ -352,8 +366,8 @@ class Meca extends Phaser.Scene {
         });	
 
         //Sockets
-        socket.on("sendRadarScan",  function(posJoueurX, posJoueurY, listEnnemis) {
-            self.onDataScanRadarReceived(self, posJoueurX, posJoueurY, listEnnemis);
+        socket.on("sendRadarScan",  function(posJoueurX, posJoueurY, listEnnemis, portal) {
+            self.onDataScanRadarReceived(self, posJoueurX, posJoueurY, listEnnemis, portal);
         });	
 
 
