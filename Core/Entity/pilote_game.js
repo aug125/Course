@@ -15,6 +15,9 @@ class Pilote extends Phaser.Scene{
     
         this.realShield = 0;
 
+        // Ennemis restants;
+        this.ennemiLeft = 10;
+
         // Qualité. à 0, pas de particules...
         this.quality = 1;
         
@@ -58,6 +61,7 @@ class Pilote extends Phaser.Scene{
             ennemi.remove();
             this.score++;
             this.scoreText.setText('Score: ' + this.score);
+            this.ennemiLeft--;
         }
     };
 
@@ -155,8 +159,7 @@ class Pilote extends Phaser.Scene{
         this.load.image('weaponImg', 'weapon.png');
         this.load.image('shieldImg', 'shield.png');
         this.load.image('flares', 'flares.png');
-
-        this.this = this;
+        this.load.image('portail', 'portail.png');
     };
 
     create()
@@ -237,7 +240,8 @@ class Pilote extends Phaser.Scene{
 
         // Ajout des étoiles en arrière plan
         this.bg = this.add.group({ key: 'star', frameQuantity: 50 });
-        this.bg.setDepth(-1);		
+        this.bg.setDepth(-1);
+
         let rect = new Phaser.Geom.Rectangle(this.cameras.main.width, this.cameras.main.height, this.cameras.main.width, this.cameras.main.height);
         Phaser.Actions.RandomRectangle(this.bg.getChildren(), rect);	
         // Colorer les étoiles pour que ça fasse un peu plus gai
@@ -248,6 +252,11 @@ class Pilote extends Phaser.Scene{
             const green = 255 - variableColor + Math.floor(Math.random() * variableColor);
             const blue = 255 - variableColor + Math.floor(Math.random() * variableColor);				
             element.setTint(red*256*256 + green*256 + blue);
+
+            // Taille aléatoire
+            element.setScale(Math.random());
+            element.setScrollFactor(1);
+
         });       
 
 
