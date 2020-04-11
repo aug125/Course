@@ -236,6 +236,7 @@ class Meca extends Phaser.Scene {
         // La taille du cercle du radar.
         const radarSize = 150;
 
+
         // Afficher un point pour chaque ennemi
         listEnnemis.forEach(ennemi => {
 
@@ -247,9 +248,10 @@ class Meca extends Phaser.Scene {
             let offsetY = (ennemi.y - posJoueurY) / (this.shipStats.porteeRadar / radarSize);
 
             // On affiche pas le point s'il est trop éloigné du radar
-            if (Math.sqrt((offsetX * offsetX)+(offsetY * offsetY)) > 150){
+            if (Math.sqrt((offsetX * offsetX)+(offsetY * offsetY)) > radarSize){
                 return;
             }
+
             scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(0xff0000));
         });
 
@@ -257,11 +259,11 @@ class Meca extends Phaser.Scene {
         if (portal.visible) {
             let offsetX = (portal.x - posJoueurX) / (this.shipStats.porteeRadar / radarSize);
             let offsetY = (portal.y - posJoueurY) / (this.shipStats.porteeRadar / radarSize);
-             // On affiche pas le point s'il est trop éloigné du radar
-             if (Math.sqrt((offsetX * offsetX)+(offsetY * offsetY)) > 150){
-                return;
+            // On affiche pas le point s'il est trop éloigné du radar
+            if (Math.sqrt((offsetX * offsetX)+(offsetY * offsetY)) <= radarSize){
+                scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(0x0022ee));
             }
-            scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(0x0022ee));
+           
         }
 
         this.isRadarReceived = true;

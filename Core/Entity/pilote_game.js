@@ -330,9 +330,9 @@ class Pilote extends Phaser.Scene{
         this.portal = this.physics.add.image(0, 0, 'portail').setDepth(3);
 
         // Création des particules
-        this.playerParticles = this.add.particles('flares');
+        this.particles = this.add.particles('flares');
 
-        this.playerEmitter = this.playerParticles.createEmitter({
+        this.playerEmitter = this.particles.createEmitter({
             lifespan: 600,
             speed: { min: 400, max: 600 },
             scale: { start: 0.2, end: 0 },
@@ -342,8 +342,8 @@ class Pilote extends Phaser.Scene{
         });
 
         // Particules du portail
-        this.portal.wellParticle = this.playerParticles.createGravityWell(this.portal.x, this.portal.y);
-        this.portal.particle = this.playerParticles.createEmitter({
+        this.portal.wellParticle = this.particles.createGravityWell(this.portal.x, this.portal.y);
+        this.portal.particle = this.particles.createEmitter({
             lifespan: 600,           
             speed: { min: 0, max: 350 },
             scale: { start: 0.1, end: 0 },
@@ -482,7 +482,7 @@ class Pilote extends Phaser.Scene{
             this.timeLastEnnemyPop = time;
         }
         
-        const delaiApparitionEnnemi = 5000;
+        const delaiApparitionEnnemi = this.gameStats.tempsApparitionEnnemi;
 
         if (time > this.timeLastEnnemyPop + delaiApparitionEnnemi)
         {

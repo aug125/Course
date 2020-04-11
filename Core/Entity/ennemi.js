@@ -28,7 +28,7 @@ let Ennemi = new Phaser.Class({
         this.body.maxVelocity.set(this.stats.maxVelocity);
 
         // Création des particules
-        this.ennemiEmitter = this.scene.playerParticles.createEmitter({
+        this.ennemiEmitter = this.scene.particles.createEmitter({
             lifespan: 600,
             speed: { min: 400, max: 600 },
             scale: { start: 0.2, end: 0 },
