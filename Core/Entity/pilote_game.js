@@ -674,9 +674,11 @@ class Pilote extends Phaser.Scene{
         const timeElapsedLevel = new Date().getTime() - this.timeStartLevel;
         if (timeElapsedLevel < 500) {
             this.rectangleTransition.setAlpha(1 - (timeElapsedLevel / 500));
+            this.cameras.main.setZoom(2 - timeElapsedLevel / 500);
         }
         else {
             this.rectangleTransition.setAlpha(0);
+            this.cameras.main.setZoom(1);
         }
 
     };
