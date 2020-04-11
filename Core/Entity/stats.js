@@ -13,7 +13,7 @@ class Stats{
 
 		}
 		if (owner == "ennemi") {
-			this.maxVelocity = 300; // Vitesse max
+			this.maxVelocity = 390; // Vitesse max
 			this.acceleration = 200; // Accélération du vaisseau
 			this.vitesseRotation = 150; // Vitesse de rotation du vaisseau
 			this.vitesseTir = 500; // Vitesse du projectile
@@ -36,9 +36,9 @@ class Stats{
 			this.porteeRadar = 3000;
 		}
 		if (owner == "game") {
-			this.maxDistancePortail = 1000; // Distance max du portail en x et y, ramené vers le joueur si trop éloigné
-			this.distanceApparitionEnnemi = 400;
-			this.nbEnnemis = 1;
+			this.maxDistancePortail = 5000; // Distance max du portail en x et y, ramené vers le joueur si trop éloigné
+			this.distanceApparitionEnnemi = 3000;
+			this.nbEnnemis = 10;
 		}
 	}
 }

@@ -23,8 +23,9 @@ class Pilote extends Phaser.Scene{
         
         // Numéro de niveau
         this.currentLevel = 1;
-        
 
+        // Temps depuis le début du niveau
+        this.timeStartLevel = -1;
     }
 
     setGameOver() {
@@ -42,6 +43,7 @@ class Pilote extends Phaser.Scene{
         this.scene.start('GameOver', { score: this.score});
     };
 
+    // Callbacks
     joueurTouche (player, tir) {
         if (tir.isPlayer == false)
         {
@@ -59,13 +61,6 @@ class Pilote extends Phaser.Scene{
         }
     };
 
-    openPortal() {
-        // Ouverture du portail
-        this.portal.setVisible(true);
-        this.portal.timeSetActive = new Date().getTime();
-        this.printText("Portail ouvert !");
-    }    
-
     ennemiTouche (ennemi, tir){
         if (tir.isPlayer == true && ennemi.active == true)
         {
@@ -81,6 +76,19 @@ class Pilote extends Phaser.Scene{
             }            
         }
     };
+
+    portalReached (player, portal) {
+        this.levelInitialisation();
+    }
+
+    openPortal() {
+        // Ouverture du portail
+        this.portal.setVisible(true);
+        this.portal.timeSetActive = new Date().getTime();
+        this.printText("Portail ouvert !");
+    }    
+
+
 
     setWarningTint(image, value, isPrintRequired = true) {
         let message = "";
@@ -155,6 +163,25 @@ class Pilote extends Phaser.Scene{
         this.ennemiLeft =  this.gameStats.nbEnnemis;
         this.textEnnemiLeft.setText("Ennemis restants : " + this.ennemiLeft);
 
+        // Positionner le joueur
+        this.player.x = 0;
+        this.player.y = 0;
+        this.player.setAccelerationX(0);
+        this.player.setAccelerationY(0);
+        this.player.setVelocityX(0);
+        this.player.setVelocityY(0);
+
+        // Enlever tous les ennemis
+        this.ennemis.getChildren().forEach(function(ennemi) {
+            ennemi.remove();
+        });
+
+        // Enlever tous les tirs
+        this.tirs.getChildren().forEach(function(tir) {
+            tir.remove();
+        });
+
+
         // Initialiser le portail
         this.portal.x = Math.random() * this.gameStats.maxDistancePortail * 2 - this.gameStats.maxDistancePortail;
         this.portal.y = Math.random() * this.gameStats.maxDistancePortail * 2 - this.gameStats.maxDistancePortail;
@@ -162,6 +189,8 @@ class Pilote extends Phaser.Scene{
         this.portal.timeSetActive = -1;
         this.portal.setVisible(false);
 
+        // Mettre à jour le compteur                
+        this.timeStartLevel = new Date().getTime();
     }
 
     // Méthodes de socket
@@ -247,6 +276,7 @@ class Pilote extends Phaser.Scene{
 
         this.textPrincipal.timeDisplayed = 0;
         this.textPrincipal.setDepth(10);
+        this.textEnnemiLeft.setDepth(10);
 
         // Création des images de warning
         this.powerWarning = this.add.image(game.config.width - 100, 350, 'powerImg');
@@ -297,7 +327,7 @@ class Pilote extends Phaser.Scene{
         });
 
         // Création du portail
-        this.portal = this.physics.add.image(0, 0, 'portail');
+        this.portal = this.physics.add.image(0, 0, 'portail').setDepth(3);
 
         // Création des particules
         this.playerParticles = this.add.particles('flares');
@@ -314,13 +344,11 @@ class Pilote extends Phaser.Scene{
         // Particules du portail
         this.portal.wellParticle = this.playerParticles.createGravityWell(this.portal.x, this.portal.y);
         this.portal.particle = this.playerParticles.createEmitter({
-            lifespan: 600,
-            x: { min: this.portal.x - 1000, max: this.portal.x + 1000 },
-            y: { min: this.portal.y - 1000, max: this.portal.y + 1000 },
-            speed: { min: 0, max: 50 },
+            lifespan: 600,           
+            speed: { min: 0, max: 350 },
             scale: { start: 0.1, end: 0 },
-            tint: 0xffffff,
-            quantity: 5,
+            tint: 0xbbbbff,
+            quantity: 4,
             blendMode: 'ADD',
             on:false
         });
@@ -331,7 +359,8 @@ class Pilote extends Phaser.Scene{
         // Créer les callbacks en cas de tir 
         this.physics.add.overlap(this.player, this.tirs, this.joueurTouche, null, this);
         this.physics.add.overlap(this.ennemis, this.tirs, this.ennemiTouche, null, this);
-                    
+        this.physics.add.overlap(this.player, this.portal, this.portalReached, null, this);
+        
         // Resize selon l'écran
         // Création de la caméra
         this.camera = this.cameras.main;
@@ -341,10 +370,10 @@ class Pilote extends Phaser.Scene{
         this.bg = this.add.group({ key: 'star', frameQuantity: 50 });
         this.bg.setDepth(-1);
 
-        let rect = new Phaser.Geom.Rectangle(this.cameras.main.width, this.cameras.main.height, this.cameras.main.width, this.cameras.main.height);
-        Phaser.Actions.RandomRectangle(this.bg.getChildren(), rect);	
+        const rectScreen = new Phaser.Geom.Rectangle(0,0, this.cameras.main.width, this.cameras.main.height);
+        Phaser.Actions.RandomRectangle(this.bg.getChildren(), rectScreen);	
+
         // Colorer les étoiles pour que ça fasse un peu plus gai
-        
         this.bg.getChildren().forEach(function(element) {
             const variableColor = 80;
             const red = 255 - variableColor + Math.floor(Math.random() * variableColor);				
@@ -354,8 +383,6 @@ class Pilote extends Phaser.Scene{
 
             // Taille aléatoire
             element.setScale(Math.random());
-            element.setScrollFactor(1);
-
         });       
 
 
@@ -363,12 +390,18 @@ class Pilote extends Phaser.Scene{
         // Définir couleur arrière plan
         this.cameras.main.setBackgroundColor('rgba(0, 0, 0, 2)');
 
+        // Créer rectangle de transition
+        this.rectangleTransition = this.add.rectangle(0,0,game.config.width, game.config.height, 0xeeeeff).setOrigin(0).setAlpha(0);
+        console.log(game.config.width);
+        this.rectangleTransition.setScrollFactor(0);
+        this.rectangleTransition.setDepth(20);
+
         // Définir Taille vaisseau
         this.player.setScale(0.6);
 
         // Définir vitesse max du vaisseau (et ralentissement naturel)
         this.player.body.maxVelocity.set(this.baseShipStats.maxVelocity);
-        this.player.body.drag.set(100);
+        this.player.body.drag.set(150);
 
 
         // Caméra suit le joueur
@@ -563,8 +596,7 @@ class Pilote extends Phaser.Scene{
         }
 
         //Particules du portail
-        this.portal.particle.moveToX = {min: this.portal.x - 1000, max: this.portal.x + 1000};
-        this.portal.particle.moveToY = {min: this.portal.y - 1000, max: this.portal.y + 1000};
+        this.portal.particle.setPosition({min: this.portal.x - 500, max: this.portal.x + 500}, {min: this.portal.y - 500, max: this.portal.y + 500});
         this.portal.wellParticle.x = this.portal.x;
         this.portal.wellParticle.y = this.portal.y;
 
@@ -635,6 +667,16 @@ class Pilote extends Phaser.Scene{
         } 
         else {
             this.textPrincipal.setAlpha(0);
+        }
+
+
+        // Rectangle de transition
+        const timeElapsedLevel = new Date().getTime() - this.timeStartLevel;
+        if (timeElapsedLevel < 500) {
+            this.rectangleTransition.setAlpha(1 - (timeElapsedLevel / 500));
+        }
+        else {
+            this.rectangleTransition.setAlpha(0);
         }
 
     };
