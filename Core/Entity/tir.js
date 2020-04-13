@@ -12,6 +12,8 @@ var Tir = new Phaser.Class({
 
     fire: function (x, y, rotation, velocity, speed, isPlayer, precisionTir, damage)
     {
+        this.setScale(0.5);
+
         let color;
         if (isPlayer)
             color = 0x00dd00;

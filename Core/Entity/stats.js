@@ -1,10 +1,10 @@
 class Stats{
 	constructor(owner){
 		if (owner == "player") {
-			this.maxVelocity = 400; // Vitesse max
-			this.acceleration = 400; // Accélération du vaisseau
+			this.maxVelocity = 250; // Vitesse max
+			this.acceleration = 300; // Accélération du vaisseau
 			this.vitesseRotation = 180; // Vitesse de rotation du vaisseau
-			this.vitesseTir = 700; // Vitesse du projectile
+			this.vitesseTir = 400; // Vitesse du projectile
 			this.rechargementTir = 300; // Temps avant le prochain tir
 			this.precisionTir = 0.1; // Précision du tir. 0 = tire en face
 			this.maxBouclier = 100;
@@ -12,15 +12,24 @@ class Stats{
 			this.degats = 40; // dégats au bouclier/coque
 
 		}
-		if (owner == "ennemi") {
-			this.maxVelocity = 300; // Vitesse max
-			this.acceleration = 200; // Accélération du vaisseau
+
+
+		// Ennemis.
+
+		// pod rouge
+		if (owner == "pod") {
+			this.scale = 0.5; // Taille du vaisseau
+			this.maxVelocity = 250; // Vitesse max
+			this.acceleration = 250; // Accélération du vaisseau
 			this.vitesseRotation = 150; // Vitesse de rotation du vaisseau
-			this.vitesseTir = 500; // Vitesse du projectile
+			this.vitesseTir = 400; // Vitesse du projectile
 			this.rechargementTir = 900; // Temps avant le prochain tir
 			this.precisionTir = 0.0; // Précision du tir. 0 = tire en face
 			this.degats = 25; // dégats au bouclier/coque
 		}
+
+		
+		// Stats du joueur meca		
 		if (owner == "meca") {
 			this.nbModules = 4; // Nombre de modules
 			this.initialTemperature = 30; // Température de base
@@ -39,7 +48,8 @@ class Stats{
 			this.maxDistancePortail = 5000; // Distance max du portail en x et y, ramené vers le joueur si trop éloigné
 			this.distanceApparitionEnnemi = 3000;
 			this.tempsApparitionEnnemi = 4000; // en ms
-			this.nbEnnemis = 10;
+			this.nbEnnemis = 1;
+			
 		}	
 	}
 }

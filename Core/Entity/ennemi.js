@@ -10,14 +10,18 @@ let Ennemi = new Phaser.Class({
         Phaser.GameObjects.Image.call(this, scene, 0, 0, 'vaisseau');
         this.scene = scene;
         this.lastFired = 0;
-        this.stats = new Stats("ennemi");
         this.gameStats = new Stats("game");        
     },
 
-    display: function ()
+    display: function (name)
     {
+        this.stats = new Stats(name);
+        this.setScale(this.stats.scale);
+        this.setTexture(name);
+
         this.setActive(true);
 		this.setVisible(true);  
+
 
         //Positionner le vaisseau autour du joueur
         // Choisir un angle

@@ -188,6 +188,8 @@ class Pilote extends Phaser.Scene{
         this.portal.setScale(0);
         this.portal.timeSetActive = -1;
         this.portal.setVisible(false);
+        this.portal.setAngularVelocity(250);
+
 
         // Mettre à jour le compteur                
         this.timeStartLevel = new Date().getTime();
@@ -241,6 +243,10 @@ class Pilote extends Phaser.Scene{
 
         // Charger les images
         this.load.image('vaisseau', 'vaisseau.png');
+
+        // Vaisseau ennemis
+        this.load.image('pod', 'pod.png');
+
         this.load.image('star', 'star.png');
         this.load.image('tir', 'tir.png');
         this.load.image('bouclier', 'bouclier.png');
@@ -307,8 +313,8 @@ class Pilote extends Phaser.Scene{
 
         // Créations du bouclier
         this.player.shield = this.add.image(0, 0, 'bouclier').setAlpha(this.realShield).setScale(0.6);
-        // Mettre le bouclier au premier plan
         this.player.shield.setDepth(1);
+        this.player.shield.setScale(0.5);
 
         
         // Création des "tirs"			
@@ -367,7 +373,7 @@ class Pilote extends Phaser.Scene{
         this.camera.setSize(game.config.width, game.config.height);
 
         // Ajout des étoiles en arrière plan
-        this.bg = this.add.group({ key: 'star', frameQuantity: 50 });
+        this.bg = this.add.group({ key: 'star', frameQuantity: 100 });
         this.bg.setDepth(-1);
 
         const rectScreen = new Phaser.Geom.Rectangle(0,0, this.cameras.main.width, this.cameras.main.height);
@@ -375,7 +381,7 @@ class Pilote extends Phaser.Scene{
 
         // Colorer les étoiles pour que ça fasse un peu plus gai
         this.bg.getChildren().forEach(function(element) {
-            const variableColor = 80;
+            const variableColor = 100;
             const red = 255 - variableColor + Math.floor(Math.random() * variableColor);				
             const green = 255 - variableColor + Math.floor(Math.random() * variableColor);
             const blue = 255 - variableColor + Math.floor(Math.random() * variableColor);				
@@ -392,12 +398,11 @@ class Pilote extends Phaser.Scene{
 
         // Créer rectangle de transition
         this.rectangleTransition = this.add.rectangle(0,0,game.config.width, game.config.height, 0xeeeeff).setOrigin(0).setAlpha(0);
-        console.log(game.config.width);
         this.rectangleTransition.setScrollFactor(0);
         this.rectangleTransition.setDepth(20);
 
         // Définir Taille vaisseau
-        this.player.setScale(0.6);
+        this.player.setScale(0.4);
 
         // Définir vitesse max du vaisseau (et ralentissement naturel)
         this.player.body.maxVelocity.set(this.baseShipStats.maxVelocity);
@@ -489,7 +494,7 @@ class Pilote extends Phaser.Scene{
             let ennemi = this.ennemis.get();
             if (ennemi)
             {
-                ennemi.display();
+                ennemi.display("pod");
                 this.timeLastEnnemyPop = time;
             }
         }
@@ -674,7 +679,7 @@ class Pilote extends Phaser.Scene{
         const timeElapsedLevel = new Date().getTime() - this.timeStartLevel;
         if (timeElapsedLevel < 500) {
             this.rectangleTransition.setAlpha(1 - (timeElapsedLevel / 500));
-            this.cameras.main.setZoom(2 - timeElapsedLevel / 500);
+            this.cameras.main.setZoom(2 - Math.sqrt((timeElapsedLevel / 500)));
         }
         else {
             this.rectangleTransition.setAlpha(0);
