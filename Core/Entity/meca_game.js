@@ -234,7 +234,7 @@ class Meca extends Phaser.Scene {
         const PosRadarY = 680;
 
         // La taille du cercle du radar.
-        const radarSize = 150;
+        const radarSize = 145;
 
 
         // Afficher un point pour chaque ennemi

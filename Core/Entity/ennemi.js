@@ -73,13 +73,26 @@ let Ennemi = new Phaser.Class({
         this.body.setAccelerationX(velocity.x);
         this.body.setAccelerationY(velocity.y);
 
+        // Calcul distance entre vaisseau et joueur
+        const distanceEnnemiPlayer = Phaser.Math.Distance.Between(this.scene.player.x, this.scene.player.y, this.x, this.y);
+
         // Faire tirer le vaisseau
-        if (time - this.lastFired > this.stats.rechargementTir && this.scene.gameOver == false) {
+        if (time - this.lastFired > this.stats.rechargementTir && this.scene.gameOver == false && distanceEnnemiPlayer < 1000) {
             let tir = this.scene.tirs.get();
             if (tir)
             {
                 tir.fire(this.x, this.y, this.rotation, new Phaser.Math.Vector2(0,0), this.stats.vitesseTir, false, this.stats.precisionTir, this.stats.degats);
                 this.lastFired = time;
+
+
+                let distanceThreshold = 1500; //This is the max distance from the object. Any farther and no sound is played.
+                console.log(distanceEnnemiPlayer);
+                const normalizedSound = 1 - (distanceEnnemiPlayer / distanceThreshold);
+                this.scene.soundLaser4.volume = Phaser.Math.Easing.Sine.In(normalizedSound);                
+                this.scene.soundLaser4.play();
+            }
+            else {
+                console.log("PLUS DE TIR ! ");
             }
         }
 

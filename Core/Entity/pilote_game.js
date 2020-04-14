@@ -37,7 +37,8 @@ class Pilote extends Phaser.Scene{
         this.player.setAccelerationY (0);
         this.player.setAngularVelocity(0);
         this.player.setVisible(false);
-        this.player.shield.setAlpha(0);
+        
+        this.shield.setAlpha(0);
 
         this.gameOver = true;
         this.scene.start('GameOver', { score: this.score});
@@ -65,6 +66,7 @@ class Pilote extends Phaser.Scene{
         if (tir.isPlayer == true && ennemi.active == true)
         {
             ennemi.remove();
+            tir.remove();
             this.score++;
             if (this.ennemiLeft > 0) {
                 this.ennemiLeft--;
@@ -255,6 +257,12 @@ class Pilote extends Phaser.Scene{
         this.load.image('shieldImg', 'shield.png');
         this.load.image('flares', 'flares.png');
         this.load.image('portail', 'portail.png');
+
+        // Sons
+        this.load.audio('laser7', "laser7.wav");
+        this.load.audio('laser4', "laser4.wav");
+
+
     };
 
     create()
@@ -305,6 +313,10 @@ class Pilote extends Phaser.Scene{
         this.shieldWarning.setScrollFactor(0);
 
 
+        // Charger les sons
+        this.soundLaser7 = this.sound.add("laser7");
+        this.soundLaser4 = this.sound.add("laser4");
+
         // Statistiques du vaisseau
         this.baseShipStats = new Stats("player"); 
 
@@ -312,10 +324,10 @@ class Pilote extends Phaser.Scene{
         this.gameStats = new Stats("game");
 
         // Créations du bouclier
-        this.player.shield = this.add.image(0, 0, 'bouclier').setAlpha(this.realShield).setScale(0.6);
-        this.player.shield.setDepth(1);
-        this.player.shield.setScale(0.5);
-
+        this.shield = this.physics.add.image(0, 0, 'bouclier').setAlpha(this.realShield);
+        this.shield.setDepth(1);
+        this.shield.setScale(0.4);
+        this.shield.setAngularVelocity(150);
         
         // Création des "tirs"			
         this.tirs = this.physics.add.group({
@@ -477,8 +489,8 @@ class Pilote extends Phaser.Scene{
             this.realShield = Math.min(this.realShield + this.baseShipStats.rechargementBouclier*delta / 1000, targerShield);
         } 
 
-        this.player.shield.setPosition (this.player.x, this.player.y);
-        this.player.shield.setAlpha(this.realShield / this.baseShipStats.maxBouclier);
+        this.shield.setPosition (this.player.x, this.player.y);
+        this.shield.setAlpha(this.realShield / this.baseShipStats.maxBouclier);
 
         // Création des ennemis	
         
@@ -575,6 +587,7 @@ class Pilote extends Phaser.Scene{
                     {
                         tir.fire(this.player.x, this.player.y, this.player.rotation, this.player.body.velocity, this.baseShipStats.vitesseTir, true, this.baseShipStats.precisionTir,  this.baseShipStats.degats);
                         this.lastFired = time;
+                        this.soundLaser7.play();
                     }
                 }
             }
@@ -677,9 +690,9 @@ class Pilote extends Phaser.Scene{
 
         // Rectangle de transition
         const timeElapsedLevel = new Date().getTime() - this.timeStartLevel;
-        if (timeElapsedLevel < 500) {
-            this.rectangleTransition.setAlpha(1 - (timeElapsedLevel / 500));
-            this.cameras.main.setZoom(2 - Math.sqrt((timeElapsedLevel / 500)));
+        if (timeElapsedLevel < 1500) {
+            this.rectangleTransition.setAlpha(1 - (timeElapsedLevel / 1500));
+            this.cameras.main.setZoom(2 - Math.sqrt((timeElapsedLevel / 1500)));
         }
         else {
             this.rectangleTransition.setAlpha(0);
