@@ -587,6 +587,7 @@ class Pilote extends Phaser.Scene{
                     {
                         tir.fire(this.player.x, this.player.y, this.player.rotation, this.player.body.velocity, this.baseShipStats.vitesseTir, true, this.baseShipStats.precisionTir,  this.baseShipStats.degats);
                         this.lastFired = time;
+                        this.soundLaser7.setDetune(Math.random() * 500);
                         this.soundLaser7.play();
                     }
                 }
@@ -692,11 +693,11 @@ class Pilote extends Phaser.Scene{
         const timeElapsedLevel = new Date().getTime() - this.timeStartLevel;
         if (timeElapsedLevel < 1500) {
             this.rectangleTransition.setAlpha(1 - (timeElapsedLevel / 1500));
-            this.cameras.main.setZoom(2 - Math.sqrt((timeElapsedLevel / 1500)));
+            //this.cameras.main.setZoom(2 - Math.sqrt((timeElapsedLevel / 1500)));
         }
         else {
             this.rectangleTransition.setAlpha(0);
-            this.cameras.main.setZoom(1);
+            //this.cameras.main.setZoom(1);
         }
 
     };

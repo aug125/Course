@@ -36,7 +36,7 @@ class Stats{
 			this.dangerTemperature = 500; // Température minimale du danger 
 			this.maxTemperature = 1000; // Température maximale
 			this.consommationMaxTemperature = 400; // La consommation permettant d'atteindre la température maximale
-			this.coefficientChaleur = 0.2; // Influe sur la vitesse de montée et de descente de température		
+			this.coefficientChaleur = 0.1; // Influe sur la vitesse de montée et de descente de température		
 			this.dureeMinimaleEntrePannes = 3; // Durée minimale entre l'ajout de pannes en seconde
 			this.dureeMaximaleEntrePannes = 10; // Durée maximale entre l'ajout des pannes en seconde
 			this.degatsMaxSurchauffe = 30; // Dégat maximal que peut provoquer une surchauffe.

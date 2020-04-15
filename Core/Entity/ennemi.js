@@ -89,10 +89,8 @@ let Ennemi = new Phaser.Class({
                 console.log(distanceEnnemiPlayer);
                 const normalizedSound = 1 - (distanceEnnemiPlayer / distanceThreshold);
                 this.scene.soundLaser4.volume = Phaser.Math.Easing.Sine.In(normalizedSound);                
+                this.scene.soundLaser4.setDetune(Math.random() * 500);
                 this.scene.soundLaser4.play();
-            }
-            else {
-                console.log("PLUS DE TIR ! ");
             }
         }
 

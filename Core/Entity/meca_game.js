@@ -224,6 +224,9 @@ class Meca extends Phaser.Scene {
     }
 
     onDataScanRadarReceived(scene, posJoueurX, posJoueurY, listEnnemis, portal) {
+
+        let minDistanceEnnemi = -1;
+
         scene.radarDots.getChildren().forEach(dot => {
             dot.setVisible(false);
             dot.setActive(false);
@@ -248,8 +251,13 @@ class Meca extends Phaser.Scene {
             let offsetY = (ennemi.y - posJoueurY) / (this.shipStats.porteeRadar / radarSize);
 
             // On affiche pas le point s'il est trop éloigné du radar
-            if (Math.sqrt((offsetX * offsetX)+(offsetY * offsetY)) > radarSize){
+            const distanceEnnemi = Math.sqrt((offsetX * offsetX)+(offsetY * offsetY));
+            if ( distanceEnnemi > radarSize){
                 return;
+            }
+
+            if (minDistanceEnnemi == -1 || distanceEnnemi < minDistanceEnnemi) {
+                minDistanceEnnemi = distanceEnnemi;
             }
 
             scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(0xff0000));
@@ -260,13 +268,28 @@ class Meca extends Phaser.Scene {
             let offsetX = (portal.x - posJoueurX) / (this.shipStats.porteeRadar / radarSize);
             let offsetY = (portal.y - posJoueurY) / (this.shipStats.porteeRadar / radarSize);
             // On affiche pas le point s'il est trop éloigné du radar
-            if (Math.sqrt((offsetX * offsetX)+(offsetY * offsetY)) <= radarSize){
+
+            const distanceRadar = Math.sqrt((offsetX * offsetX)+(offsetY * offsetY));
+            if (distanceRadar <= radarSize){
                 scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(0x0022ee));
+            }
+            if (minDistanceEnnemi == -1 || distanceRadar < minDistanceEnnemi) {
+                minDistanceEnnemi = distanceRadar;
             }
            
         }
 
         this.isRadarReceived = true;
+
+        // Jouer son radar
+        if (minDistanceEnnemi != -1) {
+            minDistanceEnnemi = Math.max(50, minDistanceEnnemi);
+            scene.soundRadar.setRate(1 + 5 / minDistanceEnnemi);
+            scene.soundRadar.setVolume(0.4);
+            scene.soundRadar.play();
+            this.playSoundRadar  = true;
+        }
+
     }
 
     // Fonctions phaser
@@ -279,6 +302,10 @@ class Meca extends Phaser.Scene {
         this.load.image('radar', 'radar.png');
         this.load.image('dot', 'point.png');
         
+
+        this.load.audio('soundClavier', "clavier.ogg");
+        this.load.audio('soundRadar', "radar.ogg");
+
         // Nécessaire pour corriger le bug du slider
         this.scale.setGameSize(game.config.width, game.config.height);
 
@@ -302,6 +329,14 @@ class Meca extends Phaser.Scene {
 
         // Liste des points affichés sur le radar.
         this.radarDots = this.add.group(config);
+
+        // Sons
+        this.soundClavier = this.sound.add("soundClavier");
+        this.soundClavier.setLoop(true);
+        this.soundClavier.setVolume(0.2);
+        this.soundClavier.play();
+
+        this.soundRadar = this.sound.add("soundRadar");
 
         // Gestion du relachement du clic gauche
         let self = this;
@@ -348,7 +383,6 @@ class Meca extends Phaser.Scene {
             align: 'center'
         });
         this.textTemperatureMax.setOrigin(0.5);
-
 
 
         // Ajout manuel du radar
@@ -401,7 +435,6 @@ class Meca extends Phaser.Scene {
 
         // Vérifier s'il s'est  écoulé suffisemment de temps avant un accident de surchauffe
         if (Date.now() >= this.nextFailureVerification){
-
             // Définir la prochaine vérification
             const min = this.shipStats.dureeMinimaleEntrePannes;
             const max = this.shipStats.dureeMaximaleEntrePannes;
@@ -488,4 +521,5 @@ class Meca extends Phaser.Scene {
         // Mettre à jour la luminosité des points sur le radar
         this.radarDots.setAlpha(1 - (time - this.timeLastReceiveScan) /  this.shipStats.tempsRadarEntreScans);
     }	
+
 }
