@@ -214,6 +214,7 @@ class Meca extends Phaser.Scene {
     // Received from pilote
     onDamageReceived(damage) {
         this.camera.shake(200,0.02);
+        this.soundChocs[Math.floor(Math.random()*2)].play();
         let module;
         const modules = Array.from(this.listModules.values());
         // Prendre un module au hasard       
@@ -306,6 +307,9 @@ class Meca extends Phaser.Scene {
         this.load.audio('soundClavier', "clavier.ogg");
         this.load.audio('soundRadar', "radar.ogg");
 
+        this.load.audio('soundChoc2', "choc2.ogg");
+        this.load.audio('soundChoc3', "choc3.ogg");
+
         // Nécessaire pour corriger le bug du slider
         this.scale.setGameSize(game.config.width, game.config.height);
 
@@ -337,6 +341,9 @@ class Meca extends Phaser.Scene {
         this.soundClavier.play();
 
         this.soundRadar = this.sound.add("soundRadar");
+        
+        this.soundChocs = [this.sound.add("soundChoc2"), this.sound.add("soundChoc3")];
+
 
         // Gestion du relachement du clic gauche
         let self = this;

@@ -46,7 +46,7 @@ class Pilote extends Phaser.Scene{
 
     // Callbacks
     joueurTouche (player, tir) {
-        if (tir.isPlayer == false)
+        if (tir.isPlayer == false && tir.active)
         {
 
             // Le bouclier encaisse en premier
@@ -55,7 +55,9 @@ class Pilote extends Phaser.Scene{
             {
                 this.camera.shake(200,0.02);
                 socket.emit("damage", tir.damage);
-                //  You can set your own intensity and duration
+
+                this.soundChocs[Math.floor(Math.random()*2)].play();
+                console.log(Math.random());
                 
             }
             tir.remove();
@@ -261,6 +263,8 @@ class Pilote extends Phaser.Scene{
         // Sons
         this.load.audio('laser7', "laser7.wav");
         this.load.audio('laser4', "laser4.wav");
+        this.load.audio('soundChoc2', "choc2.ogg");
+        this.load.audio('soundChoc3', "choc3.ogg");
 
 
     };
@@ -316,6 +320,7 @@ class Pilote extends Phaser.Scene{
         // Charger les sons
         this.soundLaser7 = this.sound.add("laser7");
         this.soundLaser4 = this.sound.add("laser4");
+        this.soundChocs = [this.sound.add("soundChoc2"), this.sound.add("soundChoc3")];
 
         // Statistiques du vaisseau
         this.baseShipStats = new Stats("player"); 
