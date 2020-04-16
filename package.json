@@ -6,7 +6,6 @@
         "ejs": ">=2.5.5",
         "express": "~4.13.3",
         "phaser": "^3.22.0",
-        "socket": "*",
         "socket.io": "^2.3.0",
         "phaser3-rex-plugins" : "*"
 
