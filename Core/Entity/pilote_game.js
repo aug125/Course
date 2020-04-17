@@ -82,6 +82,7 @@ class Pilote extends Phaser.Scene{
     };
 
     portalReached (player, portal) {
+        this.soundTeleport.play();
         this.levelInitialisation();
     }
 
@@ -261,13 +262,14 @@ class Pilote extends Phaser.Scene{
         this.load.image('portail', 'portail.png');
 
         // Sons
-        this.load.audio('laser7', "laser7.wav");
-        this.load.audio('laser4', "laser4.wav");
+        this.load.audio('soundLaser4', "laser4.wav");
+        this.load.audio('soundLaser7', "laser7.wav");        
         this.load.audio('soundChoc2', "choc2.ogg");
         this.load.audio('soundChoc3', "choc3.ogg");
 
         this.load.audio('soundVortex', "vortex.ogg");
-
+        this.load.audio('soundTeleport', "teleport.ogg");
+        this.load.audio('soundReacteur', "reacteur.ogg");
 
     };
 
@@ -320,9 +322,14 @@ class Pilote extends Phaser.Scene{
 
 
         // Charger les sons
-        this.soundLaser7 = this.sound.add("laser7");
-        this.soundLaser4 = this.sound.add("laser4");
+        this.soundLaser4 = this.sound.add("soundLaser4");
+        this.soundLaser7 = this.sound.add("soundLaser7");
         this.soundChocs = [this.sound.add("soundChoc2"), this.sound.add("soundChoc3")];
+        this.soundTeleport = this.sound.add("soundTeleport");
+
+        this.soundReacteur = this.sound.add("soundReacteur");
+        this.soundReacteur.setLoop(true);
+        this.soundReacteur.setVolume(0.5);
 
         this.soundVortex = this.sound.add("soundVortex");
         this.soundVortex.setVolume(0);
@@ -560,7 +567,12 @@ class Pilote extends Phaser.Scene{
 
             const velocity = this.physics.velocityFromRotation(this.player.rotation, this.baseShipStats.acceleration * this.meca_power);
             this.player.setAccelerationX(velocity.x);
-            this.player.setAccelerationY(velocity.y);				
+            this.player.setAccelerationY(velocity.y);	
+            
+            // Ajouter le son
+            if (!this.soundReacteur.isPlaying) {
+                this.soundReacteur.play();
+            }
         }
         else if (cursors.down.isDown)
         {
@@ -575,7 +587,13 @@ class Pilote extends Phaser.Scene{
         
             const velocity = this.physics.velocityFromRotation(this.player.rotation + Math.PI, this.baseShipStats.acceleration * this.meca_power);
             this.player.setAccelerationX(velocity.x);
-            this.player.setAccelerationY(velocity.y);					
+            this.player.setAccelerationY(velocity.y);
+
+            // Ajouter le son
+            if (!this.soundReacteur.isPlaying) {
+                this.soundReacteur.play();
+            }    
+
         }
 
         else
@@ -583,6 +601,12 @@ class Pilote extends Phaser.Scene{
             this.playerEmitter.on = false;
             this.player.setAccelerationX (0);
             this.player.setAccelerationY (0);
+
+            // Ajouter le son
+            if (this.soundReacteur.isPlaying) {
+                this.soundReacteur.stop();
+            }
+
         }
 
         // Tirer
