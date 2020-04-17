@@ -39,7 +39,7 @@
 			document.oncontextmenu = new Function("return false");
 
 			// Connexion socket.io
-			var socket = io.connect('https://systemeb.herokuapp.com:8080');
+			var socket = io.connect('http://127.0.0.1:8080');
 //			let socket = io.connect('http://192.168.1.110:8080');
 						
 			socket.emit('newPlayer');

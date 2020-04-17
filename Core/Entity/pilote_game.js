@@ -266,6 +266,8 @@ class Pilote extends Phaser.Scene{
         this.load.audio('soundChoc2', "choc2.ogg");
         this.load.audio('soundChoc3', "choc3.ogg");
 
+        this.load.audio('soundVortex', "vortex.ogg");
+
 
     };
 
@@ -322,6 +324,11 @@ class Pilote extends Phaser.Scene{
         this.soundLaser4 = this.sound.add("laser4");
         this.soundChocs = [this.sound.add("soundChoc2"), this.sound.add("soundChoc3")];
 
+        this.soundVortex = this.sound.add("soundVortex");
+        this.soundVortex.setVolume(0);
+        this.soundVortex.setLoop(true);
+        this.soundVortex.play();
+        
         // Statistiques du vaisseau
         this.baseShipStats = new Stats("player"); 
 
@@ -641,7 +648,15 @@ class Pilote extends Phaser.Scene{
             this.portal.particle.on = false;
         }
 
+        // Gérer le son du portail
+        const distancePortal = Phaser.Math.Distance.Between(this.portal.x, this.portal.y, this.player.x, this.player.y);
 
+        if (distancePortal < 2000 && this.portal.visible) {
+            this.soundVortex.setVolume(1 - (distancePortal / 2000));
+        }
+        else {
+            this.soundVortex.setVolume(0);
+        }
 
 
         // Affichage des warnings

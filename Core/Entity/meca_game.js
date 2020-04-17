@@ -304,6 +304,7 @@ class Meca extends Phaser.Scene {
         this.load.image('dot', 'point.png');
         
 
+        this.load.audio('soundCockpit', "cockpit.ogg");
         this.load.audio('soundClavier', "clavier.ogg");
         this.load.audio('soundRadar', "radar.ogg");
 
@@ -339,6 +340,25 @@ class Meca extends Phaser.Scene {
         this.soundClavier.setLoop(true);
         this.soundClavier.setVolume(0.2);
         this.soundClavier.play();
+        let self = this;
+        this.soundClavier.on('looped', function() {
+            if (self.soundClavier.volume == 0) {
+                self.soundClavier.setVolume(0.2);
+            }
+            else {
+                self.soundClavier.setVolume(0);
+            }
+            console.log(self.soundClavier.volume);
+        });
+
+
+        // Sons
+        this.soundCockpit = this.sound.add("soundCockpit");
+        this.soundCockpit.setLoop(true);
+        this.soundCockpit.setVolume(0.4);
+        this.soundCockpit.play();
+
+
 
         this.soundRadar = this.sound.add("soundRadar");
         
@@ -346,7 +366,6 @@ class Meca extends Phaser.Scene {
 
 
         // Gestion du relachement du clic gauche
-        let self = this;
         this.input.on('pointerup', function (pointer) {        
             self.sendSettings();        
         }, this);    
