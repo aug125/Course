@@ -26,6 +26,9 @@ class Pilote extends Phaser.Scene{
 
         // Temps depuis le début du niveau
         this.timeStartLevel = -1;
+
+        this.bonusManager = new BonusManager();
+
     }
 
     setGameOver() {
@@ -56,9 +59,7 @@ class Pilote extends Phaser.Scene{
                 this.camera.shake(200,0.02);
                 socket.emit("damage", tir.damage);
 
-                this.soundChocs[Math.floor(Math.random()*2)].play();
-                console.log(Math.random());
-                
+                this.soundChocs[Math.floor(Math.random()*2)].play();                
             }
             tir.remove();
         }
@@ -91,7 +92,6 @@ class Pilote extends Phaser.Scene{
                         children[i].x = ennemi.x;
                         children[i].y = ennemi.y;
                         children[i].setAngularVelocity(40);
-                        console.log(children [i]);
                         break;
                     }
                 }
@@ -104,11 +104,13 @@ class Pilote extends Phaser.Scene{
         this.levelInitialisation();
     }
 
-    bonusReached (player, bonus)  {
-        if (bonus.visible == false) {
+    bonusReached (player, pictureBonus)  {
+        if (pictureBonus.visible == false) {
             return;
         }
-        bonus.setVisible(false);
+        pictureBonus.setVisible(false);
+        let bonus = this.bonusManager.getNewBonus();
+        console.log(bonus);
     }
 
     openPortal() {
@@ -775,6 +777,18 @@ class Pilote extends Phaser.Scene{
             this.rectangleTransition.setAlpha(0);
             //this.cameras.main.setZoom(1);
         }
+
+        // Tinte des bonus
+        const timeLoop = 1800;
+        const currentTime = Math.min(Math.floor(time%timeLoop), timeLoop - Math.floor(time%timeLoop));
+        const color = Phaser.Display.Color.Interpolate.RGBWithRGB(5,200,30,
+            200,5,200, 
+            timeLoop, 
+            currentTime);
+
+        this.bonus.setTint(Math.round(color.r) * 256 * 256 + Math.round(color.g) * 256 + Math.round(color.b));
+
+        //this.bonus.setTint(256 * 256 * 200 + 256 * 250 + 250);
 
     };
 }
