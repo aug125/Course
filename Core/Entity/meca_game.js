@@ -70,6 +70,7 @@ class Meca extends Phaser.Scene {
 
             // Création du slider de puissance
             module.manette = scene.add.image(posX, posY, 'manette');
+            module.manette.setTint(color);
             module.manette.originY = 1;        
             module.slider = scene.plugins.get('rexsliderplugin').add(module.manette, {
             endPoints: [{

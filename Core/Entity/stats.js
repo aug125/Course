@@ -2,7 +2,7 @@ class Stats{
 	constructor(owner){
 		if (owner == "player") {
 			this.maxVelocity = 250; // Vitesse max
-			this.acceleration = 300; // Accélération du vaisseau
+			this.acceleration = 300; 
 			this.vitesseRotation = 180; // Vitesse de rotation du vaisseau
 			this.vitesseTir = 600; // Vitesse du projectile
 			this.rechargementTir = 300; // Temps avant le prochain tir
@@ -20,7 +20,7 @@ class Stats{
 		if (owner == "pod") {
 			this.scale = 0.5; // Taille du vaisseau
 			this.maxVelocity = 250; // Vitesse max
-			this.acceleration = 250; // Accélération du vaisseau
+			this.acceleration = 250; 
 			this.vitesseRotation = 150; // Vitesse de rotation du vaisseau
 			this.vitesseTir = 600; // Vitesse du projectile
 			this.rechargementTir = 900; // Temps avant le prochain tir
@@ -48,8 +48,9 @@ class Stats{
 			this.maxDistancePortail = 5000; // Distance max du portail en x et y, ramené vers le joueur si trop éloigné
 			this.distanceApparitionEnnemi = 3000;
 			this.tempsApparitionEnnemi = 4000; // en ms
-			this.nbEnnemis = 1;
-			
+			this.nbEnnemis = 10;
+			this.probaBonusParEnnemi = 0.99; // Proba de lâcher un bonus par ennemi
+			this.maxBonusParNiveau = 3;			
 		}	
 	}
 }

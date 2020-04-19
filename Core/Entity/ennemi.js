@@ -86,7 +86,6 @@ let Ennemi = new Phaser.Class({
 
 
                 let distanceThreshold = 1500; //This is the max distance from the object. Any farther and no sound is played.
-                console.log(distanceEnnemiPlayer);
                 const normalizedSound = 1 - (distanceEnnemiPlayer / distanceThreshold);
                 this.scene.soundLaser4.volume = Phaser.Math.Easing.Sine.In(normalizedSound);                
                 this.scene.soundLaser4.setDetune(Math.random() * 500);

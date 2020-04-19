@@ -77,13 +77,38 @@ class Pilote extends Phaser.Scene{
             if (this.ennemiLeft == 0 && this.portal.visible == false) {
                 this.openPortal();
                 this.textEnnemiLeft.setText("Trouvez le portail");
-            }            
+            }
+            
+            // Apparition du bonus
+            if (Math.random() < this.gameStats.probaBonusParEnnemi) {
+
+                let children = this.bonus.getChildren();
+
+                for (let i = 0; i < children.length; i++) {
+                    if (children[i].visible == false) {
+
+                        children[i].setVisible(true);
+                        children[i].x = ennemi.x;
+                        children[i].y = ennemi.y;
+                        children[i].setAngularVelocity(40);
+                        console.log(children [i]);
+                        break;
+                    }
+                }
+            }
         }
     };
 
     portalReached (player, portal) {
         this.soundTeleport.play();
         this.levelInitialisation();
+    }
+
+    bonusReached (player, bonus)  {
+        if (bonus.visible == false) {
+            return;
+        }
+        bonus.setVisible(false);
     }
 
     openPortal() {
@@ -260,6 +285,7 @@ class Pilote extends Phaser.Scene{
         this.load.image('shieldImg', 'shield.png');
         this.load.image('flares', 'flares.png');
         this.load.image('portail', 'portail.png');
+        this.load.image('bonus', 'bonus.png');
 
         // Sons
         this.load.audio('soundLaser4', "laser4.wav");
@@ -329,7 +355,7 @@ class Pilote extends Phaser.Scene{
 
         this.soundReacteur = this.sound.add("soundReacteur");
         this.soundReacteur.setLoop(true);
-        this.soundReacteur.setVolume(0.5);
+        this.soundReacteur.setVolume(0.8);
 
         this.soundVortex = this.sound.add("soundVortex");
         this.soundVortex.setVolume(0);
@@ -390,6 +416,13 @@ class Pilote extends Phaser.Scene{
             on:false
         });
 
+        // Bonus
+        this.bonus = this.physics.add.group({
+            key: 'bonus',
+            frameQuantity: 5
+        });
+        this.bonus.setVisible(false);
+
         this.playerEmitter.setFrequency(500, 1);
         this.playerEmitter.startFollow(this.player);
  
@@ -397,6 +430,7 @@ class Pilote extends Phaser.Scene{
         this.physics.add.overlap(this.player, this.tirs, this.joueurTouche, null, this);
         this.physics.add.overlap(this.ennemis, this.tirs, this.ennemiTouche, null, this);
         this.physics.add.overlap(this.player, this.portal, this.portalReached, null, this);
+        this.physics.add.overlap(this.player, this.bonus, this.bonusReached, null, this);
         
         // Resize selon l'écran
         // Création de la caméra
@@ -421,8 +455,6 @@ class Pilote extends Phaser.Scene{
             // Taille aléatoire
             element.setScale(Math.random());
         });       
-
-
 
         // Définir couleur arrière plan
         this.cameras.main.setBackgroundColor('rgba(0, 0, 0, 2)');
