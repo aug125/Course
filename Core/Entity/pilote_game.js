@@ -110,7 +110,36 @@ class Pilote extends Phaser.Scene{
         }
         pictureBonus.setVisible(false);
         let bonus = this.bonusManager.getNewBonus();
-        console.log(bonus);
+
+        let rarityText;
+        let color;
+        if (bonus.rarity < 0.2) {
+            rarityText = "Commun";
+            color = "#eeee44";
+        }
+        else if (bonus.rarity < 0.4) {
+            rarityText = "Peu commun";
+            color = "#11cc11";
+        }
+
+        else if (bonus.rarity < 0.6) {
+            rarityText = "Rare";
+            color = "#22aaff";
+        }
+
+        else if (bonus.rarity < 0.8) {
+            rarityText = "Très rare";
+            color = "#9900aa";
+        }
+        else {
+            rarityText = "Légendaire";
+            color = "#ff4400";
+        }
+
+        this.printText("Ramassé :\n" + bonus.name + " (" + rarityText + ")", color);
+
+        // Envoyé le bonus au meca
+        socket.emit("bonus",  bonus);
     }
 
     openPortal() {
@@ -183,10 +212,11 @@ class Pilote extends Phaser.Scene{
         this.setWarningTint(image, 0);
     }
 
-    printText(text) {
+    printText(text, color = "#ccffcc") {
         this.textPrincipal.setText(text);
         this.textPrincipal.timeDisplayed = new Date().getTime();
         this.textPrincipal.setAlpha(1);
+        this.textPrincipal.setColor(color);
     }    
 
     levelInitialisation() {

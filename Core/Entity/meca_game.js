@@ -17,6 +17,7 @@ class Meca extends Phaser.Scene {
         this.timeLastReceiveScan = 0;
 
         this.initializeFailures();
+        
     }
 
     initializeFailures() {
@@ -56,11 +57,9 @@ class Meca extends Phaser.Scene {
         module.y = posY;
         module.size = size;
 
-        let graphics = scene.add.graphics();        
-
         // Création de l'arrière plan
-        graphics.lineStyle(2, color, 1);
-        graphics.strokeRoundedRect(posX-225, posY-150, 450 * size, 400, 32);
+        this.graphics.lineStyle(2, color, 1);
+        this.graphics.strokeRoundedRect(posX-225, posY-150, 450 * size, 400, 32);
 
         module.disableGraphics = scene.add.graphics();
         module.disableGraphics.setDepth(-1);
@@ -130,6 +129,46 @@ class Meca extends Phaser.Scene {
                 color: colorSharp,
                 align: 'center'
             });
+        }
+
+        if (module.name == "principal") {
+        // Ces ajouts sont mis manuellement dans la partie "système principal"
+
+            module.textEnergie = this.add.text(game.config.width /2 + 30  , 150, "CONSOMMATION\nACTUELLE").setStyle({
+                fontSize: '18px',
+                fontFamily: 'Arial',
+                color: "#ffffff",
+                align: 'center'
+            });
+
+            module.textEnergie.setOrigin(1,0);
+
+            // Ajout du texte de puissance utilisée
+            module.textEnergieValue = this.add.text(game.config.width /2 + 60, 150, this.sumEnergyUsed + " GW" ).setStyle({
+                fontSize: '24px',
+                fontFamily: 'Arial',
+                color: "#00c815",
+                align: 'center'
+            });
+
+            // Ajout du texte de la température
+            module.textTemperature = this.add.text(game.config.width /2 , 250, this.temperature + "°C" ).setStyle({
+                fontSize: '46px',
+                fontFamily: 'Arial',
+                color: "#0046cc",
+                align: 'center'
+            });
+            module.textTemperature.setOrigin(0.5);
+
+
+            // Ajout du texte de la température avant dégats
+            module.textTemperatureMax = this.add.text(game.config.width /2 , 320, "Température maximale\ntolérée : " + this.shipStats.dangerTemperature + "°C" ).setStyle({
+                fontSize: '24px',
+                fontFamily: 'Arial',
+                color: "#eecccc",
+                align: 'center'
+            });
+            module.textTemperatureMax.setOrigin(0.5);
         }
 
         return module;
@@ -207,13 +246,20 @@ class Meca extends Phaser.Scene {
             this.sumEnergyUsed += module.value;
         });
         this.sumEnergyUsed *= 100;
-        this.textEnergieValue.setText(Math.round(this.sumEnergyUsed ) + " GW");
+        this.listModules.get("principal").textEnergieValue.setText(Math.round(this.sumEnergyUsed ) + " GW");
         const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,200,20,200,0,0, this.shipStats.consommationMaxTemperature, Math.round(Math.min(this.sumEnergyUsed, this.shipStats.consommationMaxTemperature)));
-        this.textEnergieValue.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
+        this.listModules.get("principal").textEnergieValue.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
+        //this.scene.start('MecaCustom');
+        //clearScene(this);
+        console.log(this.graphics);
+        this.graphics.clear();
+
+
     }
 
     // Received from pilote
     onDamageReceived(damage) {
+        console.log("degats");
         this.camera.shake(200,0.02);
         this.soundChocs[Math.floor(Math.random()*2)].play();
         let module;
@@ -294,6 +340,11 @@ class Meca extends Phaser.Scene {
 
     }
 
+    onBonusReceived(bonus) {
+
+    }
+
+
     // Fonctions phaser
 
     preload () {
@@ -333,13 +384,16 @@ class Meca extends Phaser.Scene {
             createMultipleCallback: null
         }
 
+        this.graphics = this.add.graphics();        
+
+
         // Liste des points affichés sur le radar.
         this.radarDots = this.add.group(config);
 
         // Sons
         this.soundClavier = this.sound.add("soundClavier");
         this.soundClavier.setLoop(true);
-        this.soundClavier.setVolume(0.2);
+        this.soundClavier.setVolume(0);
         this.soundClavier.play();
         let self = this;
         this.soundClavier.on('looped', function() {
@@ -349,7 +403,6 @@ class Meca extends Phaser.Scene {
             else {
                 self.soundClavier.setVolume(0);
             }
-            console.log(self.soundClavier.volume);
         });
 
 
@@ -372,45 +425,6 @@ class Meca extends Phaser.Scene {
         }, this);    
 
 
-        // Ces ajouts sont mis manuellement dans la partie "système principal"
-
-
-        this.textEnergie = this.add.text(game.config.width /2 + 30  , 150, "CONSOMMATION\nACTUELLE").setStyle({
-            fontSize: '18px',
-            fontFamily: 'Arial',
-            color: "#ffffff",
-            align: 'center'
-        });
-
-        this.textEnergie.setOrigin(1,0);
-
-        // Ajout du texte de puissance utilisée
-        this.textEnergieValue = this.add.text(game.config.width /2 + 60, 150, this.sumEnergyUsed + " GW" ).setStyle({
-            fontSize: '24px',
-            fontFamily: 'Arial',
-            color: "#00c815",
-            align: 'center'
-        });
-
-        // Ajout du texte de la température
-        this.textTemperature = this.add.text(game.config.width /2 , 250, this.temperature + "°C" ).setStyle({
-            fontSize: '46px',
-            fontFamily: 'Arial',
-            color: "#0046cc",
-            align: 'center'
-        });
-        this.textTemperature.setOrigin(0.5);
-
-
-        // Ajout du texte de la température avant dégats
-        this.textTemperatureMax = this.add.text(game.config.width /2 , 320, "Température maximale\ntolérée : " + this.shipStats.dangerTemperature + "°C" ).setStyle({
-            fontSize: '24px',
-            fontFamily: 'Arial',
-            color: "#eecccc",
-            align: 'center'
-        });
-        this.textTemperatureMax.setOrigin(0.5);
-
 
         // Ajout manuel du radar
         this.radar = this.add.image(game.config.width / 2, 680, 'radar');
@@ -428,10 +442,13 @@ class Meca extends Phaser.Scene {
             self.onDamageReceived(damage);
         });	
 
-        //Sockets
         socket.on("sendRadarScan",  function(posJoueurX, posJoueurY, listEnnemis, portal) {
             self.onDataScanRadarReceived(self, posJoueurX, posJoueurY, listEnnemis, portal);
-        });	
+        });
+
+        socket.on("bonus"), function(bonus) {
+            self.onBonusReceived(bonus);
+        }
 
 
     }
@@ -452,11 +469,11 @@ class Meca extends Phaser.Scene {
         this.temperature = Math.min(this.shipStats.maxTemperature, this.temperature);
         this.temperature = Math.max(this.shipStats.initialTemperature, this.temperature);
 
-        this.textTemperature.setText(Math.round(this.temperature) + "°C");
+        this.listModules.get("principal").textTemperature.setText(Math.round(this.temperature) + "°C");
 
         // Couleur d'affichage de la température
         const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,70,204,204,0,0, this.shipStats.maxTemperature-this.shipStats.initialTemperature, this.temperature - this.shipStats.initialTemperature );
-        this.textTemperature.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
+        this.listModules.get("principal").textTemperature.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
 
         // Gestion de la surchauffe
 

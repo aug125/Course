@@ -70,7 +70,6 @@ io.sockets.on('connection', function (socket) {
 	socket.on('power', function(powerValue) {		
 		io.to(socket.game).emit('power', powerValue);
 	});	
-
 	
 	socket.on('weapon', function(weaponValue) {		
 		io.to(socket.game).emit('weapon', weaponValue);
@@ -102,6 +101,11 @@ io.sockets.on('connection', function (socket) {
 	socket.on('score', function(score) {		
 		io.to(socket.game).emit('score', score);
 	});
+
+	socket.on('bonus', function(bonus) {		
+		io.to(socket.game).emit('bonus', bonus);
+	});
+
 
 });	
 
