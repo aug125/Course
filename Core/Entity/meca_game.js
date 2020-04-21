@@ -16,6 +16,9 @@ class Meca extends Phaser.Scene {
         this.isRadarReceived = false;
         this.timeLastReceiveScan = 0;
 
+        // scène actuellement affichée.
+        this.currentScene = "cockpit";
+
         this.initializeFailures();
         
     }
@@ -65,6 +68,15 @@ class Meca extends Phaser.Scene {
         module.disableGraphics.setDepth(-1);
         module.value = 0;
 
+        // Consommation du module
+        module.textEnergyUsed = scene.add.text(posX-200, posY-50, module.value +" GW")
+        .setStyle({
+            fontSize: '32px',
+            fontFamily: 'Arial',
+            color: colorSharp,
+            align: 'center'
+        });
+
         if (slider == true) {
 
             // Création du slider de puissance
@@ -87,26 +99,18 @@ class Meca extends Phaser.Scene {
             module.isChanged = false;
 
             // Trait
-            scene.add.graphics()
+            this.graphics
             .lineStyle(3, 0x888888, 1)
             .strokePoints(module.slider.endPoints);
 
             // Mettre la manette au premier plan
             module.manette.setDepth(1);
 
-            // Consommation du module
-            module.textValue = scene.add.text(posX-200, posY-50, module.value +" GW")
-            .setStyle({
-                fontSize: '32px',
-                fontFamily: 'Arial',
-                color: colorSharp,
-                align: 'center'
-            });
             let self = this;
             module.slider.on('valuechange', function(newValue, prevValue){  
                 module.isChanged = true; 
                 module.value = (1-newValue); 
-                module.textValue.setText(Math.round(module.value * 100) + " GW");
+                module.textEnergyUsed.setText(Math.round(module.value * 100) + " GW");
                 self.onValueChanged();
             });            
         }
@@ -249,12 +253,7 @@ class Meca extends Phaser.Scene {
         this.listModules.get("principal").textEnergieValue.setText(Math.round(this.sumEnergyUsed ) + " GW");
         const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,200,20,200,0,0, this.shipStats.consommationMaxTemperature, Math.round(Math.min(this.sumEnergyUsed, this.shipStats.consommationMaxTemperature)));
         this.listModules.get("principal").textEnergieValue.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
-        //this.scene.start('MecaCustom');
-        //clearScene(this);
-        console.log(this.graphics);
-        this.graphics.clear();
-
-
+        
     }
 
     // Received from pilote
@@ -273,6 +272,7 @@ class Meca extends Phaser.Scene {
 
     onDataScanRadarReceived(scene, posJoueurX, posJoueurY, listEnnemis, portal) {
 
+        this.showPlace("cockpit", false);
         let minDistanceEnnemi = -1;
 
         scene.radarDots.getChildren().forEach(dot => {
@@ -349,7 +349,7 @@ class Meca extends Phaser.Scene {
 
     preload () {
 
-        let url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexsliderplugin.min.js';
+        let url = 'rexsliderplugin.min.js';
         this.load.plugin('rexsliderplugin', url, true);    
         this.load.image('manette', 'manette.png');
         this.load.image('radar', 'radar.png');
@@ -465,14 +465,14 @@ class Meca extends Phaser.Scene {
         
         // Modifier la température
         this.temperature += diffTemperature * this.shipStats.coefficientChaleur * delta / 1000;
-
         this.temperature = Math.min(this.shipStats.maxTemperature, this.temperature);
         this.temperature = Math.max(this.shipStats.initialTemperature, this.temperature);
 
-        this.listModules.get("principal").textTemperature.setText(Math.round(this.temperature) + "°C");
 
         // Couleur d'affichage de la température
         const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,70,204,204,0,0, this.shipStats.maxTemperature-this.shipStats.initialTemperature, this.temperature - this.shipStats.initialTemperature );
+
+        this.listModules.get("principal").textTemperature.setText(Math.round(this.temperature) + "°C");
         this.listModules.get("principal").textTemperature.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
 
         // Gestion de la surchauffe
@@ -564,6 +564,38 @@ class Meca extends Phaser.Scene {
 
         // Mettre à jour la luminosité des points sur le radar
         this.radarDots.setAlpha(1 - (time - this.timeLastReceiveScan) /  this.shipStats.tempsRadarEntreScans);
+
     }	
+
+    // Afficher ou non le cockpit
+    showPlace(sceneName, isVisible) {
+
+        if (sceneName == "cockpit") {
+
+            this.graphics.setVisible(isVisible);
+            this.radar.setVisible(isVisible);
+            this.listModules.forEach(module => {
+                
+                module.textName.setVisible(isVisible);
+                
+                module.textEnergyUsed.setVisible(isVisible);
+                if (module.hasState) {
+                    module.textState.setVisible(isVisible);
+                }
+
+                if (module.hasSlider) {
+                    module.manette.setVisible(isVisible);
+                }
+
+                if (module.name == "principal") {
+                    module.textEnergie.setVisible(isVisible);
+                    module.textEnergieValue.setVisible(isVisible);
+                    module.textTemperature.setVisible(isVisible);
+                    module.textTemperatureMax.setVisible(isVisible);
+                }
+
+            });
+        }
+    }
 
 }

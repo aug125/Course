@@ -17,6 +17,7 @@ app.use( express.static("Core" ) );
 app.use( express.static("Core/Entity" ) );
 app.use( express.static("Core/Pictures" ) );
 app.use( express.static("Core/Sounds" ) );
+app.use( express.static("Core/Plugins" ) );
 
 app.set('view engine', 'ejs');
 
