@@ -112,31 +112,27 @@ class Pilote extends Phaser.Scene{
         let bonus = this.bonusManager.getNewBonus();
 
         let rarityText;
-        let color;
+        const color = bonus.getColor();
         if (bonus.rarity < 0.2) {
             rarityText = "Commun";
-            color = "#eeee44";
         }
         else if (bonus.rarity < 0.4) {
             rarityText = "Peu commun";
-            color = "#11cc11";
         }
 
         else if (bonus.rarity < 0.6) {
             rarityText = "Rare";
-            color = "#22aaff";
         }
 
         else if (bonus.rarity < 0.8) {
             rarityText = "Très rare";
-            color = "#9900aa";
         }
         else {
             rarityText = "Légendaire";
-            color = "#ff4400";
         }
 
-        this.printText("Ramassé :\n" + bonus.name + " (" + rarityText + ")", color);
+
+        this.printText(bonus.name + " (" + rarityText + ")", color);
 
         // Envoyé le bonus au meca
         socket.emit("bonus",  bonus);
@@ -318,6 +314,7 @@ class Pilote extends Phaser.Scene{
         this.load.image('flares', 'flares.png');
         this.load.image('portail', 'portail.png');
         this.load.image('bonus', 'bonus.png');
+        this.load.image('surchargeur', 'surchargeur.png');
 
         // Sons
         this.load.audio('soundLaser4', "laser4.wav");

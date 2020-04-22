@@ -14,10 +14,9 @@ class Effect {
 
 // Définit le bonus
 class Bonus {
-    constructor(name, description, minRarity, listEffects, module, cost) {
+    constructor(name, description, minRarity, listEffects, module, cost, imageName) {
 
         Bonus.counter = 0;
-
 
         this.name = name;
         this.description = description;
@@ -34,6 +33,9 @@ class Bonus {
 
         // Coût du bonus en GW
         this.cost = cost;
+
+        this.imageName = imageName;
+
     }
 
     // Modifier les stats selon la valeur de rareté
@@ -48,12 +50,62 @@ class Bonus {
         });
     }
 
+    getBaseColor() {
+
+        // Couleur de la base, dépendant du type de bonus
+        let color;
+        switch (this.module) {
+            case ("weapon_upgrade") :
+                color = 0x444400;
+                break;
+            case ("weapon") :
+                color = 0x664400;
+                break;
+            case ("shield_upgrade") :
+                color = 0x001133;
+                break;
+            case ("system_upgrade") :
+                color = 0x222222;
+                break;
+            case ("power_upgrade") :
+                color = 0x330000;
+                break;
+            default:
+                color = 0x222222;
+                break;                            
+        }
+        return color;
+
+    }
+
+    getColor() {
+        let color;
+        if (this.rarity < 0.2) {
+            color = "#ffffff";
+        }
+        else if (this.rarity < 0.4) {
+            color = "#11cc11";
+        }
+
+        else if (this.rarity < 0.6) {
+            color = "#22aaff";
+        }
+
+        else if (this.rarity < 0.8) {
+            color = "#9900aa";
+        }
+        else {
+            color = "#ff4400";
+        }
+        return color;
+    }
+
 }
 
 
 class BonusManager {
 
-    constructor() {
+    constructor(scene) {
 
         this.listBonus = [];
         
@@ -64,8 +116,9 @@ class BonusManager {
               "Une optimisation de la répartition de l'énergie des canons de tir permet d'augmenter la fréquence de tir", // Description
               0, // Rareté minimale
               [new Effect("fireFrequence", 50, 250)], // Liste des effets
-              "weapon", // Module
-              50 // Coût
+              "weapon_upgrade", // Module
+              50, // Coût
+              "surchargeur" // Nom de l'image
             )
         );
     }
@@ -87,6 +140,5 @@ class BonusManager {
 
         return bonus;
     }
-
 
 }

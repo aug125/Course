@@ -10,7 +10,10 @@ class Meca extends Phaser.Scene {
         this.nextFailureVerification = Date.now();
         this.failuresPresent = [];
         this.failuresExisting = [];
+        this.listBonus = [];
+        this.listEquipmentLocation = [];
         this.listModules = new Map();
+        this.listUpgrade = new Map();
         this.gameOver = false;
         this.timeLastAskScan = 0;
         this.isRadarReceived = false;
@@ -46,7 +49,7 @@ class Meca extends Phaser.Scene {
         }    
     };
 
-    createModule(scene, name, text, posX, posY, size, color, state = true, slider = true) {
+    createModule(scene, name, text, posX, posY, color, state = true, slider = true) {
 
         const colorSharp = color.replace("0x", "#");
 
@@ -58,21 +61,20 @@ class Meca extends Phaser.Scene {
         module.state = 100;
         module.x = posX;
         module.y = posY;
-        module.size = size;
 
         // Création de l'arrière plan
-        this.graphics.lineStyle(2, color, 1);
-        this.graphics.strokeRoundedRect(posX-225, posY-150, 450 * size, 400, 32);
+        this.graphicsCockpit.lineStyle(2, color, 1);
+        this.graphicsCockpit.strokeRoundedRect(posX-225, posY-150, 450, 350, 32);
 
         module.disableGraphics = scene.add.graphics();
         module.disableGraphics.setDepth(-1);
         module.value = 0;
 
         // Consommation du module
-        module.textEnergyUsed = scene.add.text(posX-200, posY-50, module.value +" GW")
+        module.textEnergyUsed = scene.add.text(posX + 120, posY + 170, module.value +" GW")
         .setStyle({
-            fontSize: '32px',
-            fontFamily: 'Arial',
+            fontSize: '24px',
+            fontFamily: 'Calibri',
             color: colorSharp,
             align: 'center'
         });
@@ -99,7 +101,7 @@ class Meca extends Phaser.Scene {
             module.isChanged = false;
 
             // Trait
-            this.graphics
+            this.graphicsCockpit
             .lineStyle(3, 0x888888, 1)
             .strokePoints(module.slider.endPoints);
 
@@ -116,7 +118,7 @@ class Meca extends Phaser.Scene {
         }
 
         // Affichage du nom du module
-        module.textName = scene.add.text(posX, posY - 100, text)
+        module.textName = scene.add.text(posX, posY - 120, text)
         .setStyle({
             fontSize: '38px',
             fontFamily: 'Arial',
@@ -126,7 +128,7 @@ class Meca extends Phaser.Scene {
 
         // Affichage de l'état du module
         if(state) {
-            module.textState = scene.add.text(posX-200, posY+200, "ÉTAT : " + module.state + "%")
+            module.textState = scene.add.text(posX-200, posY+160, "ÉTAT : " + module.state + "%")
             .setStyle({
                 fontSize: '24px',
                 fontFamily: 'Arial',
@@ -138,17 +140,17 @@ class Meca extends Phaser.Scene {
         if (module.name == "principal") {
         // Ces ajouts sont mis manuellement dans la partie "système principal"
 
-            module.textEnergie = this.add.text(game.config.width /2 + 30  , 150, "CONSOMMATION\nACTUELLE").setStyle({
+            module.textEnergie = this.add.text(posX  - 20 , posY - 60, "CONSOMMATION\nACTUELLE").setStyle({
                 fontSize: '18px',
                 fontFamily: 'Arial',
                 color: "#ffffff",
-                align: 'center'
+                align: 'right'
             });
 
             module.textEnergie.setOrigin(1,0);
 
             // Ajout du texte de puissance utilisée
-            module.textEnergieValue = this.add.text(game.config.width /2 + 60, 150, this.sumEnergyUsed + " GW" ).setStyle({
+            module.textEnergieValue = this.add.text(posX + 20, posY - 60, this.sumEnergyUsed + " GW" ).setStyle({
                 fontSize: '24px',
                 fontFamily: 'Arial',
                 color: "#00c815",
@@ -156,7 +158,7 @@ class Meca extends Phaser.Scene {
             });
 
             // Ajout du texte de la température
-            module.textTemperature = this.add.text(game.config.width /2 , 250, this.temperature + "°C" ).setStyle({
+            module.textTemperature = this.add.text(posX, posY  + 40, this.temperature + "°C" ).setStyle({
                 fontSize: '46px',
                 fontFamily: 'Arial',
                 color: "#0046cc",
@@ -166,7 +168,7 @@ class Meca extends Phaser.Scene {
 
 
             // Ajout du texte de la température avant dégats
-            module.textTemperatureMax = this.add.text(game.config.width /2 , 320, "Température maximale\ntolérée : " + this.shipStats.dangerTemperature + "°C" ).setStyle({
+            module.textTemperatureMax = this.add.text(posX , posY + 100, "Température maximale\ntolérée : " + this.shipStats.dangerTemperature + "°C" ).setStyle({
                 fontSize: '24px',
                 fontFamily: 'Arial',
                 color: "#eecccc",
@@ -184,7 +186,7 @@ class Meca extends Phaser.Scene {
             // Désactivation du module
             module.disableGraphics.clear();
             module.disableGraphics.fillStyle(0x886666, 1);
-            module.disableGraphics.fillRoundedRect(module.x-225, module.y-150, 450 * module.size, 400, 32);
+            module.disableGraphics.fillRoundedRect(module.x-225, module.y-150, 450, 350, 32);
             module.state = 0;
             if (module.hasSlider == true) {
                 module.slider.value = 1; // Valeur inversée...
@@ -237,7 +239,7 @@ class Meca extends Phaser.Scene {
         // Supprimer l'ancien rectangle de couleur
             module.disableGraphics.clear();
             module.disableGraphics.fillStyle(0x440000, 1 - module.state / 100);
-            module.disableGraphics.fillRoundedRect(module.x-225, module.y-150, 450 * module.size, 400, 32);    
+            module.disableGraphics.fillRoundedRect(module.x-225, module.y-150, 450 * module.size, 350, 32);    
         }
     }
 
@@ -272,7 +274,11 @@ class Meca extends Phaser.Scene {
 
     onDataScanRadarReceived(scene, posJoueurX, posJoueurY, listEnnemis, portal) {
 
-        this.showPlace("cockpit", false);
+        // Le radar ne fonctionne qu'au cockpit
+        if (this.currentScene != "cockpit") {
+            return;
+        }
+
         let minDistanceEnnemi = -1;
 
         scene.radarDots.getChildren().forEach(dot => {
@@ -308,7 +314,7 @@ class Meca extends Phaser.Scene {
                 minDistanceEnnemi = distanceEnnemi;
             }
 
-            scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(0xff0000));
+            scene.radarDots.add(scene.add.image(this.radar.x + offsetX, this.radar.y + offsetY , 'dot').setTint(0xff0000));
         });
 
         // Afficher le point pour le portail
@@ -319,7 +325,7 @@ class Meca extends Phaser.Scene {
 
             const distanceRadar = Math.sqrt((offsetX * offsetX)+(offsetY * offsetY));
             if (distanceRadar <= radarSize){
-                scene.radarDots.add(scene.add.image(game.config.width / 2 + offsetX, 680 + offsetY , 'dot').setTint(0x0022ee));
+                scene.radarDots.add(scene.add.image(this.radar.x + offsetX, this.radar.y + offsetY , 'dot').setTint(0x0022ee));
             }
             if (minDistanceEnnemi == -1 || distanceRadar < minDistanceEnnemi) {
                 minDistanceEnnemi = distanceRadar;
@@ -342,6 +348,24 @@ class Meca extends Phaser.Scene {
 
     onBonusReceived(bonus) {
 
+      
+        const numBonus = this.listBonus.length;
+        // Dessiner bonus reçu
+
+
+        const posOffsetX = (numBonus % 4) * 150;
+        const posOffsetY = Math.floor((numBonus / 4)) * 150;
+
+        const baseColor = bonus.getBaseColor();
+        this.groupBonusImages.add(this.add.image(50 + posOffsetX, 50 + posOffsetY, "baseBonus").setScale(0.6).setTint(baseColor).setVisible(this.currentScene == "equipment"));
+
+        const color = bonus.getColor();
+        const colorHex = color.replace("#", "0x");
+        this.groupBonusImages.add(this.add.image(50 + posOffsetX, 50 + posOffsetY, bonus.imageName).setScale(0.5).setTint(colorHex).setVisible(this.currentScene == "equipment"));
+        
+        this.listBonus.push(bonus);
+        
+
     }
 
 
@@ -354,7 +378,11 @@ class Meca extends Phaser.Scene {
         this.load.image('manette', 'manette.png');
         this.load.image('radar', 'radar.png');
         this.load.image('dot', 'point.png');
-        
+        this.load.image('squelette', 'squelette.png');
+
+        // Icones bonus
+        this.load.image('baseBonus', 'baseBonus.png');
+        this.load.image('surchargeur', 'surchargeur.png');
 
         this.load.audio('soundCockpit', "cockpit.ogg");
         this.load.audio('soundClavier', "clavier.ogg");
@@ -373,7 +401,7 @@ class Meca extends Phaser.Scene {
         this.camera = this.cameras.main;
 
         const config = {
-            classType: Phaser.GameObjects.Sprite,
+            classType: Phaser.GameObjects.Image,
             defaultKey: null,
             defaultFrame: null,
             active: true,
@@ -384,11 +412,13 @@ class Meca extends Phaser.Scene {
             createMultipleCallback: null
         }
 
-        this.graphics = this.add.graphics();        
+        this.graphicsCockpit = this.add.graphics();
+        this.graphicsEquipment = this.add.graphics();
 
 
         // Liste des points affichés sur le radar.
         this.radarDots = this.add.group(config);
+        this.groupBonusImages = this.add.group(config);
 
         // Sons
         this.soundClavier = this.sound.add("soundClavier");
@@ -427,15 +457,49 @@ class Meca extends Phaser.Scene {
 
 
         // Ajout manuel du radar
-        this.radar = this.add.image(game.config.width / 2, 680, 'radar');
+        this.radar = this.add.image(game.config.width / 2, 700, 'radar');
 
-        // Ajout des sliders
-        this.listModules.set("power", this.createModule(this, "power",  "PUISSANCE", game.config.width * 1 / 5, game.config.height * 1 /5, 1, '0xff5500'));
-        this.listModules.set("weapon", this.createModule(this, "weapon", "ARMEMENT", game.config.width* 4 / 5, game.config.height * 1 / 5, 1, '0xffdd00'));
-        this.listModules.set("shield", this.createModule(this, "shield", "BOUCLIER", game.config.width * 1 / 5, 600, 1, '0x0055ff'));
-        this.listModules.set("radar", this.createModule(this, "radar", "RADAR", game.config.width / 2, 600, 1, '0x00ff22', true, false));
-        this.listModules.set("repare", this.createModule(this, "repare", "REPARATIONS", game.config.width * 4 / 5, 600, 1, '0xee21dd', false));
-        this.listModules.set("principal", this.createModule(this, "principal", "SYSTÈME PRINCIPAL", game.config.width  / 2 , game.config.height  * 1 /5, 1, '0xffffff', true, false));
+
+        // Ajout des boutons du cockpit
+        this.equipmentButton = this.add.image(800, 450, 'squelette')
+        .setInteractive()
+        .on('pointerdown', () => this.showPlace("equipment"));
+        this.equipmentButton.setScale(0.1);
+
+        // Ajout des boutons du cockpit
+        this.cockpitButton = this.add.image(800, 450, 'squelette')
+        .setVisible(false)
+        .setInteractive()
+        .on('pointerdown', () => this.showPlace("cockpit"));
+        this.cockpitButton.setScale(0.1);
+
+
+        // Ajout des éléments de la section personnalisation vaisseau
+        this.squelette = this.add.image(1200, game.config.height / 2, 'squelette').setDepth(-1);
+
+
+        // Placer un emplacement à chaque endroit où l'on peut mettre sur le vaisseau
+        this.listEquipmentLocation.push(new EquipmentLocation(this, "weapon", -100, -200));
+        this.listEquipmentLocation.push(new EquipmentLocation(this, "weapon", 100, -200));
+
+        this.listEquipmentLocation.push(new EquipmentLocation(this, "weapon_upgrade", 0, -120));
+
+        this.listEquipmentLocation.push(new EquipmentLocation(this, "shield_upgrade", 0, 0));
+        
+        this.listEquipmentLocation.push(new EquipmentLocation(this, "system_upgrade", 0, 120));
+
+        this.listEquipmentLocation.push(new EquipmentLocation(this, "power_upgrade", -100, 220));        
+        this.listEquipmentLocation.push(new EquipmentLocation(this, "power_upgrade", 100, 220));
+
+
+
+        // Ajout des modules
+        this.listModules.set("power", this.createModule(this, "power",  "PUISSANCE", game.config.width * 1 / 5, game.config.height * 1 /5, '0xff5500'));
+        this.listModules.set("weapon", this.createModule(this, "weapon", "ARMEMENT", game.config.width* 4 / 5, game.config.height * 1 / 5, '0xffdd00'));
+        this.listModules.set("shield", this.createModule(this, "shield", "BOUCLIER", game.config.width * 1 / 5, 650, '0x0055ff'));
+        this.listModules.set("radar", this.createModule(this, "radar", "RADAR", game.config.width / 2, 650, '0x00ff22', true, false));
+        this.listModules.set("repare", this.createModule(this, "repare", "REPARATIONS", game.config.width * 4 / 5, 650, '0xee21dd', false));
+        this.listModules.set("principal", this.createModule(this, "principal", "SYSTÈME PRINCIPAL", game.config.width  / 2 , game.config.height  * 1 /5, '0xffffff', true, false));
     
         //Sockets
         socket.on("damage",  function(damage) {
@@ -446,10 +510,14 @@ class Meca extends Phaser.Scene {
             self.onDataScanRadarReceived(self, posJoueurX, posJoueurY, listEnnemis, portal);
         });
 
-        socket.on("bonus"), function(bonus) {
-            self.onBonusReceived(bonus);
-        }
+        socket.on("bonus", function(bonus) {
+            //Recommandé par lymke
+            let bonusObject = new Bonus();
+            Object.assign(bonusObject, bonus);
+            self.onBonusReceived(bonusObject);
+        });
 
+        this.showPlace("cockpit");
 
     }
 
@@ -460,7 +528,7 @@ class Meca extends Phaser.Scene {
         }
 
         // Définir la température à atteindre
-        let targetTemperature = this.shipStats.initialTemperature + (this.sumEnergyUsed * (this.shipStats.maxTemperature-this.shipStats.initialTemperature) / this.shipStats.consommationMaxTemperature);
+        const targetTemperature = this.shipStats.initialTemperature + (this.sumEnergyUsed * (this.shipStats.maxTemperature-this.shipStats.initialTemperature) / this.shipStats.consommationMaxTemperature);
         const diffTemperature = targetTemperature - this.temperature;
         
         // Modifier la température
@@ -567,35 +635,51 @@ class Meca extends Phaser.Scene {
 
     }	
 
-    // Afficher ou non le cockpit
-    showPlace(sceneName, isVisible) {
+    // Afficher ou non une scène
+    showPlace(sceneName) {
+        this.currentScene = sceneName;
 
-        if (sceneName == "cockpit") {
+        // Cockpit
+        let isVisible = (sceneName == "cockpit") 
 
-            this.graphics.setVisible(isVisible);
-            this.radar.setVisible(isVisible);
-            this.listModules.forEach(module => {
-                
-                module.textName.setVisible(isVisible);
-                
-                module.textEnergyUsed.setVisible(isVisible);
-                if (module.hasState) {
-                    module.textState.setVisible(isVisible);
-                }
+        this.graphicsCockpit.setVisible(isVisible);
+        this.radar.setVisible(isVisible);
+        this.equipmentButton.setVisible(isVisible);
+        
+        this.radarDots.getChildren().forEach(dot => {
+            dot.setVisible(isVisible);
+            dot.setActive(isVisible);
+        });
 
-                if (module.hasSlider) {
-                    module.manette.setVisible(isVisible);
-                }
+        this.listModules.forEach(module => {
+            
+            module.textName.setVisible(isVisible);
+            module.disableGraphics.setVisible(isVisible);
+            
+            module.textEnergyUsed.setVisible(isVisible);
+            if (module.hasState) {
+                module.textState.setVisible(isVisible);
+            }
 
-                if (module.name == "principal") {
-                    module.textEnergie.setVisible(isVisible);
-                    module.textEnergieValue.setVisible(isVisible);
-                    module.textTemperature.setVisible(isVisible);
-                    module.textTemperatureMax.setVisible(isVisible);
-                }
+            if (module.hasSlider) {
+                module.manette.setVisible(isVisible);
+            }
 
-            });
-        }
+            if (module.name == "principal") {
+                module.textEnergie.setVisible(isVisible);
+                module.textEnergieValue.setVisible(isVisible);
+                module.textTemperature.setVisible(isVisible);
+                module.textTemperatureMax.setVisible(isVisible);
+            }
+        });
+
+        // Equipement du vaisseau
+        isVisible = (sceneName == "equipment") 
+
+        this.cockpitButton.setVisible(isVisible);
+        this.squelette.setVisible(isVisible);
+        this.graphicsEquipment.setVisible(isVisible);
+        this.groupBonusImages.setVisible(isVisible);
     }
 
 }
