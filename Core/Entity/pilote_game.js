@@ -111,26 +111,9 @@ class Pilote extends Phaser.Scene{
         pictureBonus.setVisible(false);
         let bonus = this.bonusManager.getNewBonus();
 
-        let rarityText;
         const color = bonus.getColor();
-        if (bonus.rarity < 0.2) {
-            rarityText = "Commun";
-        }
-        else if (bonus.rarity < 0.4) {
-            rarityText = "Peu commun";
-        }
-
-        else if (bonus.rarity < 0.6) {
-            rarityText = "Rare";
-        }
-
-        else if (bonus.rarity < 0.8) {
-            rarityText = "Très rare";
-        }
-        else {
-            rarityText = "Légendaire";
-        }
-
+        const rarityText = bonus.getRarityText();
+        
 
         this.printText(bonus.name + " (" + rarityText + ")", color);
 

@@ -1,13 +1,23 @@
 class Effect {
-    constructor(name, minValue, maxValue, randomValue = 0.2) {
-        this.name = name;
+    constructor(id, minValue, maxValue, randomValue = 0.2) {
+        this.id = id;
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.randomValue = randomValue;
+
+        switch (this.id) {
+            case "fireFrequence":
+                this.name = "Fréquence de tir";
+                break;
+            default:
+                this.name = "Pouvoir inconnu";
+                break;
+        }
+
     }
 
     initialize(rarity) {
-        this.value = this.minValue + (this.maxValue - this.minValue) * rarity + (Math.random() - 0.5) * this.randomValue;       
+        this.value = this.minValue + (this.maxValue - this.minValue) * rarity + (Math.random() - 0.5) * 2 * this.randomValue * this.minValue;       
     }
 
 }
@@ -15,8 +25,6 @@ class Effect {
 // Définit le bonus
 class Bonus {
     constructor(name, description, minRarity, listEffects, module, cost, imageName) {
-
-        Bonus.counter = 0;
 
         this.name = name;
         this.description = description;
@@ -36,6 +44,9 @@ class Bonus {
 
         this.imageName = imageName;
 
+        // Numéro de l'emplacement d'équipement. -1 -> non utilisé
+        this.idEquipment = -1;
+
     }
 
     // Modifier les stats selon la valeur de rareté
@@ -43,7 +54,7 @@ class Bonus {
         this.rarity = rarity;
 
         //Attribuer ID du bonus
-        this.id = Bonus.counter;
+        this.id = Bonus.counter;        
         Bonus.counter++;
         this.listEffects.forEach(effect => {
             effect.initialize(rarity);
@@ -56,22 +67,22 @@ class Bonus {
         let color;
         switch (this.module) {
             case ("weapon_upgrade") :
-                color = 0x444400;
+                color = "#444400";
                 break;
             case ("weapon") :
-                color = 0x664400;
+                color = "#664400";
                 break;
             case ("shield_upgrade") :
-                color = 0x001133;
+                color = "#001133";
                 break;
             case ("system_upgrade") :
-                color = 0x222222;
+                color = "#222222";
                 break;
             case ("power_upgrade") :
-                color = 0x330000;
+                color = "#330000";
                 break;
             default:
-                color = 0x222222;
+                color = "#222222";
                 break;                            
         }
         return color;
@@ -100,6 +111,73 @@ class Bonus {
         return color;
     }
 
+    getRarityText() {
+        let rarity;
+
+        if (this.rarity < 0.2) {
+            rarity = "Commun";
+        }
+        else if (this.rarity < 0.4) {
+            rarity = "Peu commun";
+        }
+
+        else if (this.rarity < 0.6) {
+            rarity = "Rare";
+        }
+
+        else if (this.rarity < 0.8) {
+            rarity = "Très rare";
+        }
+        else {
+            rarity = "Légendaire";
+        }
+        return rarity;
+    }
+
+    draw(scene, posOffsetX, posOffsetY) {
+
+        this.originX =  50 + posOffsetX;
+        this.originY = 50 + posOffsetY;
+
+        const baseColor = this.getBaseColor();
+        const baseColorHex = baseColor.replace("#", "0x");
+
+        const color = this.getColor();
+        const colorHex = color.replace("#", "0x");
+
+        this.baseImg = scene.add.image(this.originX, this.originY, "baseBonus").setScale(0.6).setTint(baseColorHex).setVisible(scene.currentScene == "equipment")
+        .setInteractive()
+        .on('pointerover', () => { 
+            scene.setEquipmentText(this);
+        })
+        .on('pointerout', () => { 
+            scene.resetEquipmentText();
+        })
+        .on('pointerdown', () => {
+            scene.placeEquipment(this);
+        });
+
+        this.img = scene.add.image(this.originX, this.originY, this.imageName).setScale(0.5).setTint(colorHex).setVisible(scene.currentScene == "equipment").setDepth(2);
+    }
+
+    equipe(equipmentLocation) {
+        this.baseImg.x = equipmentLocation.x;
+        this.baseImg.y = equipmentLocation.y;
+        this.img.x = equipmentLocation.x;
+        this.img.y = equipmentLocation.y;
+
+        this.idEquipment = equipmentLocation.id;
+
+    }
+
+    unequip() {
+        this.idEquipment = -1;
+        this.baseImg.x = this.originX;
+        this.baseImg.y = this.originY;
+        this.img.x = this.originX;
+        this.img.y = this.originY;
+    }
+
 }
 
 
@@ -108,14 +186,14 @@ class BonusManager {
     constructor(scene) {
 
         this.listBonus = [];
+        Bonus.counter = 0;
         
-
         // Optimisation des canons    
         this.listBonus.push(new Bonus(
               "Surchargeur de canon", // Name
               "Une optimisation de la répartition de l'énergie des canons de tir permet d'augmenter la fréquence de tir", // Description
               0, // Rareté minimale
-              [new Effect("fireFrequence", 50, 250)], // Liste des effets
+              [new Effect("fireFrequence", 0.5, 2.5)], // Liste des effets
               "weapon_upgrade", // Module
               50, // Coût
               "surchargeur" // Nom de l'image

@@ -8,8 +8,12 @@ class Meca extends Phaser.Scene {
         this.sumEnergyUsed = 0;
         this.temperature = this.shipStats.initialTemperature;
         this.nextFailureVerification = Date.now();
+
+// Inutilisé
         this.failuresPresent = [];
         this.failuresExisting = [];
+
+
         this.listBonus = [];
         this.listEquipmentLocation = [];
         this.listModules = new Map();
@@ -121,7 +125,7 @@ class Meca extends Phaser.Scene {
         module.textName = scene.add.text(posX, posY - 120, text)
         .setStyle({
             fontSize: '38px',
-            fontFamily: 'Arial',
+            fontFamily: 'Calibri',
             color: colorSharp
         });
         module.textName.setOrigin(0.5);
@@ -131,7 +135,7 @@ class Meca extends Phaser.Scene {
             module.textState = scene.add.text(posX-200, posY+160, "ÉTAT : " + module.state + "%")
             .setStyle({
                 fontSize: '24px',
-                fontFamily: 'Arial',
+                fontFamily: 'Calibri',
                 color: colorSharp,
                 align: 'center'
             });
@@ -142,7 +146,7 @@ class Meca extends Phaser.Scene {
 
             module.textEnergie = this.add.text(posX  - 20 , posY - 60, "CONSOMMATION\nACTUELLE").setStyle({
                 fontSize: '18px',
-                fontFamily: 'Arial',
+                fontFamily: 'Calibri',
                 color: "#ffffff",
                 align: 'right'
             });
@@ -152,7 +156,7 @@ class Meca extends Phaser.Scene {
             // Ajout du texte de puissance utilisée
             module.textEnergieValue = this.add.text(posX + 20, posY - 60, this.sumEnergyUsed + " GW" ).setStyle({
                 fontSize: '24px',
-                fontFamily: 'Arial',
+                fontFamily: 'Calibri',
                 color: "#00c815",
                 align: 'center'
             });
@@ -160,7 +164,7 @@ class Meca extends Phaser.Scene {
             // Ajout du texte de la température
             module.textTemperature = this.add.text(posX, posY  + 40, this.temperature + "°C" ).setStyle({
                 fontSize: '46px',
-                fontFamily: 'Arial',
+                fontFamily: 'Calibri',
                 color: "#0046cc",
                 align: 'center'
             });
@@ -170,7 +174,7 @@ class Meca extends Phaser.Scene {
             // Ajout du texte de la température avant dégats
             module.textTemperatureMax = this.add.text(posX , posY + 100, "Température maximale\ntolérée : " + this.shipStats.dangerTemperature + "°C" ).setStyle({
                 fontSize: '24px',
-                fontFamily: 'Arial',
+                fontFamily: 'Calibri',
                 color: "#eecccc",
                 align: 'center'
             });
@@ -241,6 +245,77 @@ class Meca extends Phaser.Scene {
             module.disableGraphics.fillStyle(0x440000, 1 - module.state / 100);
             module.disableGraphics.fillRoundedRect(module.x-225, module.y-150, 450 * module.size, 350, 32);    
         }
+    }
+
+    // Fonctions partie équipement
+
+    // Mettre à jour la liste d'effets (affichage et objet)
+    updateEffectsList() {
+        this.listUpgrade.clear();
+        this.listBonus.forEach(bonus => {
+            if (bonus.idEquipment == -1) {
+                return;
+            }
+
+            bonus.listEffects.forEach(effect => {
+                if (this.listUpgrade.has(effect.id)) {
+                    this.listUpgrade.set(effect.id, listUpgrade.get(effect.id) + effect.value);
+                }
+                else {
+                    this.listUpgrade.set(effect.id, effect.value);
+                }
+            })
+
+        });
+        
+        // Afficher la liste
+
+    }
+
+    // Texte à afficher lorsqu'on survole un bonus
+    setEquipmentText(bonus) {
+        const color = bonus.getColor();
+        this.textTitleBonus.setText(bonus.name + " (" + bonus.getRarityText() + ")").setColor(bonus.getColor());
+
+        // Préparer le text des effets du bonus.
+        let text = bonus.description + "\n\n";
+        text += "Consommation : " + bonus.cost + "GW\n\n";
+        bonus.listEffects.forEach(effect => {
+            text += effect.name + " : ";
+            text +=  "+" + (effect.value * 100).toFixed(1) + "%\n";
+        });
+        this.textDescriptionBonus.setText(text);
+    }
+
+    resetEquipmentText() {
+        this.textTitleBonus.setText("");
+        this.textDescriptionBonus.setText("");
+    }
+
+    placeEquipment(bonus) {
+        
+        // Dans le cas où l'on veut équiper le bonus
+        if (bonus.idEquipment == -1) {
+
+            // Vérifier s'il y a de la place pour équiper le bonus
+            this.listEquipmentLocation.forEach(equipmentLocation => {
+                if (equipmentLocation.nameEquipment != bonus.module || equipmentLocation.idBonus != -1) {
+                    return;
+                }
+                console.log(equipmentLocation);
+                // Placer le bonus
+                equipmentLocation.idBonus = bonus.id;
+                bonus.equipe(equipmentLocation);
+            });            
+        }
+        // Dans le cas où l'on veut désequiper le bonus
+        else {
+            this.listEquipmentLocation[bonus.idEquipment].idBonus = -1;
+            bonus.unequip();
+        }
+
+        this.updateEffectsList();
+
     }
 
     // Fonctions socket
@@ -353,15 +428,12 @@ class Meca extends Phaser.Scene {
         // Dessiner bonus reçu
 
 
-        const posOffsetX = (numBonus % 4) * 150;
-        const posOffsetY = Math.floor((numBonus / 4)) * 150;
+        const posOffsetX = (numBonus % 6) * 80;
+        const posOffsetY = Math.floor((numBonus / 6)) * 80;
 
-        const baseColor = bonus.getBaseColor();
-        this.groupBonusImages.add(this.add.image(50 + posOffsetX, 50 + posOffsetY, "baseBonus").setScale(0.6).setTint(baseColor).setVisible(this.currentScene == "equipment"));
+        bonus.draw(this, posOffsetX, posOffsetY);
 
-        const color = bonus.getColor();
-        const colorHex = color.replace("#", "0x");
-        this.groupBonusImages.add(this.add.image(50 + posOffsetX, 50 + posOffsetY, bonus.imageName).setScale(0.5).setTint(colorHex).setVisible(this.currentScene == "equipment"));
+        // Le tableau contient 2 entrées supplémentaires, la base et l'icone du bonus.
         
         this.listBonus.push(bonus);
         
@@ -418,8 +490,6 @@ class Meca extends Phaser.Scene {
 
         // Liste des points affichés sur le radar.
         this.radarDots = this.add.group(config);
-        this.groupBonusImages = this.add.group(config);
-
         // Sons
         this.soundClavier = this.sound.add("soundClavier");
         this.soundClavier.setLoop(true);
@@ -474,11 +544,31 @@ class Meca extends Phaser.Scene {
         this.cockpitButton.setScale(0.1);
 
 
-        // Ajout des éléments de la section personnalisation vaisseau
+        // Ajout des éléments de la section équipement vaisseau
         this.squelette = this.add.image(1200, game.config.height / 2, 'squelette').setDepth(-1);
+
+        // Contient le titre et la rareté du bonus
+        this.textTitleBonus = this.add.text(100 , 400, "" ).setStyle({
+            fontSize: '24px',
+            fontFamily: 'Calibri',
+            color: "#ffffff",
+            align: 'center'
+        });
+
+        // Contient la description et les effets du bonus
+        this.textDescriptionBonus = this.add.text(100 , 500, "" ).setStyle({
+            fontSize: '18px',
+            fontFamily: 'Calibri',
+            color: "#ffffff",
+            align: 'left'
+        });
+        
 
 
         // Placer un emplacement à chaque endroit où l'on peut mettre sur le vaisseau
+        EquipmentLocation.counter = 0;
+
+
         this.listEquipmentLocation.push(new EquipmentLocation(this, "weapon", -100, -200));
         this.listEquipmentLocation.push(new EquipmentLocation(this, "weapon", 100, -200));
 
@@ -679,7 +769,19 @@ class Meca extends Phaser.Scene {
         this.cockpitButton.setVisible(isVisible);
         this.squelette.setVisible(isVisible);
         this.graphicsEquipment.setVisible(isVisible);
-        this.groupBonusImages.setVisible(isVisible);
+        this.textTitleBonus.setVisible(isVisible);
+        this.textDescriptionBonus.setVisible(isVisible);
+
+        this.listBonus.forEach(bonus => {
+            bonus.baseImg.setVisible(isVisible);
+            bonus.img.setVisible(isVisible);
+        });
+
+        this.listEquipmentLocation.forEach(equipmentLocation => {
+            equipmentLocation.img.setVisible(isVisible);
+        });
+
+
     }
 
 }
