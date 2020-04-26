@@ -23,6 +23,8 @@ class Meca extends Phaser.Scene {
         this.isRadarReceived = false;
         this.timeLastReceiveScan = 0;
 
+        this.godMode = true;
+
         // scène actuellement affichée.
         this.currentScene = "cockpit";
 
@@ -65,6 +67,8 @@ class Meca extends Phaser.Scene {
         module.state = 100;
         module.x = posX;
         module.y = posY;
+        module.totalEnergyUsed = 0;
+        module.flatEnergyUsed = 0;
 
         // Création de l'arrière plan
         this.graphicsCockpit.lineStyle(2, color, 1);
@@ -115,9 +119,8 @@ class Meca extends Phaser.Scene {
             let self = this;
             module.slider.on('valuechange', function(newValue, prevValue){  
                 module.isChanged = true; 
-                module.value = (1-newValue); 
-                module.textEnergyUsed.setText(Math.round(module.value * 100) + " GW");
-                self.onValueChanged();
+                module.value = (1-newValue);
+                self.updateModuleConsommation(module);
             });            
         }
 
@@ -185,6 +188,12 @@ class Meca extends Phaser.Scene {
 
     }
 
+    updateModuleConsommation(module) {
+        module.totalEnergyUsed = Math.round(module.value * 100 + module.flatEnergyUsed);
+        module.textEnergyUsed.setText(module.totalEnergyUsed + " GW");
+        this.updateSumConsommation();
+    }
+
     enableModule(module, activate) {
         if (activate == false && module.isActivated == true) {
             // Désactivation du module
@@ -222,6 +231,10 @@ class Meca extends Phaser.Scene {
 
     damageModule(module, damage) {
         
+        if (this.godMode) {
+            return;
+        }
+
         // On met des dégats au module
         module.state -= damage;
         module.state = Math.max(module.state, 0);
@@ -259,7 +272,7 @@ class Meca extends Phaser.Scene {
 
             bonus.listEffects.forEach(effect => {
                 if (this.listUpgrade.has(effect.id)) {
-                    this.listUpgrade.set(effect.id, listUpgrade.get(effect.id) + effect.value);
+                    this.listUpgrade.set(effect.id, this.listUpgrade.get(effect.id) + effect.value);
                 }
                 else {
                     this.listUpgrade.set(effect.id, effect.value);
@@ -268,8 +281,24 @@ class Meca extends Phaser.Scene {
 
         });
         
-        // Afficher la liste
+        // Afficher la liste        
+        let text = "Effets actuellement appliqués\n\n";
+        this.listUpgrade.forEach(function(value, key, map) {
+            text += Effect.getName(key) + " : ";
+            if (value >= 0) {
+                text += "+";
+            }
+            text += (value * 100).toFixed(1) + "%\n";
+        });
+        this.textEffects.setText(text);
 
+        // Envoyer la liste des bonus
+        console.log(this.listUpgrade);
+
+        // Formater les données pour un envoi
+        let transitString = JSON.stringify(Array.from(this.listUpgrade));
+
+        socket.emit("upgrade", transitString);
     }
 
     // Texte à afficher lorsqu'on survole un bonus
@@ -281,8 +310,11 @@ class Meca extends Phaser.Scene {
         let text = bonus.description + "\n\n";
         text += "Consommation : " + bonus.cost + "GW\n\n";
         bonus.listEffects.forEach(effect => {
-            text += effect.name + " : ";
-            text +=  "+" + (effect.value * 100).toFixed(1) + "%\n";
+        text += Effect.getName(effect.id) + " : ";
+            if (effect.value >= 0) {
+                text += "+";
+            }
+        text += (effect.value * 100).toFixed(1) + "%\n";
         });
         this.textDescriptionBonus.setText(text);
     }
@@ -295,43 +327,53 @@ class Meca extends Phaser.Scene {
     placeEquipment(bonus) {
         
         // Dans le cas où l'on veut équiper le bonus
+
+        let module = this.listModules.get(bonus.module);
         if (bonus.idEquipment == -1) {
 
             // Vérifier s'il y a de la place pour équiper le bonus
             this.listEquipmentLocation.forEach(equipmentLocation => {
-                if (equipmentLocation.nameEquipment != bonus.module || equipmentLocation.idBonus != -1) {
+                if (equipmentLocation.nameEquipment != bonus.module || equipmentLocation.idBonus != -1 || bonus.idEquipment != -1) {
                     return;
                 }
-                console.log(equipmentLocation);
                 // Placer le bonus
                 equipmentLocation.idBonus = bonus.id;
+
                 bonus.equipe(equipmentLocation);
+
+                console.log(bonus.cost);
+                module.flatEnergyUsed += bonus.cost;
+
             });            
         }
         // Dans le cas où l'on veut désequiper le bonus
         else {
             this.listEquipmentLocation[bonus.idEquipment].idBonus = -1;
+            module.flatEnergyUsed -= bonus.cost;
             bonus.unequip();
         }
+
+        // Mettre à jour texte consommation
+        this.updateModuleConsommation(module);
 
         this.updateEffectsList();
 
     }
 
-    // Fonctions socket
 
-    onValueChanged(newValue) {
+    updateSumConsommation() {
 
         this.sumEnergyUsed = 0;
         this.listModules.forEach(module => {
-            this.sumEnergyUsed += module.value;
+            this.sumEnergyUsed += module.totalEnergyUsed;
         });
-        this.sumEnergyUsed *= 100;
         this.listModules.get("principal").textEnergieValue.setText(Math.round(this.sumEnergyUsed ) + " GW");
         const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0,200,20,200,0,0, this.shipStats.consommationMaxTemperature, Math.round(Math.min(this.sumEnergyUsed, this.shipStats.consommationMaxTemperature)));
         this.listModules.get("principal").textEnergieValue.setColor(Phaser.Display.Color.RGBToString(Math.round(color.r), Math.round(color.g), Math.round(color.b)));
         
     }
+
+    // Fonctions socket
 
     // Received from pilote
     onDamageReceived(damage) {
@@ -361,9 +403,6 @@ class Meca extends Phaser.Scene {
             dot.setActive(false);
         });
         scene.radarDots.clear();
-        
-        const PosRadarX = game.config.width / 2;
-        const PosRadarY = 680;
 
         // La taille du cercle du radar.
         const radarSize = 145;
@@ -389,7 +428,7 @@ class Meca extends Phaser.Scene {
                 minDistanceEnnemi = distanceEnnemi;
             }
 
-            scene.radarDots.add(scene.add.image(this.radar.x + offsetX, this.radar.y + offsetY , 'dot').setTint(0xff0000));
+            scene.radarDots.add(scene.add.image(this.radar.x + offsetX, this.radar.y + offsetY, 'dot').setTint(0xff0000));
         });
 
         // Afficher le point pour le portail
@@ -400,7 +439,7 @@ class Meca extends Phaser.Scene {
 
             const distanceRadar = Math.sqrt((offsetX * offsetX)+(offsetY * offsetY));
             if (distanceRadar <= radarSize){
-                scene.radarDots.add(scene.add.image(this.radar.x + offsetX, this.radar.y + offsetY , 'dot').setTint(0x0022ee));
+                scene.radarDots.add(scene.add.image(this.radar.x + offsetX, this.radar.y + offsetY, 'dot').setTint(0x0022ee));
             }
             if (minDistanceEnnemi == -1 || distanceRadar < minDistanceEnnemi) {
                 minDistanceEnnemi = distanceRadar;
@@ -536,7 +575,7 @@ class Meca extends Phaser.Scene {
         .on('pointerdown', () => this.showPlace("equipment"));
         this.equipmentButton.setScale(0.1);
 
-        // Ajout des boutons du cockpit
+        // Ajout des boutons de la partie équipement
         this.cockpitButton = this.add.image(800, 450, 'squelette')
         .setVisible(false)
         .setInteractive()
@@ -548,7 +587,7 @@ class Meca extends Phaser.Scene {
         this.squelette = this.add.image(1200, game.config.height / 2, 'squelette').setDepth(-1);
 
         // Contient le titre et la rareté du bonus
-        this.textTitleBonus = this.add.text(100 , 400, "" ).setStyle({
+        this.textTitleBonus = this.add.text(100 , 350, "" ).setStyle({
             fontSize: '24px',
             fontFamily: 'Calibri',
             color: "#ffffff",
@@ -556,8 +595,16 @@ class Meca extends Phaser.Scene {
         });
 
         // Contient la description et les effets du bonus
-        this.textDescriptionBonus = this.add.text(100 , 500, "" ).setStyle({
-            fontSize: '18px',
+        this.textDescriptionBonus = this.add.text(100 , 425, "" ).setStyle({
+            fontSize: '22px',
+            fontFamily: 'Calibri',
+            color: "#ffffff",
+            align: 'left'
+        });
+
+        // Contient la description et les effets du bonus
+        this.textEffects = this.add.text(100 , 600, "Effets actuellement appliqués\n\n" ).setStyle({
+            fontSize: '24px',
             fontFamily: 'Calibri',
             color: "#ffffff",
             align: 'left'
@@ -572,14 +619,15 @@ class Meca extends Phaser.Scene {
         this.listEquipmentLocation.push(new EquipmentLocation(this, "weapon", -100, -200));
         this.listEquipmentLocation.push(new EquipmentLocation(this, "weapon", 100, -200));
 
-        this.listEquipmentLocation.push(new EquipmentLocation(this, "weapon_upgrade", 0, -120));
+        this.listEquipmentLocation.push(new EquipmentLocation(this, "shield", 0, -120));
 
-        this.listEquipmentLocation.push(new EquipmentLocation(this, "shield_upgrade", 0, 0));
+        this.listEquipmentLocation.push(new EquipmentLocation(this, "shield", 0, 0));
         
-        this.listEquipmentLocation.push(new EquipmentLocation(this, "system_upgrade", 0, 120));
+        this.listEquipmentLocation.push(new EquipmentLocation(this, "system", 0, 120));
+        this.listEquipmentLocation.push(new EquipmentLocation(this, "system_upgrade", 0, 170));
 
-        this.listEquipmentLocation.push(new EquipmentLocation(this, "power_upgrade", -100, 220));        
-        this.listEquipmentLocation.push(new EquipmentLocation(this, "power_upgrade", 100, 220));
+        this.listEquipmentLocation.push(new EquipmentLocation(this, "power", -100, 220));        
+        this.listEquipmentLocation.push(new EquipmentLocation(this, "power", 100, 220));
 
 
 
@@ -771,6 +819,7 @@ class Meca extends Phaser.Scene {
         this.graphicsEquipment.setVisible(isVisible);
         this.textTitleBonus.setVisible(isVisible);
         this.textDescriptionBonus.setVisible(isVisible);
+        this.textEffects.setVisible(isVisible);
 
         this.listBonus.forEach(bonus => {
             bonus.baseImg.setVisible(isVisible);

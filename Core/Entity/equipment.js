@@ -10,7 +10,7 @@ class EquipmentLocation {
         this.y = scene.squelette.y + offsetY;
         this.idBonus = -1; // Le bonus associé à l'équipement (par défaut -1)
 
-        this.img = scene.add.image(this.x, this.y, "baseBonus").setScale(0.6).setVisible(false);
+        this.img = scene.add.image(this.x, this.y, "baseBonus").setScale(0.6).setVisible(false).setTint(Bonus.getBaseColor(name).replace("#", "0x"));
       
     }
 

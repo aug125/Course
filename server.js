@@ -88,6 +88,10 @@ io.sockets.on('connection', function (socket) {
 		io.to(socket.game).emit('sendRadarScan', posJoueurX, posJoueurY, listEnnemis, portal);
 	});
 
+	socket.on('upgrade', function(listUpgrade) {	
+		io.to(socket.game).emit('upgrade', listUpgrade);
+	});	
+
 
 	// PILOTE => MECA
 	socket.on('damage', function(damage) {

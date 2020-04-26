@@ -5,26 +5,37 @@ class Effect {
         this.maxValue = maxValue;
         this.randomValue = randomValue;
 
-        switch (this.id) {
-            case "fireFrequence":
-                this.name = "Fréquence de tir";
-                break;
-            default:
-                this.name = "Pouvoir inconnu";
-                break;
-        }
-
     }
 
     initialize(rarity) {
         this.value = this.minValue + (this.maxValue - this.minValue) * rarity + (Math.random() - 0.5) * 2 * this.randomValue * this.minValue;       
     }
 
+    static getName(id) {
+
+        switch (id) {
+            case "fireFrequence":
+                name = "Fréquence de tir";
+                break;
+            case "firePrecision":
+                name = "Précision de tir";
+                break
+            default:
+                name = "Pouvoir inconnu";
+                break;
+        }
+    
+        return name;
+
+    }
+
+    
+
 }
 
 // Définit le bonus
 class Bonus {
-    constructor(name, description, minRarity, listEffects, module, cost, imageName) {
+    constructor(name, description, minRarity, listEffects, module, minCost, maxCost, imageName) {
 
         this.name = name;
         this.description = description;
@@ -40,7 +51,8 @@ class Bonus {
         this.module = module;
 
         // Coût du bonus en GW
-        this.cost = cost;
+        this.minCost = minCost;
+        this.maxCost = maxCost;
 
         this.imageName = imageName;
 
@@ -59,26 +71,25 @@ class Bonus {
         this.listEffects.forEach(effect => {
             effect.initialize(rarity);
         });
+
+        this.cost = this.minCost + Math.floor((this.maxCost - this.minCost) * this.rarity);
     }
 
-    getBaseColor() {
+    static getBaseColor(nameModule) {
 
         // Couleur de la base, dépendant du type de bonus
         let color;
-        switch (this.module) {
-            case ("weapon_upgrade") :
-                color = "#444400";
-                break;
+        switch (nameModule) {
             case ("weapon") :
-                color = "#664400";
+                color = "#666600";
                 break;
-            case ("shield_upgrade") :
+            case ("shield") :
                 color = "#001133";
                 break;
-            case ("system_upgrade") :
+            case ("system") :
                 color = "#222222";
                 break;
-            case ("power_upgrade") :
+            case ("power") :
                 color = "#330000";
                 break;
             default:
@@ -139,7 +150,7 @@ class Bonus {
         this.originX =  50 + posOffsetX;
         this.originY = 50 + posOffsetY;
 
-        const baseColor = this.getBaseColor();
+        const baseColor = Bonus.getBaseColor(this.module);
         const baseColorHex = baseColor.replace("#", "0x");
 
         const color = this.getColor();
@@ -193,20 +204,22 @@ class BonusManager {
               "Surchargeur de canon", // Name
               "Une optimisation de la répartition de l'énergie des canons de tir permet d'augmenter la fréquence de tir", // Description
               0, // Rareté minimale
-              [new Effect("fireFrequence", 0.5, 2.5)], // Liste des effets
-              "weapon_upgrade", // Module
-              50, // Coût
+              [new Effect("fireFrequence", 0.2, 2.0), 
+               new Effect("firePrecision", -0.1, -0.5)], // Liste des effets
+              "weapon", // Module
+              50, // Coût minimal
+              100, // Coût minimal
               "surchargeur" // Nom de l'image
             )
         );
+
     }
 
 
     getNewBonus(){
 
         // Calculer notre "chance"
-        const random = Math.random();
-        const rarity = Math.pow(random, 4);
+        const rarity = Math.random() * Math.random();
 
         // Récupérer le bonus
         let bonus;

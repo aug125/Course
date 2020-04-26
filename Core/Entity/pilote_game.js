@@ -29,6 +29,9 @@ class Pilote extends Phaser.Scene{
 
         this.bonusManager = new BonusManager();
 
+        // La liste de tous les bonus
+        this.listUpgrade = new Map();
+
     }
 
     setGameOver() {
@@ -198,6 +201,10 @@ class Pilote extends Phaser.Scene{
         this.textPrincipal.setColor(color);
     }    
 
+    getUpgrade(name) {
+        return  (this.listUpgrade.has(name) ? this.listUpgrade.get(name) : 0);
+    }
+
     levelInitialisation() {
 
         // Initialiser le niveau
@@ -271,6 +278,9 @@ class Pilote extends Phaser.Scene{
         socket.emit("sendRadarScan",  this.player.x, this.player.y, this.ennemis.getChildren(), this.portal);
     }
 
+    onUpgradeReceived(listUpgrade) {
+        this.listUpgrade = new Map(JSON.parse(listUpgrade));
+    }
 
     // Fonctions phaser
 
@@ -510,6 +520,11 @@ class Pilote extends Phaser.Scene{
             self.onAskRadarScanReceived();
         });
 
+        socket.on("upgrade",  function(listUpgrade) {
+            self.onUpgradeReceived(listUpgrade);
+        });
+
+        
         this.levelInitialisation();
 
     };
@@ -660,12 +675,16 @@ class Pilote extends Phaser.Scene{
             {
 
                 // Vérifier que le tir précédent soit suffisamment lointain
-                if (time > this.lastFired + this.baseShipStats.rechargementTir / this.meca_weapon)
+
+                const bonusFire = this.getUpgrade("fireFrequence");
+                const bonusPrecision = this.getUpgrade("firePrecision");
+                
+                if (time > this.lastFired + (this.baseShipStats.rechargementTir / (1 + bonusFire)) / this.meca_weapon)
                 {
                     let tir = this.tirs.get();
                     if (tir)
                     {
-                        tir.fire(this.player.x, this.player.y, this.player.rotation, this.player.body.velocity, this.baseShipStats.vitesseTir, true, this.baseShipStats.precisionTir,  this.baseShipStats.degats);
+                        tir.fire(this.player.x, this.player.y, this.player.rotation, this.player.body.velocity, this.baseShipStats.vitesseTir, true, this.baseShipStats.precisionTir - bonusPrecision,  this.baseShipStats.degats);
                         this.lastFired = time;
                         this.soundLaser7.setDetune(Math.random() * 500);
                         this.soundLaser7.play();
