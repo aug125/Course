@@ -80,8 +80,11 @@ class Pilote extends Phaser.Scene{
                 frameRate: 60,
                 repeat: 0,
                 hideOnComplete: true
-           });
-                explosion.anims.play('boum', true);
+            });
+            explosion.anims.play('boum', true);
+
+            // Jouer son explosion
+            this.soundExplosion.play();
 
             ennemi.remove();
             tir.remove();
@@ -107,6 +110,7 @@ class Pilote extends Phaser.Scene{
                         children[i].x = ennemi.x;
                         children[i].y = ennemi.y;
                         children[i].setAngularVelocity(40);
+                        children[i].setScale(0.7);
                         break;
                     }
                 }
@@ -328,6 +332,7 @@ class Pilote extends Phaser.Scene{
         this.load.audio('soundLaser7', "laser7.wav");        
         this.load.audio('soundChoc2', "choc2.ogg");
         this.load.audio('soundChoc3', "choc3.ogg");
+        this.load.audio('soundExplosion', "explosion.ogg");
 
         this.load.audio('soundVortex', "vortex.ogg");
         this.load.audio('soundTeleport', "teleport.ogg");
@@ -387,6 +392,7 @@ class Pilote extends Phaser.Scene{
         this.soundLaser7 = this.sound.add("soundLaser7");
         this.soundChocs = [this.sound.add("soundChoc2"), this.sound.add("soundChoc3")];
         this.soundTeleport = this.sound.add("soundTeleport");
+        this.soundExplosion = this.sound.add("soundExplosion");
 
         this.soundReacteur = this.sound.add("soundReacteur");
         this.soundReacteur.setLoop(true);
@@ -454,7 +460,7 @@ class Pilote extends Phaser.Scene{
         // Bonus
         this.bonus = this.physics.add.group({
             key: 'bonus',
-            frameQuantity: 5
+            frameQuantity: 10
         });
         this.bonus.setVisible(false);
 

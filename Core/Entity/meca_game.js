@@ -135,7 +135,7 @@ class Meca extends Phaser.Scene {
 
         // Affichage de l'état du module
         if(state) {
-            module.textState = scene.add.text(posX-200, posY+160, "ÉTAT : " + module.state + "%")
+            module.textState = scene.add.text(posX-200, posY+170, "ÉTAT : " + module.state + "%")
             .setStyle({
                 fontSize: '24px',
                 fontFamily: 'Calibri',
@@ -490,6 +490,8 @@ class Meca extends Phaser.Scene {
         this.load.image('radar', 'radar.png');
         this.load.image('dot', 'point.png');
         this.load.image('squelette', 'squelette.png');
+        this.load.image('bonus', 'bonus.png');
+        this.load.image('dashboard', 'dashboard.png');
 
         // Icones bonus
         this.load.image('baseBonus', 'baseBonus.png');
@@ -570,17 +572,15 @@ class Meca extends Phaser.Scene {
 
 
         // Ajout des boutons du cockpit
-        this.equipmentButton = this.add.image(800, 450, 'squelette')
+        this.equipmentButton = this.add.image(800, 450, 'bonus')
         .setInteractive()
         .on('pointerdown', () => this.showPlace("equipment"));
-        this.equipmentButton.setScale(0.1);
 
         // Ajout des boutons de la partie équipement
-        this.cockpitButton = this.add.image(800, 450, 'squelette')
+        this.cockpitButton = this.add.image(800, 450, 'dashboard')
         .setVisible(false)
         .setInteractive()
         .on('pointerdown', () => this.showPlace("cockpit"));
-        this.cockpitButton.setScale(0.1);
 
 
         // Ajout des éléments de la section équipement vaisseau
