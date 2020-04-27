@@ -6,7 +6,7 @@ class Stats{
 			this.vitesseRotation = 180; // Vitesse de rotation du vaisseau
 			this.vitesseTir = 600; // Vitesse du projectile
 			this.rechargementTir = 300; // Temps avant le prochain tir
-			this.precisionTir = 0.1; // Précision du tir. 0 = tire en face
+			this.precisionTir = 0.2; // Précision du tir. 0 = tire en face
 			this.maxBouclier = 100;
 			this.rechargementBouclier = 20; // Rechargement bouclier par seconde
 			this.degats = 40; // dégats au bouclier/coque

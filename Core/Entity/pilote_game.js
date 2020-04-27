@@ -71,6 +71,18 @@ class Pilote extends Phaser.Scene{
     ennemiTouche (ennemi, tir){
         if (tir.isPlayer == true && ennemi.active == true)
         {
+
+            let explosion = this.add.sprite(ennemi.x, ennemi.y, 'explosion', 0).setOrigin(0.5);
+            // Explosion            
+            this.anims.create({
+                key: 'boum',
+                frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 63 }),
+                frameRate: 60,
+                repeat: 0,
+                hideOnComplete: true
+           });
+                explosion.anims.play('boum', true);
+
             ennemi.remove();
             tir.remove();
             this.score++;
@@ -309,6 +321,8 @@ class Pilote extends Phaser.Scene{
         this.load.image('bonus', 'bonus.png');
         this.load.image('surchargeur', 'surchargeur.png');
 
+        this.load.spritesheet('explosion', 'explosion.png', { frameWidth: 256, frameHeight:256 });
+
         // Sons
         this.load.audio('soundLaser4', "laser4.wav");
         this.load.audio('soundLaser7', "laser7.wav");        
@@ -326,7 +340,6 @@ class Pilote extends Phaser.Scene{
         
         // Création du joueur !
         this.player = this.physics.add.image(0, 0, 'vaisseau');
-
 
         // Création des textes affichés
         this.textPrincipal = this.add.text(game.config.width /2  , 600, "").setStyle({
@@ -684,7 +697,7 @@ class Pilote extends Phaser.Scene{
                     let tir = this.tirs.get();
                     if (tir)
                     {
-                        tir.fire(this.player.x, this.player.y, this.player.rotation, this.player.body.velocity, this.baseShipStats.vitesseTir, true, this.baseShipStats.precisionTir - bonusPrecision,  this.baseShipStats.degats);
+                        tir.fire(this.player.x, this.player.y, this.player.rotation, this.player.body.velocity, this.baseShipStats.vitesseTir, true, this.baseShipStats.precisionTir * (1 - bonusPrecision),  this.baseShipStats.degats);
                         this.lastFired = time;
                         this.soundLaser7.setDetune(Math.random() * 500);
                         this.soundLaser7.play();
@@ -809,15 +822,14 @@ class Pilote extends Phaser.Scene{
 
         // Tinte des bonus
         const timeLoop = 1800;
-        const currentTime = Math.min(Math.floor(time%timeLoop), timeLoop - Math.floor(time%timeLoop));
-        const color = Phaser.Display.Color.Interpolate.RGBWithRGB(5,200,30,
-            200,5,200, 
+        const currentTime = Math.min(Math.floor(time%timeLoop), timeLoop - Math.floor(time%timeLoop)) * 2;
+        const color = Phaser.Display.Color.Interpolate.RGBWithRGB(
+            5,100,30,
+            200,200,0, 
             timeLoop, 
             currentTime);
 
         this.bonus.setTint(Math.round(color.r) * 256 * 256 + Math.round(color.g) * 256 + Math.round(color.b));
-
-        //this.bonus.setTint(256 * 256 * 200 + 256 * 250 + 250);
 
     };
 }

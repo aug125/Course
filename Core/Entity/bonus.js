@@ -28,9 +28,6 @@ class Effect {
         return name;
 
     }
-
-    
-
 }
 
 // Définit le bonus
