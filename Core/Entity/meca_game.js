@@ -293,8 +293,6 @@ class Meca extends Phaser.Scene {
         this.textEffects.setText(text);
 
         // Envoyer la liste des bonus
-        console.log(this.listUpgrade);
-
         // Formater les données pour un envoi
         let transitString = JSON.stringify(Array.from(this.listUpgrade));
 
@@ -495,7 +493,9 @@ class Meca extends Phaser.Scene {
 
         // Icones bonus
         this.load.image('baseBonus', 'baseBonus.png');
-        this.load.image('surchargeur', 'surchargeur.png');
+        this.load.image('bonus_surchargeur', 'bonus_surchargeur.png');
+        this.load.image('bonus_bouclier', 'bonus_bouclier.png');
+        
 
         this.load.audio('soundCockpit', "cockpit.ogg");
         this.load.audio('soundClavier', "clavier.ogg");

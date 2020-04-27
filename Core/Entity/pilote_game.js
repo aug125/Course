@@ -62,7 +62,9 @@ class Pilote extends Phaser.Scene{
                 this.camera.shake(200,0.02);
                 socket.emit("damage", tir.damage);
 
-                this.soundChocs[Math.floor(Math.random()*2)].play();                
+                this.soundChocs[Math.floor(Math.random()*2)].play();
+
+                this.realShield = 0;
             }
             tir.remove();
         }
@@ -295,7 +297,7 @@ class Pilote extends Phaser.Scene{
     }
 
     onUpgradeReceived(listUpgrade) {
-        this.listUpgrade = new Map(JSON.parse(listUpgrade));
+        this.listUpgrade = new Map(JSON.parse(listUpgrade));        
     }
 
     // Fonctions phaser
@@ -572,19 +574,22 @@ class Pilote extends Phaser.Scene{
         // Mettre à jour le bouclier
 
         // Valeur bouclier à atteindre    
-        const targerShield = this.meca_shield * this.baseShipStats.maxBouclier;
+        const targerShield = this.meca_shield * (this.baseShipStats.maxBouclier * (1 + this.getUpgrade("shieldMaxValue")));
+        console.log(targerShield);
         
         // Si le bouclier est plus puissant que le réglage, on le diminue
         if (this.realShield > targerShield) {
 
-            this.realShield = Math.max(this.realShield - this.baseShipStats.rechargementBouclier*delta / 1000, targerShield); 
+            this.realShield = Math.max(this.realShield - this.baseShipStats.rechargementBouclier * (1 + this.getUpgrade("shieldRegeneration")) * delta / 1000, targerShield); 
         }    
-
+        
         // Si le bouclier est moins puissant que le réglage, on l'augmente
         if (this.realShield < targerShield) {
 
-            this.realShield = Math.min(this.realShield + this.baseShipStats.rechargementBouclier*delta / 1000, targerShield);
+            this.realShield = Math.min(this.realShield + this.baseShipStats.rechargementBouclier * (1 + this.getUpgrade("shieldRegeneration")) * delta / 1000, targerShield);
         } 
+
+        console.log(this.realShield);
 
         this.shield.setPosition (this.player.x, this.player.y);
         this.shield.setAlpha(this.realShield / this.baseShipStats.maxBouclier);

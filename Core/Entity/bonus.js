@@ -19,7 +19,14 @@ class Effect {
                 break;
             case "firePrecision":
                 name = "Précision de tir";
-                break
+                break;
+            case "shieldMaxValue":
+                name = "absorption du bouclier";
+                break;
+            case "shieldRegeneration":
+                name = "Regénération du bouclier";
+                break;
+        
             default:
                 name = "Pouvoir inconnu";
                 break;
@@ -196,19 +203,33 @@ class BonusManager {
         this.listBonus = [];
         Bonus.counter = 0;
         
-        // Optimisation des canons    
         this.listBonus.push(new Bonus(
               "Surchargeur de canon", // Name
-              "Une optimisation de la répartition de l'énergie des canons de tir permet d'augmenter la fréquence de tir", // Description
+              "Une optimisation de la répartition de l'énergie du canon\n permet d'augmenter la fréquence de tir.", // Description
               0, // Rareté minimale
-              [new Effect("fireFrequence", 0.2, 2.0), 
+              [new Effect("fireFrequence", 0.2, 1.5), 
                new Effect("firePrecision", -0.1, -0.5)], // Liste des effets
               "weapon", // Module
               50, // Coût minimal
-              100, // Coût minimal
-              "surchargeur" // Nom de l'image
+              100, // Coût maximal
+              "bonus_surchargeur" // Nom de l'image
             )
         );
+
+        this.listBonus.push(new Bonus(
+            "Bouclier énergétique", // Name
+            "Un bouclier de grande capacité d'absorption et de regénération faible", // Description
+            0, // Rareté minimale
+            [new Effect("shieldMaxValue", 0.5, 1.2), 
+             new Effect("shieldRegeneration", -0.4, -0.4)], // Liste des effets
+            "shield", // Module
+            20, // Coût minimal
+            80, // Coût maximal
+            "bonus_bouclier" // Nom de l'image
+          )
+      );
+
+      // Todo reflecteurs, IA...
 
     }
 
