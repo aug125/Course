@@ -1,7 +1,7 @@
 class MenuSelectRole extends Phaser.Scene {
     constructor ()
     {
-        super('Menu');
+        super('MenuSelectRole');
         this.firstPlayer = false;
         this.targetSizePilote = 1;
         this.targetSizeMeca = 1;
@@ -20,7 +20,6 @@ class MenuSelectRole extends Phaser.Scene {
     }
     create = function(){ 
         
-
         // Couleur de l'arrière plan
         this.cameras.main.setBackgroundColor('#000009')
 
@@ -98,6 +97,7 @@ class MenuSelectRole extends Phaser.Scene {
             
         });
 
+        socket.emit('askId');
 
     }
 

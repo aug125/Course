@@ -7,9 +7,11 @@
 		
 	<body>
 
+		
+		<script type="text/javascript" src="menu.js"></script>
+		<script type="text/javascript" src="menuSelectRole_game.js"></script>
 		<script type="text/javascript" src="tir.js"></script>
 		<script type="text/javascript" src="failure.js"></script>
-		<script type="text/javascript" src="menuSelectRole_game.js"></script>
 		<script type="text/javascript" src="bonus.js"></script>
 		<script type="text/javascript" src="equipment.js"></script>
 		<script type="text/javascript" src="meca_game.js"></script>
@@ -31,32 +33,35 @@
 				physics: {
         			default: 'arcade'
 		    	},
-				scene: [MenuSelectRole
+				scene: [
+				  Menu
+				, MenuSelectRole
 				, Pilote
 				, Meca
 				, GameOver]
 			};
 					
-			let game;
+			
 			document.oncontextmenu = new Function("return false");
 
 			// Connexion socket.io
 			var socket = io();
 //			let socket = io.connect('http://192.168.1.110:8080');
-						
-			socket.emit('newPlayer');
-				
+										
 			// Sockets
 			
 			socket.on('message', function(msg) {
 				 $('#chat').append("<p>" + msg + "</p>");			
 			});
-									
+
+			let game = new Phaser.Game(config);
+			setTimeout(askId, 1000);
+/*
 			socket.on('jeu', function () {
 				game = new Phaser.Game(config);
 				setTimeout(askId, 1000);				
 			});
-
+*/
 			function askId()
 			{
 				socket.emit('askId');

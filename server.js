@@ -40,6 +40,7 @@ io.sockets.on('connection', function (socket) {
 		if (nbPlayersInLobby == 2) {
 
 			// Création de la partie
+			console.log("jeu");
 			io.to(socket.game).emit("jeu");			
 			let mapGame = new Map(); 
 			mapGames.set(socket.game,mapGame);
