@@ -462,18 +462,28 @@ class Meca extends Phaser.Scene {
 
       
         const numBonus = this.listBonus.length;
-        // Dessiner bonus reçu
+        // Dessiner bonus reçu        
 
-
-        const posOffsetX = (numBonus % 6) * 80;
-        const posOffsetY = Math.floor((numBonus / 6)) * 80;
-
-        bonus.draw(this, posOffsetX, posOffsetY);
-
-        // Le tableau contient 2 entrées supplémentaires, la base et l'icone du bonus.
+        bonus.draw(this);
         
         this.listBonus.push(bonus);
-        
+
+        // Tri
+        this.listBonus.sort(function(a,b) {
+            if (b.name > a.name) {
+                return -1;
+            }
+            if (b.name < a.name) {
+                return 1;
+            }
+            return (b.rarity - a.rarity);
+        })
+
+        let counter = 0;
+        this.listBonus.forEach(bonus => {
+            bonus.setOrigin(counter);
+            counter++;
+        });
 
     }
 

@@ -601,7 +601,7 @@ class Pilote extends Phaser.Scene{
 
         this.shield.setPosition (this.player.x, this.player.y);
         this.shield.setAlpha(this.realShield / this.baseShipStats.maxBouclier);
-        this.shield.setScale(0.4 * Math.pow(this.realShield / 100, 0.5));
+        this.shield.setScale(0.4 + (this.realShield / 100) / 10);
 
 
         // Création des ennemis	

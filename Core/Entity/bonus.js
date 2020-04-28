@@ -154,10 +154,8 @@ class Bonus {
         return rarity;
     }
 
-    draw(scene, posOffsetX, posOffsetY) {
-
-        this.originX =  50 + posOffsetX;
-        this.originY = 50 + posOffsetY;
+    // Fonction à n'appeler qu'une seule fois pour dessiner les objets
+    draw(scene) {
 
         const baseColor = Bonus.getBaseColor(this.module);
         const baseColorHex = baseColor.replace("#", "0x");
@@ -165,7 +163,7 @@ class Bonus {
         const color = this.getColor();
         const colorHex = color.replace("#", "0x");
 
-        this.baseImg = scene.add.image(this.originX, this.originY, "baseBonus").setScale(0.6).setTint(baseColorHex).setVisible(scene.currentScene == "equipment")
+        this.baseImg = scene.add.image(0,0, "baseBonus").setScale(0.6).setTint(baseColorHex).setVisible(scene.currentScene == "equipment")
         .setInteractive()
         .on('pointerover', () => { 
             scene.setEquipmentText(this);
@@ -177,7 +175,23 @@ class Bonus {
             scene.placeEquipment(this);
         });
 
-        this.img = scene.add.image(this.originX, this.originY, this.imageName).setScale(0.5).setTint(colorHex).setVisible(scene.currentScene == "equipment").setDepth(2);
+        this.img = scene.add.image(0,0, this.imageName).setScale(0.5).setTint(colorHex).setVisible(scene.currentScene == "equipment").setDepth(2);
+    }
+
+    setOrigin(numBonus) {
+
+        const posOffsetX = (numBonus % 6) * 80;
+        const posOffsetY = Math.floor((numBonus / 6)) * 80;
+
+        this.originX =  50 + posOffsetX;
+        this.originY = 50 + posOffsetY;
+
+        // Si non placé, bouger immédiatement le bonus
+        if (this.idEquipment == -1) {
+            this.baseImg.setPosition(this.originX, this.originY);
+            this.img.setPosition(this.originX, this.originY);
+        }
+        
     }
 
     equipe(equipmentLocation) {
