@@ -495,6 +495,7 @@ class Meca extends Phaser.Scene {
         this.load.image('baseBonus', 'baseBonus.png');
         this.load.image('bonus_surchargeur', 'bonus_surchargeur.png');
         this.load.image('bonus_bouclier', 'bonus_bouclier.png');
+        this.load.image('bonus_propulsion', 'bonus_propulsion.png');
         
 
         this.load.audio('soundCockpit', "cockpit.ogg");

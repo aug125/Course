@@ -21,12 +21,17 @@ class Effect {
                 name = "Précision de tir";
                 break;
             case "shieldMaxValue":
-                name = "absorption du bouclier";
+                name = "Absorption du bouclier";
                 break;
             case "shieldRegeneration":
                 name = "Regénération du bouclier";
                 break;
-        
+            case "maxSpeed":
+                name = "Vitesse maximale";
+                break;
+            case "acceleration":
+                name = "Accélération";
+                break;
             default:
                 name = "Pouvoir inconnu";
                 break;
@@ -204,30 +209,40 @@ class BonusManager {
         Bonus.counter = 0;
         
         this.listBonus.push(new Bonus(
-              "Surchargeur de canon", // Name
-              "Une optimisation de la répartition de l'énergie du canon\n permet d'augmenter la fréquence de tir.", // Description
-              0, // Rareté minimale
-              [new Effect("fireFrequence", 0.2, 1.5), 
-               new Effect("firePrecision", -0.1, -0.5)], // Liste des effets
-              "weapon", // Module
-              50, // Coût minimal
-              100, // Coût maximal
-              "bonus_surchargeur" // Nom de l'image
-            )
-        );
+            "Surchargeur de canon", // Name
+            "Une optimisation de la répartition de l'énergie du canon\n permet d'augmenter la fréquence de tir.", // Description
+            0, // Rareté minimale
+            [new Effect("fireFrequence", 0.2, 1.5), 
+             new Effect("firePrecision", -0.1, -0.5)], // Liste des effets
+            "weapon", // Module
+            50, // Coût minimal
+            100, // Coût maximal
+            "bonus_surchargeur" // Nom de l'image
+        ));
 
         this.listBonus.push(new Bonus(
             "Bouclier énergétique", // Name
             "Un bouclier de grande capacité d'absorption et de regénération faible", // Description
             0, // Rareté minimale
             [new Effect("shieldMaxValue", 0.5, 1.2), 
-             new Effect("shieldRegeneration", -0.4, -0.4)], // Liste des effets
+             new Effect("shieldRegeneration", -0.25, -0.4)], // Liste des effets
             "shield", // Module
             20, // Coût minimal
             80, // Coût maximal
             "bonus_bouclier" // Nom de l'image
-          )
-      );
+        ));
+
+        this.listBonus.push(new Bonus(
+            "Propulseurs énergétiques", // Name
+            "Des propulseurs améliorés offrant une meilleure vitesse au vaisseau.", // Description
+            0, // Rareté minimale
+            [new Effect("maxSpeed", 0.2, 0.5), 
+             new Effect("acceleration", 0.5, 2.0)], // Liste des effets            
+            "power", // Module
+            20, // Coût minimal
+            80, // Coût maximal
+            "bonus_propulsion" // Nom de l'image
+        ));
 
       // Todo reflecteurs, IA...
 

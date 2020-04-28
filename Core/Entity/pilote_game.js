@@ -219,9 +219,16 @@ class Pilote extends Phaser.Scene{
         this.textPrincipal.setColor(color);
     }    
 
-    getUpgrade(name) {
-        return  (this.listUpgrade.has(name) ? this.listUpgrade.get(name) : 0);
+    getUpgradeCoeff(name) {
+        // Retourne valeur + 1 ( 10% -> 1.1)
+        return  (this.listUpgrade.has(name) ? this.listUpgrade.get(name) + 1 : 1);
     }
+
+    getUpgradeValue(name) {
+        // Retourne valeur ( 10% -> 0.1)
+        return  (this.listUpgrade.has(name) ? this.listUpgrade.get(name) + 1 : 1);
+    }
+
 
     levelInitialisation() {
 
@@ -297,7 +304,11 @@ class Pilote extends Phaser.Scene{
     }
 
     onUpgradeReceived(listUpgrade) {
-        this.listUpgrade = new Map(JSON.parse(listUpgrade));        
+        this.listUpgrade = new Map(JSON.parse(listUpgrade));
+
+        // Changer immédiatement certaines variables
+        this.player.body.maxVelocity.set(this.baseShipStats.maxVelocity * this.getUpgradeCoeff("maxSpeed"));
+
     }
 
     // Fonctions phaser
@@ -325,7 +336,6 @@ class Pilote extends Phaser.Scene{
         this.load.image('flares', 'flares.png');
         this.load.image('portail', 'portail.png');
         this.load.image('bonus', 'bonus.png');
-        this.load.image('surchargeur', 'surchargeur.png');
 
         this.load.spritesheet('explosion', 'explosion.png', { frameWidth: 256, frameHeight:256 });
 
@@ -574,25 +584,25 @@ class Pilote extends Phaser.Scene{
         // Mettre à jour le bouclier
 
         // Valeur bouclier à atteindre    
-        const targerShield = this.meca_shield * (this.baseShipStats.maxBouclier * (1 + this.getUpgrade("shieldMaxValue")));
-        console.log(targerShield);
+        const targerShield = this.meca_shield * (this.baseShipStats.maxBouclier * (this.getUpgradeCoeff("shieldMaxValue")));
         
         // Si le bouclier est plus puissant que le réglage, on le diminue
         if (this.realShield > targerShield) {
 
-            this.realShield = Math.max(this.realShield - this.baseShipStats.rechargementBouclier * (1 + this.getUpgrade("shieldRegeneration")) * delta / 1000, targerShield); 
+            this.realShield = Math.max(this.realShield - this.baseShipStats.rechargementBouclier * (this.getUpgradeCoeff("shieldRegeneration")) * delta / 1000, targerShield); 
         }    
         
         // Si le bouclier est moins puissant que le réglage, on l'augmente
         if (this.realShield < targerShield) {
 
-            this.realShield = Math.min(this.realShield + this.baseShipStats.rechargementBouclier * (1 + this.getUpgrade("shieldRegeneration")) * delta / 1000, targerShield);
+            this.realShield = Math.min(this.realShield + this.baseShipStats.rechargementBouclier * (this.getUpgradeCoeff("shieldRegeneration")) * delta / 1000, targerShield);
         } 
 
-        console.log(this.realShield);
 
         this.shield.setPosition (this.player.x, this.player.y);
         this.shield.setAlpha(this.realShield / this.baseShipStats.maxBouclier);
+        this.shield.setScale(0.4 * Math.pow(this.realShield / 100, 0.5));
+
 
         // Création des ennemis	
         
@@ -646,9 +656,7 @@ class Pilote extends Phaser.Scene{
             // Mettre les particules à l'arrière du vaisseau
             this.playerEmitter.setPosition (-Math.cos(this.player.rotation) * 20, -Math.sin(this.player.rotation) * 20);
 
-
-
-            const velocity = this.physics.velocityFromRotation(this.player.rotation, this.baseShipStats.acceleration * this.meca_power);
+            const velocity = this.physics.velocityFromRotation(this.player.rotation, this.baseShipStats.acceleration * this.meca_power * this.getUpgradeCoeff("accelerationnode "));
             this.player.setAccelerationX(velocity.x);
             this.player.setAccelerationY(velocity.y);	
             
@@ -700,15 +708,15 @@ class Pilote extends Phaser.Scene{
 
                 // Vérifier que le tir précédent soit suffisamment lointain
 
-                const bonusFire = this.getUpgrade("fireFrequence");
-                const bonusPrecision = this.getUpgrade("firePrecision");
+                const bonusFire = this.getUpgradeCoeff("fireFrequence");
+                const bonusPrecision = this.getUpgradeCoeff("firePrecision");
                 
-                if (time > this.lastFired + (this.baseShipStats.rechargementTir / (1 + bonusFire)) / this.meca_weapon)
+                if (time > this.lastFired + (this.baseShipStats.rechargementTir / bonusFire) / this.meca_weapon)
                 {
                     let tir = this.tirs.get();
                     if (tir)
                     {
-                        tir.fire(this.player.x, this.player.y, this.player.rotation, this.player.body.velocity, this.baseShipStats.vitesseTir, true, this.baseShipStats.precisionTir * (1 - bonusPrecision),  this.baseShipStats.degats);
+                        tir.fire(this.player.x, this.player.y, this.player.rotation, this.player.body.velocity, this.baseShipStats.vitesseTir, true, this.baseShipStats.precisionTir / bonusPrecision,  this.baseShipStats.degats);
                         this.lastFired = time;
                         this.soundLaser7.setDetune(Math.random() * 500);
                         this.soundLaser7.play();
