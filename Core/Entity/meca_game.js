@@ -239,8 +239,6 @@ class Meca extends Phaser.Scene {
         module.state -= damage;
         module.state = Math.max(module.state, 0);
 
-
-
         // Vérifier si le module est HS
         if (module.state < 1) {
             this.enableModule(module, false);
@@ -377,7 +375,9 @@ class Meca extends Phaser.Scene {
     onDamageReceived(damage) {
         console.log("degats");
         this.camera.shake(200,0.02);
-        this.soundChocs[Math.floor(Math.random()*2)].play();
+        let sound = this.soundChocs[Math.floor(Math.random()*2)];
+        sound.setVolume(0.3);
+        sound.play();
         let module;
         const modules = Array.from(this.listModules.values());
         // Prendre un module au hasard       

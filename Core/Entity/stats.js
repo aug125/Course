@@ -46,7 +46,7 @@ class Stats{
 		if (owner == "game") {
 			this.maxDistancePortail = 5000; // Distance max du portail en x et y, ramené vers le joueur si trop éloigné
 			this.distanceApparitionEnnemi = 3000;
-			this.tempsApparitionEnnemi = 4000; // en ms
+			this.tempsApparitionEnnemi = 8000; // en ms
 			this.nbEnnemis = 10;
 			this.probaBonusParEnnemi = 0.99; // Proba de lâcher un bonus par ennemi
 			this.maxBonusParNiveau = 3;			

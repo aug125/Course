@@ -62,7 +62,9 @@ class Pilote extends Phaser.Scene{
                 this.camera.shake(200,0.02);
                 socket.emit("damage", tir.damage);
 
-                this.soundChocs[Math.floor(Math.random()*2)].play();
+                let sound = this.soundChocs[Math.floor(Math.random()*2)];
+                sound.setVolume(0.3);
+                sound.play();
 
                 this.realShield = 0;
             }
@@ -403,6 +405,7 @@ class Pilote extends Phaser.Scene{
         this.soundLaser4 = this.sound.add("soundLaser4");
         this.soundLaser7 = this.sound.add("soundLaser7");
         this.soundChocs = [this.sound.add("soundChoc2"), this.sound.add("soundChoc3")];
+
         this.soundTeleport = this.sound.add("soundTeleport");
         this.soundExplosion = this.sound.add("soundExplosion");
 
