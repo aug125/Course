@@ -122,11 +122,14 @@ class Pilote extends Phaser.Scene{
         }
     };
 
+    // Le joueur a réussi à atteindre le portail
     portalReached (player, portal) {
         this.soundTeleport.play();
+        this.currentLevel++;        
         this.levelInitialisation();
     }
 
+    // Le joueur a atteint un bonus
     bonusReached (player, pictureBonus)  {
         if (pictureBonus.visible == false) {
             return;
@@ -237,6 +240,7 @@ class Pilote extends Phaser.Scene{
         // Initialiser le niveau
         this.ennemiLeft =  this.gameStats.nbEnnemis;
         this.textEnnemiLeft.setText("Ennemis restants : " + this.ennemiLeft);
+        this.textVague.setText("Niveau " + this.currentLevel);
 
         // Positionner le joueur
         this.player.x = 0;
@@ -254,6 +258,12 @@ class Pilote extends Phaser.Scene{
         // Enlever tous les tirs
         this.tirs.getChildren().forEach(function(tir) {
             tir.remove();
+        });
+
+        // Enlever tous les bonus
+        this.bonus.getChildren().forEach(function(bonus) {
+            bonus.setActive(false);
+            bonus.setVisible(false);
         });
 
 
@@ -368,7 +378,14 @@ class Pilote extends Phaser.Scene{
             align: 'center'
         }).setOrigin(0.5).setScrollFactor(0);
 
-        this.textEnnemiLeft = this.add.text(0,0, "Ennemis restants : " + this.ennemiLeft).setStyle({
+        this.textEnnemiLeft = this.add.text(0,40, "Ennemis restants : " + this.ennemiLeft).setStyle({
+            fontSize: '32px',
+            fontFamily: 'Calibri',
+            color: "#ffffff",
+            align: 'center'
+        }).setScrollFactor(0);
+
+        this.textVague = this.add.text(0,0, "Niveau " + this.currentLevel).setStyle({
             fontSize: '32px',
             fontFamily: 'Calibri',
             color: "#ffffff",
