@@ -242,6 +242,7 @@ class Pilote extends Phaser.Scene{
         this.textEnnemiLeft.setText("Ennemis restants : " + this.ennemiLeft);
         this.textVague.setText("Niveau " + this.currentLevel);
 
+        
         // Positionner le joueur
         this.player.x = 0;
         this.player.y = 0;
@@ -266,6 +267,26 @@ class Pilote extends Phaser.Scene{
             bonus.setVisible(false);
         });
 
+        // Ajout des étoiles en arrière plan
+
+        // Supprimer les anciennes
+        if (this.bg !== undefined) {
+            this.bg.getChildren().forEach(function(star) {
+                star.setVisible(false);
+                star.setActive(false);
+            });
+        }
+        else {
+            console.log ("bg don't exist");
+        }
+
+        const nbStar = Math.random() * 200 + 100;
+
+        this.bg = this.add.group({ key: 'star', frameQuantity: nbStar });
+        this.bg.setDepth(-1);
+
+        const rectScreen = new Phaser.Geom.Rectangle(0,0, this.cameras.main.width, this.cameras.main.height);
+        Phaser.Actions.RandomRectangle(this.bg.getChildren(), rectScreen);	
 
         // Initialiser le portail
         this.portal.x = Math.random() * this.gameStats.maxDistancePortail * 2 - this.gameStats.maxDistancePortail;
@@ -274,6 +295,18 @@ class Pilote extends Phaser.Scene{
         this.portal.timeSetActive = -1;
         this.portal.setVisible(false);
         this.portal.setAngularVelocity(250);
+
+        // Colorer les étoiles pour que ça fasse un peu plus gai
+        this.bg.getChildren().forEach(function(element) {
+            const variableColor = 120;
+            const red = 255 - variableColor + Math.floor(Math.random() * variableColor);				
+            const green = 255 - variableColor + Math.floor(Math.random() * variableColor);
+            const blue = 255 - variableColor + Math.floor(Math.random() * variableColor);				
+            element.setTint(red*256*256 + green*256 + blue);
+
+            // Taille aléatoire
+            element.setScale(Math.random());
+        });       
 
 
         // Mettre à jour le compteur                
@@ -337,7 +370,8 @@ class Pilote extends Phaser.Scene{
         this.load.image('vaisseau', 'vaisseau.png');
 
         // Vaisseau ennemis
-        this.load.image('pod', 'pod.png');
+        this.load.image('pod1', 'pod1.png');
+        this.load.image('pod2', 'pod1.png');
 
         this.load.image('star', 'star.png');
         this.load.image('tir', 'tir.png');
@@ -510,24 +544,6 @@ class Pilote extends Phaser.Scene{
         this.camera = this.cameras.main;
         this.camera.setSize(game.config.width, game.config.height);
 
-        // Ajout des étoiles en arrière plan
-        this.bg = this.add.group({ key: 'star', frameQuantity: 100 });
-        this.bg.setDepth(-1);
-
-        const rectScreen = new Phaser.Geom.Rectangle(0,0, this.cameras.main.width, this.cameras.main.height);
-        Phaser.Actions.RandomRectangle(this.bg.getChildren(), rectScreen);	
-
-        // Colorer les étoiles pour que ça fasse un peu plus gai
-        this.bg.getChildren().forEach(function(element) {
-            const variableColor = 100;
-            const red = 255 - variableColor + Math.floor(Math.random() * variableColor);				
-            const green = 255 - variableColor + Math.floor(Math.random() * variableColor);
-            const blue = 255 - variableColor + Math.floor(Math.random() * variableColor);				
-            element.setTint(red*256*256 + green*256 + blue);
-
-            // Taille aléatoire
-            element.setScale(Math.random());
-        });       
 
         // Définir couleur arrière plan
         this.cameras.main.setBackgroundColor('rgba(0, 0, 0, 2)');
@@ -638,7 +654,7 @@ class Pilote extends Phaser.Scene{
             let ennemi = this.ennemis.get();
             if (ennemi)
             {
-                ennemi.display("pod");
+                ennemi.display("pod1");
                 this.timeLastEnnemyPop = time;
             }
         }

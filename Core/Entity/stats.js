@@ -16,7 +16,7 @@ class Stats{
 		// Ennemis.
 
 		// pod rouge
-		if (owner == "pod") {
+		if (owner == "pod1") {
 			this.scale = 0.5; // Taille du vaisseau
 			this.maxVelocity = 250; // Vitesse max
 			this.acceleration = 250; 
@@ -25,6 +25,18 @@ class Stats{
 			this.rechargementTir = 900; // Temps avant le prochain tir
 			this.precisionTir = 0.0; // Précision du tir. 0 = tire en face
 			this.degats = 25; // dégats au bouclier/coque
+		}
+
+		// pod bleu
+		if (owner == "pod2") {
+			this.scale = 0.5; // Taille du vaisseau
+			this.maxVelocity = 80; // Vitesse max
+			this.acceleration = 50; 
+			this.vitesseRotation = 90; // Vitesse de rotation du vaisseau
+			this.vitesseTir = 700; // Vitesse du projectile
+			this.rechargementTir = 1900; // Temps avant le prochain tir
+			this.precisionTir = 0.0; // Précision du tir. 0 = tire en face
+			this.degats = 36; // dégats au bouclier/coque
 		}
 
 		
