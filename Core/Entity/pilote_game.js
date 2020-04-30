@@ -371,7 +371,7 @@ class Pilote extends Phaser.Scene{
 
         // Vaisseau ennemis
         this.load.image('pod1', 'pod1.png');
-        this.load.image('pod2', 'pod1.png');
+        this.load.image('pod2', 'pod2.png');
 
         this.load.image('star', 'star.png');
         this.load.image('tir', 'tir.png');
@@ -654,12 +654,29 @@ class Pilote extends Phaser.Scene{
             let ennemi = this.ennemis.get();
             if (ennemi)
             {
-                ennemi.display("pod1");
+                // Faire apparaître ennemi selon le niveau
+                const ennemiLevel = this.gameStats.ennemisLevel.get(this.currentLevel);
+                
+                // Choisir l'ennemi
+                let sum = 0;
+                ennemiLevel.forEach(function(value, key) {
+                   sum += value; 
+                });
+                const random = Math.random() * sum;
+                let ennemiName = "";
+                let sum2 = 0;
+                for (let [key, value] of ennemiLevel.entries()) {
+                    sum2 += value;
+                    if (sum2 > random) {
+                        ennemiName = key;
+                        break;
+                    }
+                }               
+                ennemi.display(ennemiName);
                 this.timeLastEnnemyPop = time;
             }
         }
         
-
         // Gestion des inputs du joueur
         let cursors = this.input.keyboard.createCursorKeys();
         if (cursors.left.isDown)

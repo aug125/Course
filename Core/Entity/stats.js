@@ -58,10 +58,27 @@ class Stats{
 		if (owner == "game") {
 			this.maxDistancePortail = 5000; // Distance max du portail en x et y, ramené vers le joueur si trop éloigné
 			this.distanceApparitionEnnemi = 3000;
-			this.tempsApparitionEnnemi = 8000; // en ms
+			this.tempsApparitionEnnemi = 5000; // en ms
 			this.nbEnnemis = 10;
-			this.probaBonusParEnnemi = 0.99; // Proba de lâcher un bonus par ennemi
-			this.maxBonusParNiveau = 3;			
+			this.probaBonusParEnnemi = 0.3; // Proba de lâcher un bonus par ennemi
+			this.maxBonusParNiveau = 3;
+			
+			this.ennemisLevel = new Map();
+
+			// Niveau 1
+			this.ennemisLevel.set(1, new Map([
+				['pod1', 1],
+				['pod2', 1]])
+			);
+
+			// Niveau 2
+			this.ennemisLevel.set(2, new Map([
+				['pod1', 1],
+				['pod2', 1]])
+			);
+
+
+
 		}	
 	}
 }

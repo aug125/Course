@@ -10,12 +10,16 @@ let Ennemi = new Phaser.Class({
         Phaser.GameObjects.Image.call(this, scene, 0, 0, 'vaisseau');
         this.scene = scene;
         this.lastFired = 0;
-        this.gameStats = new Stats("game");        
+        this.gameStats = new Stats("game");    
+        this.displayed = false;
+
     },
 
     display: function (name)
     {
         this.stats = new Stats(name);
+        console.log(name);
+        console.log(this.stats);
         this.setScale(this.stats.scale);
         this.setTexture(name);
 
@@ -46,6 +50,10 @@ let Ennemi = new Phaser.Class({
 
     update: function (time, delta)
     {
+        if (this.active == false) {
+            return;
+        }
+
         // Faire tourner l'ennemi vers le joeuur
         if ( this.scene.gameOver == false) {
             let angle = Phaser.Math.Angle.Between(this.x, this.y, this.scene.player.x, this.scene.player.y);
@@ -108,5 +116,6 @@ let Ennemi = new Phaser.Class({
         this.setVisible(false);
         this.setActive(false);
         this.ennemiEmitter.on = false;
+        this.displayed = false;
     }
 });
