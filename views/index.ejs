@@ -46,7 +46,6 @@
 
 			// Connexion socket.io
 			var socket = io();
-//			let socket = io.connect('http://192.168.1.110:8080');
 										
 			// Sockets
 			
@@ -54,13 +53,8 @@
 				 $('#chat').append("<p>" + msg + "</p>");			
 			});
 
+			var godMode = true;
 			let game = new Phaser.Game(config);
-/*
-			socket.on('jeu', function () {
-				game = new Phaser.Game(config);
-				setTimeout(askId, 1000);				
-			});
-*/
 
         </script>
     </body>

@@ -118,7 +118,10 @@ io.sockets.on('connection', function (socket) {
 });	
 
 let port = process.env.PORT;
-console.log(port);
+
+if (port == null || port == "") {
+	port = 8080;
+}
 
 server.listen(port, function () {
 	console.log(`Listening on ${server.address().port}`);

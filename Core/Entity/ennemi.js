@@ -1,5 +1,4 @@
 let Ennemi = new Phaser.Class({
-
 	
     Extends: Phaser.GameObjects.Image,
 
@@ -18,8 +17,6 @@ let Ennemi = new Phaser.Class({
     display: function (name)
     {
         this.stats = new Stats(name);
-        console.log(name);
-        console.log(this.stats);
         this.setScale(this.stats.scale);
         this.setTexture(name);
 
@@ -89,7 +86,7 @@ let Ennemi = new Phaser.Class({
             let tir = this.scene.tirs.get();
             if (tir)
             {
-                tir.fire(this.x, this.y, this.rotation, new Phaser.Math.Vector2(0,0), this.stats.vitesseTir, false, this.stats.precisionTir, this.stats.degats);
+                tir.fire(this.x, this.y, this.rotation, new Phaser.Math.Vector2(0,0), this.stats.vitesseTir, false, this.stats.precisionTir, this.stats.degats, this.stats.teleguidage);
                 this.lastFired = time;
 
 
@@ -105,7 +102,7 @@ let Ennemi = new Phaser.Class({
 
         const randomParticleAngle = 15;
 
-        // Positionner les particules du joueur
+        // Positionner les particules de l'ennemi
         this.ennemiEmitter.setAngle( {min : this.angle + 180 - randomParticleAngle, max: this.angle + 180 + randomParticleAngle });
         this.ennemiEmitter.setPosition (-Math.cos(this.rotation) * 20, -Math.sin(this.rotation) * 20);
 

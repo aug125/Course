@@ -13,6 +13,11 @@ class Pilote extends Phaser.Scene{
         this.meca_weapon = 0;
         this.meca_shield = 0;
     
+        if (godMode) {
+            this.meca_power = 1;
+            this.meca_weapon = 1;
+            this.meca_shield = 1;        }
+
         this.realShield = 0;
 
         // Ennemis restants;

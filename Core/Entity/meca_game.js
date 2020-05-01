@@ -23,8 +23,6 @@ class Meca extends Phaser.Scene {
         this.isRadarReceived = false;
         this.timeLastReceiveScan = 0;
 
-        this.godMode = true;
-
         // scène actuellement affichée.
         this.currentScene = "cockpit";
 
@@ -231,7 +229,7 @@ class Meca extends Phaser.Scene {
 
     damageModule(module, damage) {
         
-        if (this.godMode) {
+        if (godMode) {
             return;
         }
 

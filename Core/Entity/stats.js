@@ -25,6 +25,7 @@ class Stats{
 			this.rechargementTir = 900; // Temps avant le prochain tir
 			this.precisionTir = 0.0; // Précision du tir. 0 = tire en face
 			this.degats = 25; // dégats au bouclier/coque
+			this.teleguidage = 0; // Tête chercheuse
 		}
 
 		// pod bleu
@@ -37,6 +38,7 @@ class Stats{
 			this.rechargementTir = 1900; // Temps avant le prochain tir
 			this.precisionTir = 0.0; // Précision du tir. 0 = tire en face
 			this.degats = 36; // dégats au bouclier/coque
+			this.teleguidage = 1; // Tête chercheuse
 		}
 
 		
