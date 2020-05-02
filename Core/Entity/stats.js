@@ -18,11 +18,11 @@ class Stats{
 		// pod rouge
 		if (owner == "pod1") {
 			this.scale = 0.5; // Taille du vaisseau
-			this.maxVelocity = 250; // Vitesse max
+			this.maxVelocity = 150; // Vitesse max
 			this.acceleration = 250; 
 			this.vitesseRotation = 150; // Vitesse de rotation du vaisseau
 			this.vitesseTir = 600; // Vitesse du projectile
-			this.rechargementTir = 900; // Temps avant le prochain tir
+			this.rechargementTir = 1100; // Temps avant le prochain tir
 			this.precisionTir = 0.0; // Précision du tir. 0 = tire en face
 			this.degats = 25; // dégats au bouclier/coque
 			this.teleguidage = 0; // Tête chercheuse
@@ -70,7 +70,7 @@ class Stats{
 			// Niveau 1
 			this.ennemisLevel.set(1, new Map([
 				['pod1', 1],
-				['pod2', 1]])
+				['pod2', 0]])
 			);
 
 			// Niveau 2

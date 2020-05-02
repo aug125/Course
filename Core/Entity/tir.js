@@ -39,7 +39,7 @@ let Tir = new Phaser.Class({
         // Création des particules
         this.emitter = this.scene.particles.createEmitter({
             lifespan: 800,
-            speed: 0,
+            speed: { min: 10, max: 40 },
             scale: { start: 0.1, end: 0.06 },
             alpha: { start: 1, end: 0 },
             tint: color,
@@ -97,7 +97,16 @@ let Tir = new Phaser.Class({
                     this.setRotation(this.rotation + homing);
                 }
                 this.body.setVelocity(Math.cos(this.rotation) * this.speed, Math.sin(this.rotation) * this.speed);
+                
+                if (this.isPlayer) {
+                    color = 0x00aaff;
 
+                }
+                else {
+                    color = 0xaa00ff;
+                }
+                this.emitter.setTint(color);
+                this.setTint(color);
             }
         }
 
