@@ -563,7 +563,7 @@ class Pilote extends Phaser.Scene{
 
         // Définir vitesse max du vaisseau (et ralentissement naturel)
         this.player.body.maxVelocity.set(this.baseShipStats.maxVelocity);
-        this.player.body.drag.set(150);
+        this.player.body.drag.set(250);
 
 
         // Caméra suit le joueur
