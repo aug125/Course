@@ -229,8 +229,8 @@ class BonusManager {
             [new Effect("fireFrequence", 0.2, 1.5), 
              new Effect("firePrecision", -0.1, -0.5)], // Liste des effets
             "weapon", // Module
-            50, // Coût minimal
-            100, // Coût maximal
+            10, // Coût minimal
+            40, // Coût maximal
             "bonus_surchargeur" // Nom de l'image
         ));
 
@@ -241,8 +241,8 @@ class BonusManager {
             [new Effect("shieldMaxValue", 0.5, 1.2), 
              new Effect("shieldRegeneration", -0.25, -0.4)], // Liste des effets
             "shield", // Module
-            20, // Coût minimal
-            80, // Coût maximal
+            10, // Coût minimal
+            40, // Coût maximal
             "bonus_bouclier" // Nom de l'image
         ));
 
@@ -253,8 +253,8 @@ class BonusManager {
             [new Effect("maxSpeed", 0.2, 0.5), 
              new Effect("acceleration", 0.5, 2.0)], // Liste des effets            
             "power", // Module
-            20, // Coût minimal
-            80, // Coût maximal
+            10, // Coût minimal
+            40, // Coût maximal
             "bonus_propulsion" // Nom de l'image
         ));
 
