@@ -65,55 +65,6 @@ io.sockets.on('connection', function (socket) {
 		idJoueur += 1;
 	});
 
-	socket.on('role', function(role) {
-		console.log("Envoi du rôle choisi par le premier joueur");
-		io.to(socket.game).emit('role', role);
-	});
-
-	// MECA => PILOTE
-	socket.on('power', function(powerValue) {		
-		io.to(socket.game).emit('power', powerValue);
-	});	
-	
-	socket.on('weapon', function(weaponValue) {		
-		io.to(socket.game).emit('weapon', weaponValue);
-	});	
-
-	socket.on('shield', function(shieldValue) {		
-		io.to(socket.game).emit('shield', shieldValue);
-	});
-
-	socket.on('askRadarScan', function() {		
-		io.to(socket.game).emit('askRadarScan');
-	});
-
-	socket.on('sendRadarScan', function(posJoueurX, posJoueurY, listEnnemis, portal) {
-		io.to(socket.game).emit('sendRadarScan', posJoueurX, posJoueurY, listEnnemis, portal);
-	});
-
-	socket.on('upgrade', function(listUpgrade) {	
-		io.to(socket.game).emit('upgrade', listUpgrade);
-	});	
-
-
-	// PILOTE => MECA
-	socket.on('damage', function(damage) {
-		io.to(socket.game).emit('damage', damage);
-	});
-
-	socket.on('gameOver', function() {		
-		io.to(socket.game).emit('gameOver');
-	});
-
-	// PILOTE => TOUS
-	socket.on('score', function(score) {		
-		io.to(socket.game).emit('score', score);
-	});
-
-	socket.on('bonus', function(bonus) {
-		io.to(socket.game).emit('bonus', bonus);
-	});
-
 
 });	
 
