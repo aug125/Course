@@ -8,16 +8,6 @@ class Pilote extends Phaser.Scene{
         this.score = 0;
         this.gameOver = false;
 
-        // Statistiques données par l'autre joueur. Compris entre 0 et 1
-        this.meca_power = 0;
-        this.meca_weapon = 0;
-        this.meca_shield = 0;
-    
-        if (godMode) {
-            this.meca_power = 1;
-            this.meca_weapon = 1;
-            this.meca_shield = 1;        }
-
         this.realShield = 0;
 
         // Ennemis restants;
@@ -39,6 +29,10 @@ class Pilote extends Phaser.Scene{
 
     }
 
+    init(players) {
+        this.playersInformation = players;
+    }
+
     setGameOver() {
         socket.emit("score", this.score);
         console.log("gameOver");
@@ -57,74 +51,11 @@ class Pilote extends Phaser.Scene{
 
     // Callbacks
     joueurTouche (player, tir) {
-        if (tir.isPlayer == false && tir.active)
-        {
 
-            // Le bouclier encaisse en premier
-            this.realShield -= tir.damage;
-            if (this.realShield <= 0)
-            {
-                this.camera.shake(200,0.02);
-                socket.emit("damage", tir.damage);
-
-                let sound = this.soundChocs[Math.floor(Math.random()*2)];
-                sound.setVolume(0.3);
-                sound.play();
-
-                this.realShield = 0;
-            }
-            tir.remove();
-        }
     };
 
     ennemiTouche (ennemi, tir){
-        if (tir.isPlayer == true && ennemi.active == true)
-        {
 
-            let explosion = this.add.sprite(ennemi.x, ennemi.y, 'explosion', 0).setOrigin(0.5);
-            // Explosion            
-            this.anims.create({
-                key: 'boum',
-                frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 63 }),
-                frameRate: 60,
-                repeat: 0,
-                hideOnComplete: true
-            });
-            explosion.anims.play('boum', true);
-
-            // Jouer son explosion
-            this.soundExplosion.play();
-
-            ennemi.remove();
-            tir.remove();
-            this.score++;
-            if (this.ennemiLeft > 0) {
-                this.ennemiLeft--;
-                this.textEnnemiLeft.setText("Ennemis restants : " + this.ennemiLeft);
-            }
-            if (this.ennemiLeft == 0 && this.portal.visible == false) {
-                this.openPortal();
-                this.textEnnemiLeft.setText("Trouvez le portail");
-            }
-            
-            // Apparition du bonus
-            if (Math.random() < this.gameStats.probaBonusParEnnemi) {
-
-                let children = this.bonus.getChildren();
-
-                for (let i = 0; i < children.length; i++) {
-                    if (children[i].visible == false) {
-
-                        children[i].setVisible(true);
-                        children[i].x = ennemi.x;
-                        children[i].y = ennemi.y;
-                        children[i].setAngularVelocity(40);
-                        children[i].setScale(0.7);
-                        break;
-                    }
-                }
-            }
-        }
     };
 
     // Le joueur a réussi à atteindre le portail
@@ -148,8 +79,6 @@ class Pilote extends Phaser.Scene{
 
         this.printText(bonus.name + " (" + rarityText + ")", color);
 
-        // Envoyé le bonus au meca
-        socket.emit("bonus",  bonus);
     }
 
     openPortal() {
@@ -160,75 +89,12 @@ class Pilote extends Phaser.Scene{
     }    
 
 
-
-    setWarningTint(image, value, isPrintRequired = true) {
-        let message = "";
-
-        if (image.name == "power") {
-            message = "Puissance ";
-        }
-        else if (image.name == "weapon") {
-            message = "Armement "
-        }
-        else if (image.name == "shield") {
-            message = "Bouclier "
-        }
-
-        let red = 0, green = 0, blue = 0;
-        let state = "";
-        if (value < 0.1) {
-            red = 255;
-            green = 0;
-            blue = 0;
-            state = "NONE";          
-        }
-        else if (value < 0.5) {
-            red = 255;
-            green = 200;
-            blue = 0;
-            state = "LOW";         
-        }
-        else {
-            red = 0;
-            green = 200;
-            blue = 150;                            
-            state = "HIGH";         
-        }
-        image.setTint(red*256*256 + green*256 + blue);
-
-        // Prévenir si l'état a changé
-        if (state != image.state) {
-            image.timeChanged = new Date().getTime();
-            image.state = state;
-            if (state == "NONE") {
-                message += "H.S."
-            }
-            else if (state == "LOW") {
-                message += "faible"
-            }
-            else if (state == "HIGH") {
-                message += "OK"
-            }
-            this.printText(message);
-        }
-    }
-
-    createWarningImage(image) {
-        image.initialPositionX = image.x;
-        image.initialPositionY = image.y;
-        image.timeChanged = 0;
-        image.setScale(0.3);
-        image.state = "NONE";
-        this.setWarningTint(image, 0);
-    }
-
     printText(text, color = "#ccffcc") {
         this.textPrincipal.setText(text);
         this.textPrincipal.timeDisplayed = new Date().getTime();
         this.textPrincipal.setAlpha(1);
         this.textPrincipal.setColor(color);
     }    
-
     getUpgradeCoeff(name) {
         // Retourne valeur + 1 ( 10% -> 1.1)
         return  (this.listUpgrade.has(name) ? this.listUpgrade.get(name) + 1 : 1);
@@ -238,8 +104,6 @@ class Pilote extends Phaser.Scene{
         // Retourne valeur ( 10% -> 0.1)
         return  (this.listUpgrade.has(name) ? this.listUpgrade.get(name) + 1 : 1);
     }
-
-
     levelInitialisation() {
 
         // Initialiser le niveau
@@ -256,22 +120,6 @@ class Pilote extends Phaser.Scene{
         this.player.setVelocityX(0);
         this.player.setVelocityY(0);
 
-        // Enlever tous les ennemis
-        this.ennemis.getChildren().forEach(function(ennemi) {
-            ennemi.remove();
-        });
-
-        // Enlever tous les tirs
-        this.tirs.getChildren().forEach(function(tir) {
-            tir.remove();
-        });
-
-        // Enlever tous les bonus
-        this.bonus.getChildren().forEach(function(bonus) {
-            bonus.setActive(false);
-            bonus.setVisible(false);
-        });
-
         // Ajout des étoiles en arrière plan
 
         // Supprimer les anciennes
@@ -281,9 +129,6 @@ class Pilote extends Phaser.Scene{
                 star.setActive(false);
             });
         }
-        else {
-            console.log ("bg don't exist");
-        }
 
         const nbStar = Math.random() * 200 + 100;
 
@@ -292,14 +137,6 @@ class Pilote extends Phaser.Scene{
 
         const rectScreen = new Phaser.Geom.Rectangle(0,0, this.cameras.main.width, this.cameras.main.height);
         Phaser.Actions.RandomRectangle(this.bg.getChildren(), rectScreen);	
-
-        // Initialiser le portail
-        this.portal.x = Math.random() * this.gameStats.maxDistancePortail * 2 - this.gameStats.maxDistancePortail;
-        this.portal.y = Math.random() * this.gameStats.maxDistancePortail * 2 - this.gameStats.maxDistancePortail;
-        this.portal.setScale(0);
-        this.portal.timeSetActive = -1;
-        this.portal.setVisible(false);
-        this.portal.setAngularVelocity(250);
 
         // Colorer les étoiles pour que ça fasse un peu plus gai
         this.bg.getChildren().forEach(function(element) {
@@ -324,41 +161,29 @@ class Pilote extends Phaser.Scene{
         this.setGameOver();
     };
 
-    onPowerChanged (newPowerValue){
-        // Changement de puissance
-        this.meca_power = newPowerValue;
-        
-        if (newPowerValue < 0.1) {
-            this.playerEmitter.setFrequency(500, 2);
-        }
-        else {
-            this.playerEmitter.setFrequency(50 / newPowerValue , 2);
-        }
-        this.setWarningTint(this.powerWarning, newPowerValue);        
-    };
-
-    onWeaponChanged (newWeaponValue){
-        // Changement d'armement
-        this.meca_weapon = newWeaponValue;
-        this.setWarningTint(this.weaponWarning, newWeaponValue);        
-    };
-
-    onShieldChanged (newShieldValue){
-        // Changement de bouclier
-        this.meca_shield = newShieldValue;
-        this.setWarningTint(this.shieldWarning, newShieldValue);        
-    };
-
-    onAskRadarScanReceived() {
-        socket.emit("sendRadarScan",  this.player.x, this.player.y, this.ennemis.getChildren(), this.portal);
-    }
-
     onUpgradeReceived(listUpgrade) {
         this.listUpgrade = new Map(JSON.parse(listUpgrade));
 
         // Changer immédiatement certaines variables
         this.player.body.maxVelocity.set(this.baseShipStats.maxVelocity * this.getUpgradeCoeff("maxSpeed"));
 
+    }
+
+    setPositionEnnemi(ennemiInformations) {
+        this.ennemis.getChildren().forEach(function (ennemi) {
+            if (ennemi.playerId === ennemiInformations.playerId) {
+                ennemi.setRotation(ennemiInformations.rotation);
+                ennemi.setPosition(ennemiInformations.x, ennemiInformations.y);
+            }
+          });
+    }
+
+    addOtherPlayers(playerInfo) {
+        console.log(playerInfo);
+        let otherPlayer = this.ennemis.get(playerInfo.x, playerInfo.y);                
+        otherPlayer.setTint(0xff0000);
+        otherPlayer.playerId = playerInfo.playerId;
+        otherPlayer.display();
     }
 
     // Fonctions phaser
@@ -375,15 +200,11 @@ class Pilote extends Phaser.Scene{
         this.load.image('vaisseau', 'vaisseau.png');
 
         // Vaisseau ennemis
-        this.load.image('pod1', 'pod1.png');
-        this.load.image('pod2', 'pod2.png');
 
         this.load.image('star', 'star.png');
         this.load.image('tir', 'tir.png');
         this.load.image('bouclier', 'bouclier.png');
-        this.load.image('powerImg', 'power.png');
-        this.load.image('weaponImg', 'weapon.png');
-        this.load.image('shieldImg', 'shield.png');
+
         this.load.image('flares', 'flares.png');
         this.load.image('portail', 'portail.png');
         this.load.image('bonus', 'bonus.png');
@@ -434,28 +255,6 @@ class Pilote extends Phaser.Scene{
 
         this.textPrincipal.timeDisplayed = 0;
         this.textPrincipal.setDepth(10);
-        this.textEnnemiLeft.setDepth(10);
-
-        // Création des images de warning
-        this.powerWarning = this.add.image(game.config.width - 100, 350, 'powerImg');
-        this.powerWarning.name = "power";
-        this.weaponWarning = this.add.image(game.config.width - 100, 475, 'weaponImg');
-        this.weaponWarning.name = "weapon";
-        this.shieldWarning = this.add.image(game.config.width - 100, 600, 'shieldImg');
-        this.shieldWarning.name = "shield";
- 
-        this.createWarningImage(this.powerWarning);        
-        this.createWarningImage(this.weaponWarning);        
-        this.createWarningImage(this.shieldWarning);        
- 
-        this.setWarningTint(this.powerWarning,0, false);
-        this.setWarningTint(this.weaponWarning,0, false);
-        this.setWarningTint(this.shieldWarning,0, false);
-
-        this.powerWarning.setScrollFactor(0);
-        this.weaponWarning.setScrollFactor(0);
-        this.shieldWarning.setScrollFactor(0);
-
 
         // Charger les sons
         this.soundLaser4 = this.sound.add("soundLaser4");
@@ -473,18 +272,23 @@ class Pilote extends Phaser.Scene{
         this.soundVortex.setVolume(0);
         this.soundVortex.setLoop(true);
         this.soundVortex.play();
+
         
+        // Création des ennemis			
+        this.ennemis = this.physics.add.group({
+            classType: Ennemi,
+            maxSize: 10,
+            runChildUpdate: true
+        });        
+
+        let self = this;
+
         // Statistiques du vaisseau
         this.baseShipStats = new Stats("player"); 
 
         // Statistiques de la partie
         this.gameStats = new Stats("game");
 
-        // Créations du bouclier
-        this.shield = this.physics.add.image(0, 0, 'bouclier').setAlpha(this.realShield);
-        this.shield.setDepth(1);
-        this.shield.setScale(0.4);
-        this.shield.setAngularVelocity(150);
         
         // Création des "tirs"			
         this.tirs = this.physics.add.group({
@@ -493,16 +297,6 @@ class Pilote extends Phaser.Scene{
             runChildUpdate: true
         });
 
-
-        // Création des ennemis			
-        this.ennemis = this.physics.add.group({
-            classType: Ennemi,
-            maxSize: 30,
-            runChildUpdate: true
-        });
-
-        // Création du portail
-        this.portal = this.physics.add.image(0, 0, 'portail').setDepth(3);
 
         // Création des particules
         this.particles = this.add.particles('flares');
@@ -516,18 +310,6 @@ class Pilote extends Phaser.Scene{
             on:false
         });
 
-        // Particules du portail
-        this.portal.wellParticle = this.particles.createGravityWell(this.portal.x, this.portal.y);
-        this.portal.particle = this.particles.createEmitter({
-            lifespan: 600,           
-            speed: { min: 0, max: 350 },
-            scale: { start: 0.1, end: 0 },
-            tint: 0xbbbbff,
-            quantity: 4,
-            blendMode: 'ADD',
-            on:false
-        });
-
         // Bonus
         this.bonus = this.physics.add.group({
             key: 'bonus',
@@ -535,13 +317,12 @@ class Pilote extends Phaser.Scene{
         });
         this.bonus.setVisible(false);
 
-        this.playerEmitter.setFrequency(500, 1);
+        this.playerEmitter.setFrequency(50, 1);
         this.playerEmitter.startFollow(this.player);
  
         // Créer les callbacks en cas de tir 
         this.physics.add.overlap(this.player, this.tirs, this.joueurTouche, null, this);
-        this.physics.add.overlap(this.ennemis, this.tirs, this.ennemiTouche, null, this);
-        this.physics.add.overlap(this.player, this.portal, this.portalReached, null, this);
+        //this.physics.add.overlap(this.ennemis, this.tirs, this.ennemiTouche, null, this);
         this.physics.add.overlap(this.player, this.bonus, this.bonusReached, null, this);
         
         // Resize selon l'écran
@@ -566,37 +347,30 @@ class Pilote extends Phaser.Scene{
         this.player.body.drag.set(250);
 
 
+        // Afficher tous les vaisseaux
+        Object.keys(this.playersInformation).forEach(function (id) {
+            console.log(socket.id);
+            if (self.playersInformation[id].playerId === socket.id) {
+                self.player.x = self.playersInformation[id].x;
+                self.player.y = self.playersInformation[id].y;
+            } else {
+                self.addOtherPlayers(self.playersInformation[id]);
+            }
+        });
+
+
+
         // Caméra suit le joueur
         this.cameras.main.startFollow(this.player.body.position, false);
 
-
+        
         // Sockets
-        let self = this;
-        socket.on("power",  function(powerValue) {
-            self.onPowerChanged(powerValue);        
+
+        socket.on("position",  function(idPlayer, x, y) {
+            self.setPositionEnnemi(idPlayer, x, y);
         });
 
-        socket.on("weapon",  function(weaponValue) {
-            self.onWeaponChanged(weaponValue);
-        });	
-        
-        socket.on("shield",  function(shieldValue) {
-            self.onShieldChanged(shieldValue);
-        });	
 
-        socket.on("gameOver",  function() {
-            self.onGameOverReceived();
-        });	
-
-        socket.on("askRadarScan",  function() {
-            self.onAskRadarScanReceived();
-        });
-
-        socket.on("upgrade",  function(listUpgrade) {
-            self.onUpgradeReceived(listUpgrade);
-        });
-
-        
         this.levelInitialisation();
 
     };
@@ -623,9 +397,9 @@ class Pilote extends Phaser.Scene{
         }
 
         // Mettre à jour le bouclier
-
+/*
         // Valeur bouclier à atteindre    
-        const targerShield = this.meca_shield * (this.baseShipStats.maxBouclier * (this.getUpgradeCoeff("shieldMaxValue")));
+        const targerShield =(this.baseShipStats.maxBouclier * (this.getUpgradeCoeff("shieldMaxValue")));
         
         // Si le bouclier est plus puissant que le réglage, on le diminue
         if (this.realShield > targerShield) {
@@ -644,56 +418,20 @@ class Pilote extends Phaser.Scene{
         this.shield.setAlpha(this.realShield / this.baseShipStats.maxBouclier);
         this.shield.setScale(0.4 + (this.realShield / 100) / 10);
 
-
-        // Création des ennemis	
-        
-        // Initialisation de l'apparition des ennemis la première fois.
-        if (this.timeLastEnnemyPop == 0) {
-            this.timeLastEnnemyPop = time;
-        }
-        
-        const delaiApparitionEnnemi = this.gameStats.tempsApparitionEnnemi;
-
-        if (time > this.timeLastEnnemyPop + delaiApparitionEnnemi)
-        {
-            let ennemi = this.ennemis.get();
-            if (ennemi)
-            {
-                // Faire apparaître ennemi selon le niveau
-                const ennemiLevel = this.gameStats.ennemisLevel.get(this.currentLevel);
-                
-                // Choisir l'ennemi
-                let sum = 0;
-                ennemiLevel.forEach(function(value, key) {
-                   sum += value; 
-                });
-                const random = Math.random() * sum;
-                let ennemiName = "";
-                let sum2 = 0;
-                for (let [key, value] of ennemiLevel.entries()) {
-                    sum2 += value;
-                    if (sum2 > random) {
-                        ennemiName = key;
-                        break;
-                    }
-                }               
-                ennemi.display(ennemiName);
-                this.timeLastEnnemyPop = time;
-            }
-        }
+*/ 
         
         // Gestion des inputs du joueur
         let cursors = this.input.keyboard.createCursorKeys();
         if (cursors.left.isDown)
         {
             // Gauche
-            this.player.setAngularVelocity(-this.baseShipStats.vitesseRotation * this.meca_power);
+            this.player.setAngularVelocity(-this.baseShipStats.vitesseRotation);
 
         }
         else if (cursors.right.isDown)
         {
             // Droite
-            this.player.setAngularVelocity(this.baseShipStats.vitesseRotation * this.meca_power);
+            this.player.setAngularVelocity(this.baseShipStats.vitesseRotation);
         }
         else
         {
@@ -714,7 +452,7 @@ class Pilote extends Phaser.Scene{
             // Mettre les particules à l'arrière du vaisseau
             this.playerEmitter.setPosition (-Math.cos(this.player.rotation) * 20, -Math.sin(this.player.rotation) * 20);
 
-            const velocity = this.physics.velocityFromRotation(this.player.rotation, this.baseShipStats.acceleration * this.meca_power * this.getUpgradeCoeff("accelerationnode "));
+            const velocity = this.physics.velocityFromRotation(this.player.rotation, this.baseShipStats.acceleration);
             this.player.setAccelerationX(velocity.x);
             this.player.setAccelerationY(velocity.y);	
             
@@ -734,7 +472,7 @@ class Pilote extends Phaser.Scene{
             // Mettre les particules à l'arrière du vaisseau
             this.playerEmitter.setPosition (-Math.cos(this.player.rotation) * 20, -Math.sin(this.player.rotation) * 20);
         
-            const velocity = this.physics.velocityFromRotation(this.player.rotation + Math.PI, this.baseShipStats.acceleration * this.meca_power);
+            const velocity = this.physics.velocityFromRotation(this.player.rotation + Math.PI, this.baseShipStats.acceleration);
             this.player.setAccelerationX(velocity.x);
             this.player.setAccelerationY(velocity.y);
 
@@ -761,15 +499,12 @@ class Pilote extends Phaser.Scene{
         // Tirer
         if (cursors.space.isDown)
         {
-            if (this.meca_weapon > 0.001)
-            {
-
                 // Vérifier que le tir précédent soit suffisamment lointain
 
                 const bonusFire = this.getUpgradeCoeff("fireFrequence");
                 const bonusPrecision = this.getUpgradeCoeff("firePrecision");
                 
-                if (time > this.lastFired + (this.baseShipStats.rechargementTir / bonusFire) / this.meca_weapon)
+                if (time > this.lastFired + (this.baseShipStats.rechargementTir / bonusFire))
                 {
                     let tir = this.tirs.get();
                     if (tir)
@@ -779,100 +514,9 @@ class Pilote extends Phaser.Scene{
                         this.soundLaser7.setDetune(Math.random() * 500);
                         this.soundLaser7.play();
                     }
-                }
-            }
+                }        
         }
-
-        // Positionner le portail pour qu'il ne soit pas trop loin du joueur
-
-        // Portail trop à gauche
-        while (this.portal.x  < this.player.x - this.gameStats.maxDistancePortail) {
-            this.portal.x += 2 * this.gameStats.maxDistancePortail;
-        }
-        // Portail trop à droite
-        while (this.portal.x  > this.player.x + this.gameStats.maxDistancePortail) {
-            this.portal.x -= 2 * this.gameStats.maxDistancePortail;
-        }
-
-        // Portail trop en haut
-        while (this.portal.y  < this.player.y - this.gameStats.maxDistancePortail) {
-            this.portal.y += 2 * this.gameStats.maxDistancePortail;
-        }
-        // Portail trop à droite
-        while (this.portal.y  > this.player.y + this.gameStats.maxDistancePortail) {
-            this.portal.y -= 2 * this.gameStats.maxDistancePortail;
-        }
-
-        //Particules du portail
-        this.portal.particle.setPosition({min: this.portal.x - 500, max: this.portal.x + 500}, {min: this.portal.y - 500, max: this.portal.y + 500});
-        this.portal.wellParticle.x = this.portal.x;
-        this.portal.wellParticle.y = this.portal.y;
-
-        // Taille du portail
-        const diffTimePortail = new Date().getTime() - this.portal.timeSetActive;
-        if (diffTimePortail < 1000) {
-            this.portal.setScale(diffTimePortail / 1000);  
-            this.portal.particle.on = false;          
-        }
-        else if (this.portal.visible) {
-            this.portal.setScale(1);
-            this.portal.wellParticle.power = 50;
-            this.portal.particle.on = true;
-        }
-        else {
-            this.portal.setScale(0);
-            this.portal.wellParticle.power = 0;
-            this.portal.particle.on = false;
-        }
-
-        // Gérer le son du portail
-        const distancePortal = Phaser.Math.Distance.Between(this.portal.x, this.portal.y, this.player.x, this.player.y);
-
-        if (distancePortal < 2000 && this.portal.visible) {
-            this.soundVortex.setVolume(1 - (distancePortal / 2000));
-        }
-        else {
-            this.soundVortex.setVolume(0);
-        }
-
-
-        // Affichage des warnings
-        let listWarnings = [this.powerWarning, this.weaponWarning, this.shieldWarning];
-
-        let max = 0;
-        // Un seul warning doit prendre la place du milieu, alors on prend le plus récent.
-        listWarnings.forEach(imageWarning => {
-
-            if (imageWarning.timeChanged > max) {
-                max = imageWarning.timeChanged;
-            }
-        });
-
-        listWarnings.forEach(imageWarning => {
-            const timeStartMove = 1750;
-            const timeEndMove = 2000;
-
-            const posX = game.config.width / 2;
-            const posY = 300;
-
-            const diffTime = new Date().getTime() - imageWarning.timeChanged;
-            if (diffTime < timeStartMove && imageWarning.timeChanged == max) {
-                imageWarning.x = posX;
-                imageWarning.y = posY;
-                imageWarning.setScale(1);
-            }
-            else if (diffTime < timeEndMove  && imageWarning.timeChanged == max) {
-                imageWarning.x = posX + (imageWarning.initialPositionX - posX) * ((diffTime - timeStartMove) / (timeEndMove - timeStartMove));
-                imageWarning.y = posY + (imageWarning.initialPositionY - posY) * ((diffTime - timeStartMove) / (timeEndMove - timeStartMove));
-                imageWarning.setScale(1 - 0.3 * ((diffTime - timeStartMove) / (timeEndMove - timeStartMove)));
-            }
-            else {
-                imageWarning.x = imageWarning.initialPositionX;
-                imageWarning.y = imageWarning.initialPositionY;
-                imageWarning.setScale(0.3);
-            }
-        });
-
+           
         // Changer l'affichage du texte.
         const diffTimetextPrincipal = new Date().getTime() - this.textPrincipal.timeDisplayed;
         if (diffTimetextPrincipal < 1500) {
@@ -907,6 +551,9 @@ class Pilote extends Phaser.Scene{
             currentTime);
 
         this.bonus.setTint(Math.round(color.r) * 256 * 256 + Math.round(color.g) * 256 + Math.round(color.b));
+
+        // Envoi de sa position
+        socket.emit("position", this.player.x, this.player.y, this.player.rotation);
 
     };
 }

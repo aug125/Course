@@ -11,25 +11,21 @@ let Ennemi = new Phaser.Class({
         this.lastFired = 0;
         this.gameStats = new Stats("game");    
         this.displayed = false;
+        this.playerId = -1;
 
     },
 
-    display: function (name)
+    display: function ()
     {
-        this.stats = new Stats(name);
+        this.stats = new Stats("player");
         this.setScale(this.stats.scale);
-        this.setTexture(name);
-
         this.setActive(true);
 		this.setVisible(true);  
 
 
         //Positionner le vaisseau autour du joueur
-        // Choisir un angle
-        const angleApparition = Math.random() * Math.PI*2;
-        const distanceApparition = this.gameStats.distanceApparitionEnnemi;
-        this.setPosition(this.scene.player.x + Math.cos(angleApparition) * distanceApparition, this.scene.player.y + Math.sin(angleApparition) * distanceApparition);
-        this.setRotation(angleApparition + Math.PI); // L'ennemi fait face au joueur
+        // Choisir un angle        
+        
         this.body.maxVelocity.set(this.stats.maxVelocity);
 
         // Création des particules
@@ -50,7 +46,7 @@ let Ennemi = new Phaser.Class({
         if (this.active == false) {
             return;
         }
-
+/*
         // Faire tourner l'ennemi vers le joeuur
         if ( this.scene.gameOver == false) {
             let angle = Phaser.Math.Angle.Between(this.x, this.y, this.scene.player.x, this.scene.player.y);
@@ -72,34 +68,15 @@ let Ennemi = new Phaser.Class({
         else {
             this.body.setAngularVelocity(0);
         }
-
-        // Avancer le vaisseau        
+*/
+/*        // Avancer le vaisseau        
         let velocity = this.scene.physics.velocityFromRotation(this.rotation, this.stats.acceleration);
         this.body.setAccelerationX(velocity.x);
         this.body.setAccelerationY(velocity.y);
 
         // Calcul distance entre vaisseau et joueur
         const distanceEnnemiPlayer = Phaser.Math.Distance.Between(this.scene.player.x, this.scene.player.y, this.x, this.y);
-
-        // Faire tirer le vaisseau
-        if (time - this.lastFired > this.stats.rechargementTir && this.scene.gameOver == false && distanceEnnemiPlayer < 1000) {
-            let tir = this.scene.tirs.get();
-            if (tir)
-            {
-                tir.fire(this.x, this.y, this.rotation, new Phaser.Math.Vector2(0,0), this.stats.vitesseTir, false, this.stats.precisionTir, this.stats.degats, this.stats.teleguidage);
-                this.lastFired = time;
-
-
-                let distanceThreshold = 1500; //This is the max distance from the object. Any farther and no sound is played.
-                const normalizedSound = 1 - (distanceEnnemiPlayer / distanceThreshold);
-                this.scene.soundLaser4.volume = Phaser.Math.Easing.Sine.In(normalizedSound);                
-                this.scene.soundLaser4.setDetune(Math.random() * 500);
-                this.scene.soundLaser4.play();
-            }
-        }
-
-        // Mise à jour de la direction des particules
-
+*/
         const randomParticleAngle = 15;
 
         // Positionner les particules de l'ennemi
@@ -108,11 +85,5 @@ let Ennemi = new Phaser.Class({
 
 
     },
-    remove : function() 
-    {    
-        this.setVisible(false);
-        this.setActive(false);
-        this.ennemiEmitter.on = false;
-        this.displayed = false;
-    }
+    
 });

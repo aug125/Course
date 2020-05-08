@@ -29,43 +29,50 @@ app.get('/', function (req, res) {
 	res.render('index.ejs');		
 });
 
+var players = {};
+
 io.sockets.on('connection', function (socket) {
+
+
 
 	socket.on('newPlayer', function (){		
 		nbPlayersInLobby += 1;
 		console.log(nbPlayersInLobby + " joueur(s) dans la salle d'attente de la partie " + idGameLobby);
 		socket.game = idGameLobby;
 		socket.join(idGameLobby);
+
+		players[socket.id] = {
+			rotation: 0,
+			x: Math.floor(Math.random() * 700) + 50,
+			y: Math.floor(Math.random() * 500) + 50,
+			playerId: socket.id
+		}		
 	
-
 		if (nbPlayersInLobby == 2) {
-
+			// create a new player and add it to our players object
+			
 			// Création de la partie
 			console.log("jeu");
-			io.to(socket.game).emit("jeu");			
+			io.to(socket.game).emit("jeu", players);			
 			let mapGame = new Map(); 
 			mapGames.set(socket.game,mapGame);
-			idJoueur = 0;
 			idGameLobby++;
 			nbPlayersInLobby -= 2;
-			
-		}		
+		}
 	});		
-
+	
 	socket.on('disconnect', function() {
 		if (socket.game == idGameLobby)
 			nbPlayersInLobby -= 1;
+	});	
+
+	socket.on("position",  function(x,y,r) {
+		players[socket.id].x = x;
+		players[socket.id].y = y;
+		players[socket.id].rotation = r;
+		io.to(socket.game).emit('position', players[socket.id]);
 	});
 	
-	socket.on('askId', function() {
-
-		console.log("Le joueur " + idJoueur + " joue dans la partie " + socket.game);
-		socket.id = idJoueur;		
-		socket.emit('sendId', idJoueur);
-		idJoueur += 1;
-	});
-
-
 });	
 
 let port = process.env.PORT;

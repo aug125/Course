@@ -12,8 +12,6 @@ class Menu extends Phaser.Scene {
 
     preload() {
 
-        this.load.image('piloteButton', 'piloteButton.png');
-
     }
     create = function(){
       let attenteText = this.add.text(800, 400, "En attente de la connexion de l'autre joueur")
@@ -26,9 +24,8 @@ class Menu extends Phaser.Scene {
       attenteText.setOrigin(0.5);  
 
       let self = this;
-      socket.on('jeu', function(role) {
-        console.log("jeu");
-        self.scene.start('MenuSelectRole');
+      socket.on('jeu', function(players) {
+          self.scene.start('Pilote', players);
       });
 
       // On annonce qu'on est prêt.

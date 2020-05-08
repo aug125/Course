@@ -1,6 +1,7 @@
 class Stats{
 	constructor(owner){
 		if (owner == "player") {
+			this.scale = 0.4; // Taille du vaisseau
 			this.maxVelocity = 250; // Vitesse max
 			this.acceleration = 300; 
 			this.vitesseRotation = 120; // Vitesse de rotation du vaisseau
